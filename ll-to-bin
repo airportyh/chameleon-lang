@@ -1,0 +1,4 @@
+# From https://llvm.org/docs/GettingStarted.html#example-with-clang
+
+llc -O0 $1 -o ${1%.ll}.s
+gcc -O0 ${1%.ll}.s -o ${1%.ll}.bin

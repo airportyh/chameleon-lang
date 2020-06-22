@@ -1,0 +1,5 @@
+a = 60 + 7
+b = a + 4
+putchar(a)
+putchar(b)
+putchar(10)

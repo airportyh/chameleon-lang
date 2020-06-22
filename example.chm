@@ -1,0 +1,48 @@
+struct User {
+    name: string
+    email: string
+}
+
+proc listify(x: t?) [
+    return { x }
+]
+
+proc listify(x: t?) [
+    return { x }
+]
+
+proc add(x: t? y: t?): t?
+where t? is additive
+[
+    return x + y
+]
+
+proc add_double(x: double y: double): double [
+    return x + y
+]
+
+proc main() [
+    content = FS::read("text.txt")
+    parts = split(content ",")
+    names = { "Marty" "Linus" "Emma" }
+    toby = User {
+        name = "Toby"
+        email = "airportyh@gmail.com"
+    }
+    emma = User {
+        name = "Emma"
+        email = "emma@gmail.com"
+    }
+    linus = User {
+        name = "Linus"
+        email = "linus.q.ho@gmail.com"
+    }
+    marty = User {
+        name = "Marty"
+        email = "marty.q.ho@gmail.com"
+    }
+    users = { toby emma linus marty }
+    for user in users [
+        print(user.name)
+    ]
+]

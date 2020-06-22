@@ -1,0 +1,4 @@
+# From https://llvm.org/docs/GettingStarted.html#example-with-clang
+
+clang -O0 -emit-llvm $1 -c -o ${1%.c}.bc
+llvm-dis < ${1%.c}.bc > ${1%.c}.ll

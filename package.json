@@ -1,0 +1,17 @@
+{
+  "name": "chameleon",
+  "version": "1.0.0",
+  "description": "A programming language for learning.",
+  "main": "lexer.js",
+  "scripts": {
+    "gen-parser": "nearleyc grammar.ne -o grammar.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "moo": "^0.5.1",
+    "mz": "^2.7.0",
+    "nearley": "^2.19.4"
+  }
+}
