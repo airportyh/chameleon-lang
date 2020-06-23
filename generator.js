@@ -78,9 +78,73 @@ function generate(node, context, variables) {
         return generateFunDef(node, context, variables);
     } else if (node.type === "return") {
         return generateReturn(node, context, variables);
+    } else if (node.type === "if") {
+        return generateIf(node, context, variables);
     } else {
+        console.log("node", node);
         throw new Error("Unsupported node type: " + node.type);
     }
+}
+
+function generateIf(node, context, variables) {
+    const topCode = [];
+    const cond = generate(node.cond, context, variables);
+    topCode.push(...cond.topCode);
+    const id = context.nextTemp++;
+    const trueLabel = "if_true" + id;
+    const falseLabel = "if_false" + id;
+    const exitLabel = "if_exit" + id;
+    if (!node.alternate) {
+        topCode.push(`br i1 ${cond.valueCode}, label %${trueLabel}, label %${exitLabel}`);
+        // generate 2 blocks: if_true and if_exit
+        const consequentTopCode = node.consequent.reduce((allTopCode, statement) => {
+            const result = generate(statement, context, variables);
+            return allTopCode.concat(result.topCode);
+        }, []);
+        
+        topCode.push("");
+        topCode.push(`${trueLabel}:`);
+        topCode.push(...consequentTopCode);
+        topCode.push(`br label %${exitLabel}`);
+        topCode.push("");
+        topCode.push(`${exitLabel}:`);
+    } else if (node.alternate) {
+        topCode.push(`br i1 ${cond.valueCode}, label %${trueLabel}, label %${falseLabel}`);
+        
+        const consequentTopCode = node.consequent.reduce((allTopCode, statement) => {
+            const result = generate(statement, context, variables);
+            return allTopCode.concat(result.topCode);
+        }, []);
+        
+        let alternateTopCode;
+        
+        if (Array.isArray(node.alternate)) {
+            alternateTopCode = node.alternate.reduce((allTopCode, statement) => {
+                const result = generate(statement, context, variables);
+                return allTopCode.concat(result.topCode);
+            }, []);
+        } else if (node.alternate.type === "if") {
+            const alternate = generate(node.alternate, context, variables);
+            alternateTopCode = alternate.topCode;
+        } else {
+            throw new Error(`Unexpected alternate type`);
+        }
+        topCode.push("");
+        topCode.push(`${trueLabel}:`);
+        topCode.push(...consequentTopCode);
+        topCode.push(`br label %${exitLabel}`);
+        topCode.push("");
+        topCode.push(`${falseLabel}:`);
+        topCode.push(...alternateTopCode);
+        topCode.push(`br label %${exitLabel}`);
+        topCode.push("");
+        topCode.push(`${exitLabel}:`);
+    }
+    return {
+        topCode,
+        valueCode: null,
+        dataType: null
+    };
 }
 
 function generateReturn(node, context, variables) {
@@ -124,10 +188,15 @@ function generateFunDef(node, context) {
     
     const topCode = [
         `define i32 @${funName}(${paramList.join(", ")}) {`,
-        indent(body),
+        indent(body)
+    ];
+    if (funName === "main") {
+        topCode.push("ret i32 0");
+    }
+    topCode.push(    
         "}",
         ""
-    ];
+    );
     return {
         topCode,
         valueCode: null,
@@ -310,6 +379,20 @@ function generateBinExpr(node, context, variables) {
         ins = isFloat(dataType, context) ? "fmul" : "mul";
     } else if (operator === "+") {
         ins = isFloat(dataType, context) ? "fdiv" : "div";
+    } else if (operator === ">") {
+        ins = isFloat(dataType, context) ? "fcmp ogt" : "icmp sgt";
+    } else if (operator === "<") {
+        ins = isFloat(dataType, context) ? "fcmp olt" : "icmp slt";
+    } else if (operator === ">=") {
+        ins = isFloat(dataType, context) ? "fcmp oge" : "icmp sge";
+    } else if (operator === "<=") {
+        ins = isFloat(dataType, context) ? "fcmp ole" : "icmp sle";
+    } else if (operator === "==") {
+        ins = isFloat(dataType, context) ? "fcmp oeq" : "icmp eq";
+    }
+    
+    if (!ins) {
+        throw new Error(`${locInfo(node.operator)}: Unable to find instruction for operator ${node.operator.value}`);
     }
     
     const code = `${varName} = ${ins} ${llDataType} ${leftInlined}, ${rightInlined}`;

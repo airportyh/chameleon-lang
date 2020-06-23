@@ -1,0 +1,10 @@
+fun main() [
+    a = 10
+    if a > 6 [
+        x = 4
+        putchar(65)
+    ] else [
+        putchar(67)
+    ]
+    putchar(10)
+]

@@ -1,0 +1,18 @@
+fun main() [
+    a = 5
+    if a [
+        x = 4
+    ] else [
+        y = 4
+    ]
+    if a [
+        c = 4
+    ]
+    if a [
+        x = 4
+    ] else if y [
+        z = 4
+    ] else [
+        x = 3
+    ]
+]

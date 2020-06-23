@@ -33,6 +33,7 @@ var grammar = {
     {"name": "statement", "symbols": ["var_assign"], "postprocess": id},
     {"name": "statement", "symbols": ["fun_def"], "postprocess": id},
     {"name": "statement", "symbols": ["return"], "postprocess": id},
+    {"name": "statement", "symbols": ["if"], "postprocess": id},
     {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
@@ -93,7 +94,7 @@ var grammar = {
             return [data[0], ...data[2]];
         }
                 },
-    {"name": "fun_def", "symbols": [{"literal":"fun"}, "_", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_parameter_list", "_", "type_def", "code_block"], "postprocess": 
+    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_parameter_list", "_", "type_def", "code_block"], "postprocess": 
         (data) => {
             return {
                 type: "fun_def",
@@ -113,7 +114,7 @@ var grammar = {
             return [data[0]];
         }
                 },
-    {"name": "parameter_list", "symbols": ["fun_param", "parameter_list"], "postprocess": 
+    {"name": "parameter_list", "symbols": ["fun_param", "__", "parameter_list"], "postprocess": 
         (data) => {
             return [data[0], ...data[1]];
         }
@@ -140,6 +141,21 @@ var grammar = {
             };
         }
                 },
+    {"name": "if$ebnf$1$subexpression$1", "symbols": ["_", {"literal":"else"}, "_", "if_alternate"]},
+    {"name": "if$ebnf$1", "symbols": ["if$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "if$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "if", "symbols": [{"literal":"if"}, "__", "expr", "__", "code_block", "if$ebnf$1"], "postprocess": 
+        (data) => {
+            return {
+                type: "if",
+                cond: data[2],
+                consequent: data[4],
+                alternate: data[5] && data[5][3]
+            };
+        }
+            },
+    {"name": "if_alternate", "symbols": ["if"], "postprocess": id},
+    {"name": "if_alternate", "symbols": ["code_block"], "postprocess": id},
     {"name": "__$ebnf$1", "symbols": [(lexer.has("WS") ? {type: "WS"} : WS)]},
     {"name": "__$ebnf$1", "symbols": ["__$ebnf$1", (lexer.has("WS") ? {type: "WS"} : WS)], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "__", "symbols": ["__$ebnf$1"]},

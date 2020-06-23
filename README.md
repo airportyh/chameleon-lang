@@ -5,14 +5,15 @@ backends.
 
 ## Todos
 
-* allow main to not have to return 0 explicitly
-* if statements
 * while loops
 * structs
 * arrays
 * allow defining referenced functions later
 * change type casting scheme to allow opt to optimize away casting instructions if possible (maybe type hints)
 * separate type checker from generator
+* make type checker give good error messages and protect against errors in the
+generator stage
+* allow function input and output types to be inferred
 * implement implicit type casting for ints to floats but not longs to floats
 * implement implicit type casting for function inputs (function signatures)
 * web assembly backend?
@@ -23,6 +24,9 @@ backends.
 * strings (maybe implemented in the language)
 * operator precedence
 
+* allow main to not have to return 0 explicitly (done)
+* comparison operators (done)
+* if statements (done)
 * function definitions (done)
 * cast from integer to floats correctly (done)
 * arithemetic for floats (done)

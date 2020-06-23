@@ -41,6 +41,7 @@ statement
     |  var_assign      {% id %}
     |  fun_def         {% id %}
     |  return          {% id %}
+    |  if              {% id %}
 
 var_assign
     -> %identifier _ type_def "=" _ expr
@@ -128,7 +129,7 @@ argument_list
         %}
 
 fun_def
-    -> "fun" _ %identifier _ paranthesized_parameter_list _ type_def code_block
+    -> "fun" __ %identifier _ paranthesized_parameter_list _ type_def code_block
         {%
             (data) => {
                 return {
@@ -191,7 +192,25 @@ return
                 };
             }
         %}
-    
+
+if
+    -> "if" __ expr __ code_block
+       (_ "else" _ if_alternate):?
+    {%
+        (data) => {
+            return {
+                type: "if",
+                cond: data[2],
+                consequent: data[4],
+                alternate: data[5] && data[5][3]
+            };
+        }
+    %}
+
+if_alternate
+    -> if          {% id %}
+    |  code_block  {% id %}
+
 __ -> %WS:+
 
 _  -> %WS:*
