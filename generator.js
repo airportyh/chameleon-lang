@@ -191,7 +191,7 @@ function generateFunDef(node, context) {
         indent(body)
     ];
     if (funName === "main") {
-        topCode.push("ret i32 0");
+        topCode.push(indent("ret i32 0"));
     }
     topCode.push(    
         "}",

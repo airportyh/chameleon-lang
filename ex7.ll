@@ -17,7 +17,7 @@ define i32 @main() {
   
   if_exit3:
   %tmp6 = call i32 @putchar (i32 10)
-ret i32 0
+  ret i32 0
 }
 
 declare i32 @putchar(i32)
