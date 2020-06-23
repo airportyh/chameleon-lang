@@ -7,7 +7,7 @@ const lexer = require("./lexer.js");
 var grammar = {
     Lexer: lexer,
     ParserRules: [
-    {"name": "program", "symbols": ["statements"], "postprocess": 
+    {"name": "program", "symbols": ["lines"], "postprocess": 
         (data) => {
             return {
                 type: "program",
@@ -15,26 +15,39 @@ var grammar = {
             };
         }
             },
-    {"name": "statements", "symbols": ["_", "statement", "_"], "postprocess": 
+    {"name": "lines", "symbols": ["line"], "postprocess": id},
+    {"name": "lines", "symbols": ["line", (lexer.has("NL") ? {type: "NL"} : NL), "lines"], "postprocess": 
+        (data) => {
+            return [...data[0], ...data[2]];
+        }
+                },
+    {"name": "line", "symbols": ["_", "statement", "_"], "postprocess": 
         (data) => {
             return [data[1]];
         }
                 },
-    {"name": "statements", "symbols": ["_", "statement", "_", (lexer.has("NL") ? {type: "NL"} : NL), "statements"], "postprocess": 
-        (data) => {
-            return [data[1], ...data[4]];
-        }
+    {"name": "line", "symbols": ["_"], "postprocess": 
+        () => []
                 },
     {"name": "statement", "symbols": ["fun_call"], "postprocess": id},
     {"name": "statement", "symbols": ["var_assign"], "postprocess": id},
-    {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"="}, "_", "expr"], "postprocess": 
+    {"name": "statement", "symbols": ["fun_def"], "postprocess": id},
+    {"name": "statement", "symbols": ["return"], "postprocess": id},
+    {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
                 type: "var_assign",
+                data_type: data[2],
                 var_name: data[0],
-                value: data[4]
+                value: data[5]
             };
         }
+                },
+    {"name": "type_def", "symbols": [], "postprocess": () => null},
+    {"name": "type_def", "symbols": [{"literal":":"}, "_", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_"], "postprocess": 
+        (data) => {
+            return data[2];
+        }    
                 },
     {"name": "expr", "symbols": ["bin_expr"], "postprocess": id},
     {"name": "bin_expr", "symbols": ["unary_expr"], "postprocess": id},
@@ -75,9 +88,56 @@ var grammar = {
             return [data[0]];
         }
                 },
-    {"name": "argument_list", "symbols": ["expr", "_", {"literal":","}, "_", "argument_list"], "postprocess": 
+    {"name": "argument_list", "symbols": ["expr", "_", "argument_list"], "postprocess": 
         (data) => {
-            return [data[0], ...data[4]];
+            return [data[0], ...data[2]];
+        }
+                },
+    {"name": "fun_def", "symbols": [{"literal":"fun"}, "_", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_parameter_list", "_", "type_def", "code_block"], "postprocess": 
+        (data) => {
+            return {
+                type: "fun_def",
+                fun_name: data[2],
+                data_type: data[6],
+                parameters: data[4],
+                body: data[7]
+            };
+        }
+                },
+    {"name": "paranthesized_parameter_list", "symbols": [{"literal":"("}, "_", {"literal":")"}], "postprocess": () => []},
+    {"name": "paranthesized_parameter_list", "symbols": [{"literal":"("}, "_", "parameter_list", "_", {"literal":")"}], "postprocess": 
+        (data) => data[2]
+                },
+    {"name": "parameter_list", "symbols": ["fun_param"], "postprocess": 
+        (data) => {
+            return [data[0]];
+        }
+                },
+    {"name": "parameter_list", "symbols": ["fun_param", "parameter_list"], "postprocess": 
+        (data) => {
+            return [data[0], ...data[1]];
+        }
+                },
+    {"name": "fun_param", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def"], "postprocess": 
+        (data) => {
+            return {
+                type: "fun_param",
+                name: data[0],
+                data_type: data[2]
+            }
+        }
+            },
+    {"name": "code_block", "symbols": [{"literal":"["}, "lines", {"literal":"]"}], "postprocess": 
+        (data) => {
+            return data[1];
+        }
+                },
+    {"name": "return", "symbols": [{"literal":"return"}, "__", "expr"], "postprocess": 
+        (data) => {
+            return {
+                type: "return",
+                value: data[2]
+            };
         }
                 },
     {"name": "__$ebnf$1", "symbols": [(lexer.has("WS") ? {type: "WS"} : WS)]},

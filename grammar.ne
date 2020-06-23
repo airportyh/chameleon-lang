@@ -4,7 +4,7 @@ const lexer = require("./lexer.js");
 
 @lexer lexer
 
-program -> statements
+program -> lines
     {%
         (data) => {
             return {
@@ -14,34 +14,54 @@ program -> statements
         }
     %}
 
-statements
+lines
+    -> line   {% id %}
+    |  line %NL lines
+        {%
+            (data) => {
+                return [...data[0], ...data[2]];
+            }
+        %}
+
+line
     -> _ statement _
         {%
             (data) => {
                 return [data[1]];
             }
         %}
-    |  _ statement _ %NL statements
+    |  _
         {%
-            (data) => {
-                return [data[1], ...data[4]];
-            }
+            () => []
         %}
+    
 
 statement
     -> fun_call        {% id %}
     |  var_assign      {% id %}
+    |  fun_def         {% id %}
+    |  return          {% id %}
 
 var_assign
-    -> %identifier _ "=" _ expr
+    -> %identifier _ type_def "=" _ expr
         {%
             (data) => {
                 return {
                     type: "var_assign",
+                    data_type: data[2],
                     var_name: data[0],
-                    value: data[4]
+                    value: data[5]
                 };
             }
+        %}
+
+type_def
+    -> null    {% () => null %}
+    |  ":" _ %identifier _
+        {%
+            (data) => {
+                return data[2];
+            }    
         %}
 
 expr -> bin_expr    {% id %}
@@ -85,7 +105,7 @@ fun_call
                 };
             }
         %}
-
+        
 paranthesized_argument_list
     ->  "(" _ ")"    {% () => [] %}
     |   "(" _ argument_list _ ")"
@@ -100,10 +120,75 @@ argument_list
                 return [data[0]];
             }
         %}
-    |  expr _ "," _ argument_list
+    |  expr _ argument_list
         {%
             (data) => {
-                return [data[0], ...data[4]];
+                return [data[0], ...data[2]];
+            }
+        %}
+
+fun_def
+    -> "fun" _ %identifier _ paranthesized_parameter_list _ type_def code_block
+        {%
+            (data) => {
+                return {
+                    type: "fun_def",
+                    fun_name: data[2],
+                    data_type: data[6],
+                    parameters: data[4],
+                    body: data[7]
+                };
+            }
+        %}
+
+paranthesized_parameter_list
+    ->  "(" _ ")"    {% () => [] %}
+    |   "(" _ parameter_list _ ")"
+        {%
+            (data) => data[2]
+        %}
+
+parameter_list
+    -> fun_param
+        {%
+            (data) => {
+                return [data[0]];
+            }
+        %}
+    |  fun_param parameter_list
+        {%
+            (data) => {
+                return [data[0], ...data[1]];
+            }
+        %}
+
+fun_param -> %identifier _ type_def
+    {%
+        (data) => {
+            return {
+                type: "fun_param",
+                name: data[0],
+                data_type: data[2]
+            }
+        }
+    %}
+
+code_block
+    -> "[" lines "]"
+        {%
+            (data) => {
+                return data[1];
+            }
+        %}
+
+return
+    -> "return" __ expr
+        {%
+            (data) => {
+                return {
+                    type: "return",
+                    value: data[2]
+                };
             }
         %}
     

@@ -9,8 +9,11 @@ const lexer = moo.compile({
   string:  /"(?:\\["\\]|[^\n"\\])*"/,
   lparen:  '(',
   rparen:  ')',
+  lbracket: '[',
+  rbracket: ']',
   comma: ',',
   assign: '=',
+  colon: ':',
   NL:      { match: /\n/, lineBreaks: true },
 });
 

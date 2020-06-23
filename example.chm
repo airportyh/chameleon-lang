@@ -3,25 +3,25 @@ struct User {
     email: string
 }
 
-proc listify(x: t?) [
+fun listify(x: t?) [
     return { x }
 ]
 
-proc listify(x: t?) [
+fun listify(x: t?) [
     return { x }
 ]
 
-proc add(x: t? y: t?): t?
+fun add(x: t? y: t?): t?
 where t? is additive
 [
     return x + y
 ]
 
-proc add_double(x: double y: double): double [
+fun add_double(x: double y: double): double [
     return x + y
 ]
 
-proc main() [
+fun main() [
     content = FS::read("text.txt")
     parts = split(content ",")
     names = { "Marty" "Linus" "Emma" }

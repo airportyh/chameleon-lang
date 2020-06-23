@@ -19,6 +19,10 @@ async function main() {
         return;
     }
     
+    if (parser.results.length === 0) {
+        console.error("Parse failed.");
+        return;
+    }
     const outputFilename = path.basename(filename, ".chm") + ".ast";
     const ast = parser.results[0];
     await fs.writeFile(outputFilename, JSON.stringify(ast, null, "  "));

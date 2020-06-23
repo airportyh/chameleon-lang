@@ -1,0 +1,19 @@
+{
+  "type": "program",
+  "body": [
+    {
+      "type": "fun_def",
+      "fun_name": {
+        "type": "identifier",
+        "value": "main",
+        "text": "main",
+        "offset": 4,
+        "lineBreaks": 0,
+        "line": 1,
+        "col": 5
+      },
+      "data_type": null,
+      "parameters": []
+    }
+  ]
+}

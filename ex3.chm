@@ -1,0 +1,11 @@
+fun add(x: int y: int): int [
+    return x + y
+]
+
+fun main() [
+    a = 5
+    b = 60
+    c = add(a b)
+    putchar(c)
+    return 0
+]

@@ -1,5 +1,10 @@
-a = 60 + 7
-b = a + 4
-putchar(a)
-putchar(b)
+a: long = (6 * 10) + 5
+b = a + 4 - 2
+c = (b - 2) * (a + 4) - 2 + int(30.5)
+d = int(c)
+f: float = float(5)
+g = double(f) + 5.6 * double(20)
+h = g - double(5)
+putchar(d)
+putchar(int(h))
 putchar(10)
