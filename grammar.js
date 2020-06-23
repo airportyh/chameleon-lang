@@ -34,6 +34,7 @@ var grammar = {
     {"name": "statement", "symbols": ["fun_def"], "postprocess": id},
     {"name": "statement", "symbols": ["return"], "postprocess": id},
     {"name": "statement", "symbols": ["if"], "postprocess": id},
+    {"name": "statement", "symbols": ["while"], "postprocess": id},
     {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
@@ -156,6 +157,15 @@ var grammar = {
             },
     {"name": "if_alternate", "symbols": ["if"], "postprocess": id},
     {"name": "if_alternate", "symbols": ["code_block"], "postprocess": id},
+    {"name": "while", "symbols": [{"literal":"while"}, "__", "expr", "__", "code_block"], "postprocess": 
+        (data) => {
+            return {
+                type: "while",
+                cond: data[2],
+                body: data[4]
+            };
+        }
+            },
     {"name": "__$ebnf$1", "symbols": [(lexer.has("WS") ? {type: "WS"} : WS)]},
     {"name": "__$ebnf$1", "symbols": ["__$ebnf$1", (lexer.has("WS") ? {type: "WS"} : WS)], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "__", "symbols": ["__$ebnf$1"]},

@@ -42,6 +42,7 @@ statement
     |  fun_def         {% id %}
     |  return          {% id %}
     |  if              {% id %}
+    |  while           {% id %}
 
 var_assign
     -> %identifier _ type_def "=" _ expr
@@ -210,6 +211,18 @@ if
 if_alternate
     -> if          {% id %}
     |  code_block  {% id %}
+
+while
+    -> "while" __ expr __ code_block
+    {%
+        (data) => {
+            return {
+                type: "while",
+                cond: data[2],
+                body: data[4]
+            };
+        }
+    %}
 
 __ -> %WS:+
 

@@ -80,9 +80,40 @@ function generate(node, context, variables) {
         return generateReturn(node, context, variables);
     } else if (node.type === "if") {
         return generateIf(node, context, variables);
+    } else if (node.type === "while") {
+        return generateWhile(node, context, variables);
     } else {
         console.log("node", node);
         throw new Error("Unsupported node type: " + node.type);
+    }
+}
+
+function generateWhile(node, context, variables) {
+    const cond = generate(node.cond, context, variables);
+    const id = context.nextTemp++;
+    const loopTopLabel = "loop_top" + id;
+    const loopBodyLabel = "loop_body" + id;
+    const loopExitLabel = "loop_exit" + id;
+    const topCode = [];
+    topCode.push(`br label %${loopTopLabel}`);
+    topCode.push("");
+    topCode.push(`${loopTopLabel}:`);
+    topCode.push(...cond.topCode);
+    topCode.push(`br i1 ${cond.valueCode}, label %${loopBodyLabel}, label %${loopExitLabel}`);
+    const bodyTopCode = node.body.reduce((allTopCode, statement) => {
+        const result = generate(statement, context, variables);
+        return allTopCode.concat(result.topCode);
+    }, []);
+    topCode.push("");
+    topCode.push(`${loopBodyLabel}:`);
+    topCode.push(...bodyTopCode);
+    topCode.push(`br label %${loopTopLabel}`);
+    topCode.push("");
+    topCode.push(`${loopExitLabel}:`);
+    return {
+        topCode,
+        valueCode: null,
+        dataType: null
     }
 }
 
@@ -365,7 +396,6 @@ function generateBinExpr(node, context, variables) {
     }
     
     if (!dataType) {
-        console.log("variables", variables);
         throw new Error(`${locInfo(node.left)}: cannot determine data type for binary operation.`);
     }
     const llDataType = context.dataTypeMap.get(dataType);
@@ -455,13 +485,13 @@ function generateVarAssign(node, context, variables) {
     if (!dataType) {
         throw new Error(`${locInfo(node.var_name)}: Unable to infer data type for ${varName}`);
     }
+    const llDataType = context.dataTypeMap.get(dataType);
     
     if (!variables.has(varName)) {
         variables.set(varName, dataType);
+        code.push(`%${varName} = alloca ${llDataType}`);
     }
-    const llDataType = context.dataTypeMap.get(dataType);
     code.push(
-        `%${varName} = alloca ${llDataType}`,
         `store ${llDataType} ${valueCode}, ${llDataType}* %${varName}`
     );
     return {

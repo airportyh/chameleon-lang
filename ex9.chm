@@ -1,0 +1,9 @@
+fun main() [
+    x = 65
+    while x < 91 [
+        putchar(x)
+        putchar(10)
+        x = x + 1
+    ]
+    putchar(10)
+]
