@@ -1,4 +1,4 @@
-fun add(x: int y: int): int [
+fun add(x:int y:int):int [
     return x + y
 ]
 

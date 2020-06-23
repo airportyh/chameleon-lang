@@ -16,6 +16,7 @@ async function main() {
 
     if (parser.results.length > 1) {
         console.log("Ambiguous grammar detected.");
+        console.log(parser.results);
         return;
     }
     

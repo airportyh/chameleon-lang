@@ -88,7 +88,7 @@ var grammar = {
             return [data[0]];
         }
                 },
-    {"name": "argument_list", "symbols": ["expr", "_", "argument_list"], "postprocess": 
+    {"name": "argument_list", "symbols": ["expr", "__", "argument_list"], "postprocess": 
         (data) => {
             return [data[0], ...data[2]];
         }

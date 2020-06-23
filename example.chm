@@ -45,4 +45,10 @@ fun main() [
     for user in users [
         print(user.name)
     ]
+    x = 0
+    while x < 10 [
+        print(x)
+        x = x + 1
+    ]
+
 ]

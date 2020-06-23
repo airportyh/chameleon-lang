@@ -1,0 +1,42 @@
+{
+  "type": "program",
+  "body": [
+    {
+      "type": "fun_call",
+      "fun_name": {
+        "type": "identifier",
+        "value": "putchar",
+        "text": "putchar",
+        "offset": 0,
+        "lineBreaks": 0,
+        "line": 1,
+        "col": 1
+      },
+      "arguments": [
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "int",
+            "text": "int",
+            "offset": 8,
+            "lineBreaks": 0,
+            "line": 1,
+            "col": 9
+          },
+          "arguments": [
+            {
+              "type": "identifier",
+              "value": "h",
+              "text": "h",
+              "offset": 12,
+              "lineBreaks": 0,
+              "line": 1,
+              "col": 13
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

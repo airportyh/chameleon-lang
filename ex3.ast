@@ -16,10 +16,10 @@
         "type": "identifier",
         "value": "int",
         "text": "int",
-        "offset": 24,
+        "offset": 21,
         "lineBreaks": 0,
         "line": 1,
-        "col": 25
+        "col": 22
       },
       "parameters": [
         {
@@ -37,10 +37,10 @@
             "type": "identifier",
             "value": "int",
             "text": "int",
-            "offset": 11,
+            "offset": 10,
             "lineBreaks": 0,
             "line": 1,
-            "col": 12
+            "col": 11
           }
         },
         {
@@ -49,19 +49,19 @@
             "type": "identifier",
             "value": "y",
             "text": "y",
-            "offset": 15,
+            "offset": 14,
             "lineBreaks": 0,
             "line": 1,
-            "col": 16
+            "col": 15
           },
           "data_type": {
             "type": "identifier",
             "value": "int",
             "text": "int",
-            "offset": 18,
+            "offset": 16,
             "lineBreaks": 0,
             "line": 1,
-            "col": 19
+            "col": 17
           }
         }
       ],
@@ -74,7 +74,7 @@
               "type": "identifier",
               "value": "x",
               "text": "x",
-              "offset": 41,
+              "offset": 38,
               "lineBreaks": 0,
               "line": 2,
               "col": 12
@@ -83,7 +83,7 @@
               "type": "operator",
               "value": "+",
               "text": "+",
-              "offset": 43,
+              "offset": 40,
               "lineBreaks": 0,
               "line": 2,
               "col": 14
@@ -92,7 +92,7 @@
               "type": "identifier",
               "value": "y",
               "text": "y",
-              "offset": 45,
+              "offset": 42,
               "lineBreaks": 0,
               "line": 2,
               "col": 16
@@ -107,7 +107,7 @@
         "type": "identifier",
         "value": "main",
         "text": "main",
-        "offset": 54,
+        "offset": 51,
         "lineBreaks": 0,
         "line": 5,
         "col": 5
@@ -122,7 +122,7 @@
             "type": "identifier",
             "value": "a",
             "text": "a",
-            "offset": 67,
+            "offset": 64,
             "lineBreaks": 0,
             "line": 6,
             "col": 5
@@ -131,7 +131,7 @@
             "type": "number",
             "value": "5",
             "text": "5",
-            "offset": 71,
+            "offset": 68,
             "lineBreaks": 0,
             "line": 6,
             "col": 9
@@ -144,7 +144,7 @@
             "type": "identifier",
             "value": "b",
             "text": "b",
-            "offset": 77,
+            "offset": 74,
             "lineBreaks": 0,
             "line": 7,
             "col": 5
@@ -153,7 +153,7 @@
             "type": "number",
             "value": "60",
             "text": "60",
-            "offset": 81,
+            "offset": 78,
             "lineBreaks": 0,
             "line": 7,
             "col": 9
@@ -166,7 +166,7 @@
             "type": "identifier",
             "value": "c",
             "text": "c",
-            "offset": 88,
+            "offset": 85,
             "lineBreaks": 0,
             "line": 8,
             "col": 5
@@ -177,7 +177,7 @@
               "type": "identifier",
               "value": "add",
               "text": "add",
-              "offset": 92,
+              "offset": 89,
               "lineBreaks": 0,
               "line": 8,
               "col": 9
@@ -187,7 +187,7 @@
                 "type": "identifier",
                 "value": "a",
                 "text": "a",
-                "offset": 96,
+                "offset": 93,
                 "lineBreaks": 0,
                 "line": 8,
                 "col": 13
@@ -196,7 +196,7 @@
                 "type": "identifier",
                 "value": "b",
                 "text": "b",
-                "offset": 98,
+                "offset": 95,
                 "lineBreaks": 0,
                 "line": 8,
                 "col": 15
@@ -210,7 +210,7 @@
             "type": "identifier",
             "value": "putchar",
             "text": "putchar",
-            "offset": 105,
+            "offset": 102,
             "lineBreaks": 0,
             "line": 9,
             "col": 5
@@ -220,7 +220,7 @@
               "type": "identifier",
               "value": "c",
               "text": "c",
-              "offset": 113,
+              "offset": 110,
               "lineBreaks": 0,
               "line": 9,
               "col": 13
@@ -233,7 +233,7 @@
             "type": "number",
             "value": "0",
             "text": "0",
-            "offset": 127,
+            "offset": 124,
             "lineBreaks": 0,
             "line": 10,
             "col": 12

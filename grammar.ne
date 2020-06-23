@@ -120,7 +120,7 @@ argument_list
                 return [data[0]];
             }
         %}
-    |  expr _ argument_list
+    |  expr __ argument_list
         {%
             (data) => {
                 return [data[0], ...data[2]];
@@ -155,7 +155,7 @@ parameter_list
                 return [data[0]];
             }
         %}
-    |  fun_param parameter_list
+    |  fun_param __ parameter_list
         {%
             (data) => {
                 return [data[0], ...data[1]];

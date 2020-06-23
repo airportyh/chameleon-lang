@@ -52,3 +52,4 @@ define i32 @main() {
 }
 
 declare i32 @putchar(i32)
+declare i32 @getchar()

@@ -13,7 +13,21 @@
         "col": 5
       },
       "data_type": null,
-      "parameters": []
+      "parameters": [],
+      "body": [
+        {
+          "type": "return",
+          "value": {
+            "type": "number",
+            "value": "0",
+            "text": "0",
+            "offset": 24,
+            "lineBreaks": 0,
+            "line": 2,
+            "col": 12
+          }
+        }
+      ]
     }
   ]
 }

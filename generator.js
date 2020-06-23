@@ -365,7 +365,7 @@ function generateVarAssign(node, context, variables) {
             code.push(`${tmpVarName} = zext ${llValueType} ${valueResult.valueCode} to ${llDataType}`);
             valueCode = tmpVarName;
         } else {
-            throw new Error(`Data types do not match: ${dataType} vs ${valueResult.dataType}`);
+            throw new Error(`${locInfo(node.var_name)}: Data types do not match: ${dataType} vs ${valueResult.dataType}`);
         }
     }
     
@@ -389,10 +389,14 @@ function generateVarAssign(node, context, variables) {
 }
 
 function generateProgram(node, context) {
+    const builtInFuns = [
+        `declare i32 @putchar(i32)`,
+        `declare i32 @getchar()`
+    ];
     const topCode = node.body.map(statement => {
         const { topCode } = generate(statement, context, null);
         return topCode.join("\n");
-    });
+    }).concat(builtInFuns);
     return {
         topCode,
         valueCode: null,
