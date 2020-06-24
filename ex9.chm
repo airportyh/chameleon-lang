@@ -1,7 +1,12 @@
 fun main() [
     x = 65
     while x < 91 [
-        putchar(x)
+        y = 48
+        while y <= 57 [
+            putchar(x)
+            putchar(y)
+            y = y + 1
+        ]
         putchar(10)
         x = x + 1
     ]

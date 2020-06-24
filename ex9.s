@@ -5,31 +5,60 @@
 _main:                                  ## @main
 	.cfi_startproc
 ## %bb.0:
-	subq	$24, %rsp
-	.cfi_def_cfa_offset 32
-	movl	$65, 20(%rsp)
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register %rbp
+	subq	$32, %rsp
+	movl	$65, -4(%rbp)
 LBB0_1:                                 ## %loop_top3
-                                        ## =>This Inner Loop Header: Depth=1
-	cmpl	$91, 20(%rsp)
-	jge	LBB0_3
+                                        ## =>This Loop Header: Depth=1
+                                        ##     Child Loop BB0_3 Depth 2
+	cmpl	$91, -4(%rbp)
+	jge	LBB0_6
 ## %bb.2:                               ## %loop_body3
                                         ##   in Loop: Header=BB0_1 Depth=1
-	movl	20(%rsp), %edi
+	movq	%rsp, %rax
+	addq	$-16, %rax
+	movq	%rax, %rsp
+	movl	$48, (%rax)
+	movq	%rax, -16(%rbp)         ## 8-byte Spill
+LBB0_3:                                 ## %loop_top6
+                                        ##   Parent Loop BB0_1 Depth=1
+                                        ## =>  This Inner Loop Header: Depth=2
+	movq	-16(%rbp), %rax         ## 8-byte Reload
+	cmpl	$57, (%rax)
+	jg	LBB0_5
+## %bb.4:                               ## %loop_body6
+                                        ##   in Loop: Header=BB0_3 Depth=2
+	movl	-4(%rbp), %edi
 	callq	_putchar
+	movq	-16(%rbp), %rcx         ## 8-byte Reload
+	movl	(%rcx), %edi
+	movl	%eax, -20(%rbp)         ## 4-byte Spill
+	callq	_putchar
+	movq	-16(%rbp), %rcx         ## 8-byte Reload
+	movl	(%rcx), %edx
+	addl	$1, %edx
+	movl	%edx, (%rcx)
+	jmp	LBB0_3
+LBB0_5:                                 ## %loop_exit6
+                                        ##   in Loop: Header=BB0_1 Depth=1
 	movl	$10, %edi
-	movl	%eax, 16(%rsp)          ## 4-byte Spill
 	callq	_putchar
-	movl	20(%rsp), %ecx
+	movl	-4(%rbp), %ecx
 	addl	$1, %ecx
-	movl	%ecx, 20(%rsp)
+	movl	%ecx, -4(%rbp)
 	jmp	LBB0_1
-LBB0_3:                                 ## %loop_exit3
+LBB0_6:                                 ## %loop_exit3
 	movl	$10, %edi
 	callq	_putchar
 	xorl	%ecx, %ecx
-	movl	%eax, 12(%rsp)          ## 4-byte Spill
+	movl	%eax, -24(%rbp)         ## 4-byte Spill
 	movl	%ecx, %eax
-	addq	$24, %rsp
+	movq	%rbp, %rsp
+	popq	%rbp
 	retq
 	.cfi_endproc
                                         ## -- End function

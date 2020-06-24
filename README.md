@@ -5,7 +5,6 @@ backends.
 
 ## Todos
 
-* while loops
 * structs
 * arrays
 * allow defining referenced functions later
@@ -24,6 +23,7 @@ generator stage
 * strings (maybe implemented in the language)
 * operator precedence
 
+* while loops (done)
 * allow main to not have to return 0 explicitly (done)
 * comparison operators (done)
 * if statements (done)
