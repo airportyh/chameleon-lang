@@ -43,6 +43,7 @@ statement
     |  return          {% id %}
     |  if              {% id %}
     |  while           {% id %}
+    |  struct_def      {% id %}
 
 var_assign
     -> %identifier _ type_def "=" _ expr
@@ -56,15 +57,23 @@ var_assign
                 };
             }
         %}
-
-type_def
-    -> null    {% () => null %}
-    |  ":" _ %identifier _
+    | %identifier _ "=" _ expr
         {%
             (data) => {
-                return data[2];
-            }    
+                return {
+                    type: "var_assign",
+                    var_name: data[0],
+                    value: data[4]
+                };
+            }
         %}
+
+type_def -> ":" _ %identifier
+    {%
+        (data) => {
+            return data[2];
+        }
+    %}
 
 expr -> bin_expr    {% id %}
 
@@ -92,6 +101,7 @@ unary_expr
                 return data[1];
             }
         %}
+    |  struct_literal  {% id %}
     
 var_ref
     -> %identifier  {% id %}
@@ -130,7 +140,7 @@ argument_list
         %}
 
 fun_def
-    -> "fun" __ %identifier _ paranthesized_parameter_list _ type_def code_block
+    -> "fun" __ %identifier _ paranthesized_parameter_list _ type_def _ code_block
         {%
             (data) => {
                 return {
@@ -138,10 +148,22 @@ fun_def
                     fun_name: data[2],
                     data_type: data[6],
                     parameters: data[4],
-                    body: data[7]
+                    body: data[8]
                 };
             }
         %}
+    | "fun" __ %identifier _ paranthesized_parameter_list _ code_block
+        {%
+            (data) => {
+                return {
+                    type: "fun_def",
+                    fun_name: data[2],
+                    parameters: data[4],
+                    body: data[6]
+                };
+            }
+        %}
+    
 
 paranthesized_parameter_list
     ->  "(" _ ")"    {% () => [] %}
@@ -164,16 +186,26 @@ parameter_list
             }
         %}
 
-fun_param -> %identifier _ type_def
-    {%
-        (data) => {
-            return {
-                type: "fun_param",
-                name: data[0],
-                data_type: data[2]
+fun_param
+    -> %identifier _ type_def
+        {%
+            (data) => {
+                return {
+                    type: "fun_param",
+                    name: data[0],
+                    data_type: data[2]
+                }
             }
-        }
-    %}
+        %}
+    |  %identifier
+        {%
+            (data) => {
+                return {
+                    type: "fun_param",
+                    name: data[0]
+                }
+            }
+        %}
 
 code_block
     -> "[" lines "]"
@@ -223,6 +255,84 @@ while
             };
         }
     %}
+
+struct_def
+    -> "struct" __ %identifier _ "{" MLWS struct_def_entry_list MLWS "}"
+        {%
+            (data) => {
+                return {
+                    type: "struct_def",
+                    name: data[2],
+                    entries: data[6]
+                };
+            }
+        %}
+
+struct_def_entry_list
+    -> struct_def_entry
+        {%
+            (data) => [data[0]]
+        %}
+    |  struct_def_entry MLWS struct_def_entry_list
+        {%
+            (data) => {
+                return [data[0], ...data[2]];
+            }
+        %}
+
+struct_def_entry
+    -> %identifier _ type_def
+        {%
+            (data) => {
+                return {
+                    type: "struct_def_entry",
+                    field_name: data[0],
+                    field_type: data[2]
+                };
+            }
+        %}
+        
+struct_literal
+    -> %identifier _ "{" MLWS struct_literal_entry_list MLWS "}"
+        {%
+            (data) => {
+                return {
+                    type: "struct_literal",
+                    entries: data[4]
+                };
+            }
+        %}
+
+struct_literal_entry_list
+    -> struct_literal_entry
+        {%
+            (data) => [data[0]]
+        %}
+    |  struct_literal_entry MLWS struct_literal_entry_list
+        {%
+            (data) => [data[0], ...data[2]]
+        %}
+
+struct_literal_entry
+    -> %identifier _ "=" _ expr
+        {%
+            (data) => {
+                return {
+                    type: "struct_literal_entry",
+                    field_name: data[0],
+                    field_value: data[4]
+                };
+            }
+        %}
+
+# Multi-line whitespace
+MLWS
+    -> nl_or_ws
+    |  nl_or_ws MLWS
+
+nl_or_ws
+    -> __
+    |  %NL
 
 __ -> %WS:+
 

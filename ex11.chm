@@ -1,0 +1,22 @@
+struct User {
+    firstInitial: int
+    lastInitial: int
+}
+
+fun main() [
+    user = User {
+        firstInitial = 84
+        lastInitial = 72
+    }
+    user2 = User {
+        firstInitial = 84
+        lastInitial = 72
+    }
+    printUser(user)
+]
+
+fun printUser(user: User) [
+    putchar(user.firstInitial)
+    putchar(user.lastInitial)
+    putchar(10)
+]

@@ -1,6 +1,6 @@
 struct User {
-    name: string
-    email: string
+    firstInitial: int
+    lastInitial: int
 }
 
 fun listify(x: t?) [
@@ -22,6 +22,10 @@ fun add_double(x: double y: double): double [
 ]
 
 fun main() [
+    users = User[10] {
+        name = ""
+        email = ""
+    }
     content = FS::read("text.txt")
     parts = split(content ",")
     names = { "Marty" "Linus" "Emma" }
@@ -37,10 +41,11 @@ fun main() [
         name = "Linus"
         email = "linus.q.ho@gmail.com"
     }
-    marty = User {
+    marty = alloc User {
         name = "Marty"
         email = "marty.q.ho@gmail.com"
     }
+    free marty
     users = { toby emma linus marty }
     for user in users [
         print(user.name)

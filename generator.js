@@ -83,7 +83,6 @@ function generate(node, context, variables) {
     } else if (node.type === "while") {
         return generateWhile(node, context, variables);
     } else {
-        console.log("node", node);
         throw new Error("Unsupported node type: " + node.type);
     }
 }
