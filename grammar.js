@@ -224,6 +224,7 @@ var grammar = {
         (data) => {
             return {
                 type: "struct_literal",
+                structName: data[0],
                 entries: data[4]
             };
         }

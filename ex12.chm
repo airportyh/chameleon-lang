@@ -9,7 +9,13 @@ fun main() [
         lastInitial = 72
     }
     user2 = User {
-        firstInitial = 84
+        firstInitial = 77
         lastInitial = 72
     }
+    putchar(user.firstInitial)
+    putchar(user.lastInitial)
+    putchar(10)
+    putchar(user2.firstInitial)
+    putchar(user2.lastInitial)
+    putchar(10)
 ]

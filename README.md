@@ -5,7 +5,8 @@ backends.
 
 ## Todos
 
-* structs
+* pointers?? how to do linked lists wo pointers?
+* nested structs
 * arrays
 * allow defining referenced functions later
 * change type casting scheme to allow opt to optimize away casting instructions if possible (maybe type hints)
@@ -23,6 +24,7 @@ generator stage
 * strings (maybe implemented in the language)
 * operator precedence
 
+* structs (done)
 * while loops (done)
 * allow main to not have to return 0 explicitly (done)
 * comparison operators (done)

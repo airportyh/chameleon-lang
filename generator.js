@@ -41,11 +41,13 @@ async function main() {
     dataTypePriority.set("long", 5);
     dataTypePriority.set("float", 6);
     dataTypePriority.set("double", 7);
+    const structTable = new Map();
     const context = {
         nextTemp: 1,
         funTypes,
         dataTypeMap,
-        dataTypePriority
+        dataTypePriority,
+        structTable
     };
     const { topCode } = generate(ast, context, null);
     await fs.writeFile(outputFilename, topCode.join("\n"));
@@ -82,9 +84,62 @@ function generate(node, context, variables) {
         return generateIf(node, context, variables);
     } else if (node.type === "while") {
         return generateWhile(node, context, variables);
+    } else if (node.type === "struct_def") {
+        return generateStructDef(node, context, variables);
+    } else if (node.type === "struct_literal") {
+        return generateStructLiteral(node, context, variables);
     } else {
         throw new Error("Unsupported node type: " + node.type);
     }
+}
+
+// Precondition: node.value is a struct_literal node
+function generateVarAssignToStruct(node, context, variables) {
+    const topCode = [];
+    const structNode = node.value;
+    var varName = node.var_name.value;
+    const structName = structNode.structName.value;
+    const structId = `%struct.${structName}`;
+    topCode.push(`%${varName} = alloca ${structId}`);
+    const structDef = context.structTable.get(structName);
+    if (!structDef) {
+        throw new Error(`Undefined struct ${structName}`);
+    }
+    for (let i = 0; i < structNode.entries.length; i++) {
+        const fieldDef = structDef.entries[i];
+        const fieldType = fieldDef.field_type.value;
+        const llFieldType = context.dataTypeMap.get(fieldType);
+        const fieldValue = generate(structNode.entries[i].field_value, context, variables);
+        const fieldValueTempVar = newTempVar(context);
+        topCode.push(...fieldValue.topCode);
+        topCode.push(`${fieldValueTempVar} = getelementptr inbounds ${structId}, ${structId}* %${varName}, i32 0, i32 ${i}`);
+        topCode.push(`store ${llFieldType} ${fieldValue.valueCode}, ${llFieldType}* ${fieldValueTempVar}`);
+    }
+    variables.set(varName, structName);
+    const retval = {
+        topCode,
+        valueCode: `%${varName}`,
+        dataType: structName
+    };
+    return retval;
+}
+
+function generateStructDef(node, context, variables) {
+    const structName = node.name.value;
+    const llStructType = "%struct." + structName;
+    const llStructDef = llStructType + " = type { " +
+        node.entries.map(entry => {
+            const fieldType = entry.field_type.value;
+            const llType = context.dataTypeMap.get(fieldType);
+            return llType;
+        }).join(", ") + " }";
+    context.structTable.set(structName, node);
+    context.dataTypeMap.set(structName, llStructType);
+    return {
+        topCode: [llStructDef, ""],
+        valueCode: null,
+        dataType: null
+    };
 }
 
 function generateWhile(node, context, variables) {
@@ -361,12 +416,56 @@ function generateImplicitTypeCast(sourceDataType, destDataType, valueCode, conte
     }
 }
 
+function generateFieldAccessor(node, context, variables) {
+    const topCode = [];
+    const ptrVarName = newTempVar(context);
+    const valVarName = newTempVar(context);
+    if (node.left.type !== "identifier") {
+        throw new Error(locInfo(node.left) + ": Expected right hand side of dot operator to be an identifier, but got: " + node.left.type);
+    }
+    const structVarName = node.left.value;
+    if (node.right.type !== "identifier") {
+        throw new Error(locInfo(node.right) + ": Expected right hand side of dot operator to be a field name, but got: " + node.right.type);
+    }
+    const structType = variables.get(structVarName);
+    const fieldName = node.right.value;
+    const llStructType = context.dataTypeMap.get(structType);
+    if (!llStructType.startsWith("%struct.")) {
+        throw new Error(locInfo(node.left) + ": Expected left hand side of dot operator to be a struct, but was " + left.dataType);
+    }
+    const structDef = context.structTable.get(structType);
+    const index = indexWhere(structDef.entries, (entry) => entry.field_name.value === fieldName);
+    const fieldDef = structDef.entries[index];
+    const fieldType = fieldDef.field_type.value;
+    const llFieldType = context.dataTypeMap.get(fieldType);
+    topCode.push(`${ptrVarName} = getelementptr inbounds ${llStructType}, ${llStructType}* %${structVarName}, i32 0, i32 ${index}`);
+    topCode.push(`${valVarName} = load ${llFieldType}, ${llFieldType}* ${ptrVarName}`);
+    return {
+        topCode,
+        valueCode: valVarName,
+        dataType: fieldType
+    };
+}
+
+function indexWhere(arr, pred) {
+    for (let i = 0; i < arr.length; i++) {
+        if (pred(arr[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 function generateBinExpr(node, context, variables) {
+    const operator = node.operator.value;
+    if (operator === ".") {
+        return generateFieldAccessor(node, context, variables);
+    }
     let { topCode: leftCode, valueCode: leftInlined, dataType: leftDataType } = 
         generate(node.left, context, variables);
     let { topCode: rightCode, valueCode: rightInlined, dataType: rightDataType } = 
         generate(node.right, context, variables);
-    const operator = node.operator.value;
+    
     let dataType;
     const topCode = [
         ...leftCode,
@@ -398,7 +497,7 @@ function generateBinExpr(node, context, variables) {
         throw new Error(`${locInfo(node.left)}: cannot determine data type for binary operation.`);
     }
     const llDataType = context.dataTypeMap.get(dataType);
-    const varName = "%tmp" + context.nextTemp++;
+    const varName = newTempVar(context);
     let ins;
     if (operator === "+") {
         ins = isFloat(dataType, context) ? "fadd" : "add";
@@ -450,6 +549,9 @@ function generateVarRef(node, context, variables) {
 }
 
 function generateVarAssign(node, context, variables) {
+    if (node.value.type === "struct_literal") {
+        return generateVarAssignToStruct(node, context, variables);
+    }
     const code = [];
     const varName = node.var_name.value;
     const explicitDataType = node.data_type && node.data_type.value;

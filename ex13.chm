@@ -12,4 +12,11 @@ fun main() [
         firstInitial = 84
         lastInitial = 72
     }
+    printUser(user)
+]
+
+fun printUser(user: User) [
+    putchar(user.firstInitial)
+    putchar(user.lastInitial)
+    putchar(10)
 ]

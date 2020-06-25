@@ -83,6 +83,15 @@
           },
           "value": {
             "type": "struct_literal",
+            "structName": {
+              "type": "identifier",
+              "value": "User",
+              "text": "User",
+              "offset": 84,
+              "lineBreaks": 0,
+              "line": 7,
+              "col": 12
+            },
             "entries": [
               {
                 "type": "struct_literal_entry",
@@ -142,6 +151,15 @@
           },
           "value": {
             "type": "struct_literal",
+            "structName": {
+              "type": "identifier",
+              "value": "User",
+              "text": "User",
+              "offset": 160,
+              "lineBreaks": 0,
+              "line": 11,
+              "col": 13
+            },
             "entries": [
               {
                 "type": "struct_literal_entry",
@@ -187,177 +205,6 @@
               }
             ]
           }
-        },
-        {
-          "type": "fun_call",
-          "fun_name": {
-            "type": "identifier",
-            "value": "printUser",
-            "text": "printUser",
-            "offset": 228,
-            "lineBreaks": 0,
-            "line": 15,
-            "col": 5
-          },
-          "arguments": [
-            {
-              "type": "identifier",
-              "value": "user",
-              "text": "user",
-              "offset": 238,
-              "lineBreaks": 0,
-              "line": 15,
-              "col": 15
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "fun_def",
-      "fun_name": {
-        "type": "identifier",
-        "value": "printUser",
-        "text": "printUser",
-        "offset": 251,
-        "lineBreaks": 0,
-        "line": 18,
-        "col": 5
-      },
-      "parameters": [
-        {
-          "type": "fun_param",
-          "name": {
-            "type": "identifier",
-            "value": "user",
-            "text": "user",
-            "offset": 261,
-            "lineBreaks": 0,
-            "line": 18,
-            "col": 15
-          },
-          "data_type": {
-            "type": "identifier",
-            "value": "User",
-            "text": "User",
-            "offset": 267,
-            "lineBreaks": 0,
-            "line": 18,
-            "col": 21
-          }
-        }
-      ],
-      "body": [
-        {
-          "type": "fun_call",
-          "fun_name": {
-            "type": "identifier",
-            "value": "putchar",
-            "text": "putchar",
-            "offset": 279,
-            "lineBreaks": 0,
-            "line": 19,
-            "col": 5
-          },
-          "arguments": [
-            {
-              "type": "bin_expr",
-              "left": {
-                "type": "identifier",
-                "value": "user",
-                "text": "user",
-                "offset": 287,
-                "lineBreaks": 0,
-                "line": 19,
-                "col": 13
-              },
-              "operator": {
-                "type": "operator",
-                "value": ".",
-                "text": ".",
-                "offset": 291,
-                "lineBreaks": 0,
-                "line": 19,
-                "col": 17
-              },
-              "right": {
-                "type": "identifier",
-                "value": "firstInitial",
-                "text": "firstInitial",
-                "offset": 292,
-                "lineBreaks": 0,
-                "line": 19,
-                "col": 18
-              }
-            }
-          ]
-        },
-        {
-          "type": "fun_call",
-          "fun_name": {
-            "type": "identifier",
-            "value": "putchar",
-            "text": "putchar",
-            "offset": 310,
-            "lineBreaks": 0,
-            "line": 20,
-            "col": 5
-          },
-          "arguments": [
-            {
-              "type": "bin_expr",
-              "left": {
-                "type": "identifier",
-                "value": "user",
-                "text": "user",
-                "offset": 318,
-                "lineBreaks": 0,
-                "line": 20,
-                "col": 13
-              },
-              "operator": {
-                "type": "operator",
-                "value": ".",
-                "text": ".",
-                "offset": 322,
-                "lineBreaks": 0,
-                "line": 20,
-                "col": 17
-              },
-              "right": {
-                "type": "identifier",
-                "value": "lastInitial",
-                "text": "lastInitial",
-                "offset": 323,
-                "lineBreaks": 0,
-                "line": 20,
-                "col": 18
-              }
-            }
-          ]
-        },
-        {
-          "type": "fun_call",
-          "fun_name": {
-            "type": "identifier",
-            "value": "putchar",
-            "text": "putchar",
-            "offset": 340,
-            "lineBreaks": 0,
-            "line": 21,
-            "col": 5
-          },
-          "arguments": [
-            {
-              "type": "number",
-              "value": "10",
-              "text": "10",
-              "offset": 348,
-              "lineBreaks": 0,
-              "line": 21,
-              "col": 13
-            }
-          ]
         }
       ]
     }
