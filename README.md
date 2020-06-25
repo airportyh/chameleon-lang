@@ -5,9 +5,11 @@ backends.
 
 ## Todos
 
-* pointers?? how to do linked lists wo pointers?
-* nested structs
 * arrays
+* integrate malloc and free for dynamic memory
+* pointers?? how to do linked lists wo pointers?
+* garbage collector
+* nested structs
 * allow defining referenced functions later
 * change type casting scheme to allow opt to optimize away casting instructions if possible (maybe type hints)
 * separate type checker from generator
