@@ -185,7 +185,7 @@ parameter_list
     |  fun_param __ parameter_list
         {%
             (data) => {
-                return [data[0], ...data[1]];
+                return [data[0], ...data[2]];
             }
         %}
 

@@ -360,7 +360,9 @@ function generateFunDef(node, context) {
         );
     }
     const funName = node.fun_name.value;
-    context.funTypes.set(funName, node.data_type && node.data_type.value);
+    const outputType = node.data_type && node.data_type.value || "void";
+    const llOutputType = context.dataTypeMap.get(outputType);
+    context.funTypes.set(funName, outputType);
     
     const body = 
         allocaStoreInstructions.concat(
@@ -370,12 +372,9 @@ function generateFunDef(node, context) {
         })).join("\n");
     
     const topCode = [
-        `define i32 @${funName}(${paramList.join(", ")}) {`,
+        `define ${llOutputType} @${funName}(${paramList.join(", ")}) {`,
         indent(body)
     ];
-    if (funName === "main") {
-        topCode.push(indent("ret i32 0"));
-    }
     topCode.push(    
         "}",
         ""
@@ -407,7 +406,10 @@ function generateFunCall(node, context, variables) {
         return generateTypeCastFunCall(node, context, variables);
     }
     const argResults = node.arguments.map(arg => generate(arg, context, variables));
-    const outputDataType = context.funTypes.get(node.fun_name.value);
+    if (!context.funTypes.has(funName)) {
+        throw new Error(`${locInfo(node.fun_name)}: Trying to call function ${funName} which is not defined (yet)`);
+    }
+    const outputDataType = context.funTypes.get(funName);
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
     const argList = argResults.map(argResult => {
         const llDataType = context.dataTypeMap.get(argResult.dataType);

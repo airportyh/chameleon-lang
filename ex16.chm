@@ -1,0 +1,22 @@
+struct LinkedList {
+    data: int
+    next: LinkedList
+}
+
+fun makeLL(data:int next:LinkedList): LinkedList [
+    return alloc LinkedList {
+        data = data
+        next = next
+    }
+]
+
+fun main(): int [
+    list = makeLL(65 makeLL(66 makeLL(67 makeLL(68 null))))
+    current = list
+    while current != null [
+        putchar(current.data)
+        current = current.next
+    ]
+    putchar(10)
+    return 0
+]

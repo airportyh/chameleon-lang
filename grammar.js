@@ -140,7 +140,7 @@ var grammar = {
                 },
     {"name": "parameter_list", "symbols": ["fun_param", "__", "parameter_list"], "postprocess": 
         (data) => {
-            return [data[0], ...data[1]];
+            return [data[0], ...data[2]];
         }
                 },
     {"name": "fun_param", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def"], "postprocess": 
