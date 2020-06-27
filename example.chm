@@ -1,0 +1,115 @@
+struct User {
+    id: int
+    firstInitial: int
+    lastInitial: int
+}
+
+protocol Show<ValueType> defines [
+    fun show(value: ValueType): string
+]
+
+implement protocol Show<User> as [
+    fun show(user: User) [
+        return user.firstInitial + user.lastInitial
+    ]
+]
+
+protocol ToInt<SourceType> defines [
+    fun int(value: SourceType): int
+]
+
+implement protocol ToInt<User> as [
+    fun int(user) [
+        return user.id
+    ]
+]
+
+protocol Equatable for valueType? defines [
+    (one: valueType? = other: valueType?): bool
+]
+
+User implements protocol Equatable<User> as [
+    one = other [
+        return one.firstInitial == other.firstInitial and one.lastInitial == other.lastInitial
+    ]
+]
+
+protocol Iterable for iterableType? itemType? defines [
+    fun foreach(iterable:iterableType? visit:fun(item:itemType?))
+]
+
+List<itemType?> implements protocol Iterable<List<itemType?>, itemType?> as [
+    fun foreach(list:List<itemType?> visit:fun(item:itemType?) [
+        while list.next != null [
+            visit(list.item)
+            list = list.next
+        ]
+    ]
+]
+
+implement protocol Iterable for List<itemType?> itemType? as [
+    fun foreach(list:List<itemType?> visit:fun(item:itemType?) [
+        while list.next != null [
+            visit(list.item)
+            list = list.next
+        ]
+    ]
+]
+
+fun listify(x: t?) [
+    return { x }
+]
+
+fun listify(x: t?) [
+    return { x }
+]
+
+fun add(x: t? y: t?): t?
+where t? is additive
+[
+    return x + y
+]
+
+fun add_double(x: double y: double): double [
+    return x + y
+]
+
+fun main() [
+    users = User[10] {
+        name = ""
+        email = ""
+    }
+    content = FS::read("text.txt")
+    parts = split(content ",")
+        names = { "Marty" "Linus" "Emma" }
+    toby = User {
+        name = "Toby"
+        email = "airportyh@gmail.com"
+    }
+    emma = User {
+        name = "Emma"
+        email = "emma@gmail.com"
+    }
+    linus = User {
+        name = "Linus"
+        email = "linus.q.ho@gmail.com"
+    }
+    marty = alloc User {
+        name = "Marty"
+        email = "marty.q.ho@gmail.com"
+    }
+    free marty
+    users = { toby emma linus marty }
+    for user in users [
+        print(user.name)
+    ]
+    foreach(users fun(user)[
+        
+    ])
+    x = 0
+    while x < 10 [
+        print(x)
+        x = x + 1
+    ]
+
+]
