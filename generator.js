@@ -425,7 +425,7 @@ function generateNumberConstant(node, context, variables) {
 function generateFunCall(node, context, variables) {
     const funName = node.fun_name.value;
     if (context.dataTypeMap.has(funName)) {
-        return generateTypeCastFunCall(node, context, variables);
+        return explicitTypeCast(node, context, variables);
     }
     const argResults = node.arguments.map(arg => generate(arg, context, variables));
     if (!context.funTable.has(funName)) {
@@ -457,7 +457,7 @@ function generateFunCall(node, context, variables) {
     };
 }
 
-function generateTypeCastFunCall(node, context, variables) {
+function explicitTypeCast(node, context, variables) {
     const destDataType = node.fun_name.value;
     const llDestDataType = context.dataTypeMap.get(destDataType);
     if (node.arguments.length > 1) {
@@ -548,26 +548,24 @@ function generateBinExpr(node, context, variables) {
     if (operator === ".") {
         return generateFieldAccessor(node, context, variables);
     }
-    let { topCode: leftCode, valueCode: leftInlined, dataType: leftDataType } = 
-        generate(node.left, context, variables);
-    let { topCode: rightCode, valueCode: rightInlined, dataType: rightDataType } = 
-        generate(node.right, context, variables);
+    let left = generate(node.left, context, variables);
+    let right = generate(node.right, context, variables);
     
     let dataType;
     const topCode = [
-        ...leftCode,
-        ...rightCode
+        ...left.topCode,
+        ...right.topCode
     ];
     
-    if (isStructType(leftDataType, context) || isStructType(rightDataType, context)) {
-        if (leftDataType === rightDataType) {
-            dataType = leftDataType;
-        } else if (leftDataType === "null") {
-            dataType = rightDataType;
-        } else if (rightDataType === "null") {
-            dataType = leftDataType;
+    if (isStructType(left.dataType, context) || isStructType(right.dataType, context)) {
+        if (left.dataType === right.dataType) {
+            dataType = left.dataType;
+        } else if (left.dataType === "null") {
+            dataType = right.dataType;
+        } else if (right.dataType === "null") {
+            dataType = left.dataType;
         } else {
-            throw new Error(`${locInfo(node.left)}: Cannot compare a ${leftDataType} vs a ${rightDataType}`);
+            throw new Error(`${locInfo(node.left)}: Cannot compare a ${left.dataType} vs a ${right.dataType}`);
         }
         
         let ins;
@@ -576,9 +574,12 @@ function generateBinExpr(node, context, variables) {
         } else if (operator === "!=") {
             ins = "icmp ne";
         }
+        if (!ins) {
+            throw new Error(`${locInfo(node.left)}: Unable to find instruction for operator ${operator}`);
+        }
         const llDataType = context.dataTypeMap.get(dataType);
         const varName = newTempVar(context);
-        const code = `${varName} = ${ins} ${llDataType} ${leftInlined}, ${rightInlined}`;
+        const code = `${varName} = ${ins} ${llDataType} ${left.valueCode}, ${right.valueCode}`;
         topCode.push(code);
         return {
             topCode: topCode, 
@@ -587,25 +588,25 @@ function generateBinExpr(node, context, variables) {
         };
     }
     
-    if (leftDataType != rightDataType) {
+    if (left.dataType != right.dataType) {
         // perform a type cast
-        const leftPriority = context.dataTypePriority.get(leftDataType);
-        const rightPriority = context.dataTypePriority.get(rightDataType);
+        const leftPriority = context.dataTypePriority.get(left.dataType);
+        const rightPriority = context.dataTypePriority.get(right.dataType);
         if (leftPriority > rightPriority) {
             // cast right to the same type as left
-            const typeCastResult = implicitTypeCast(rightDataType, leftDataType, rightInlined, context, node);
+            const typeCastResult = implicitTypeCast(right.dataType, left.dataType, right.valueCode, context, node);
             topCode.push(...typeCastResult.topCode);
-            rightInlined = typeCastResult.valueCode;
-            dataType = leftDataType;
+            right.valueCode = typeCastResult.valueCode;
+            dataType = typeCastResult.dataType;
         } else {
             // cast left to the same type as right
-            const typeCastResult = implicitTypeCast(leftDataType, rightDataType, leftInlined, context, node);
+            const typeCastResult = implicitTypeCast(left.dataType, right.dataType, left.valueCode, context, node);
             topCode.push(...typeCastResult.topCode);
-            leftInlined = typeCastResult.valueCode;
-            dataType = rightDataType;
+            right.valueCode = typeCastResult.valueCode;
+            dataType = typeCastResult.dataType;
         }
     } else {
-        dataType = leftDataType;
+        dataType = left.dataType;
     }
     
     if (!dataType) {
@@ -640,7 +641,7 @@ function generateBinExpr(node, context, variables) {
         throw new Error(`${locInfo(node.operator)}: Unable to find instruction for operator ${node.operator.value}`);
     }
     
-    const code = `${varName} = ${ins} ${llDataType} ${leftInlined}, ${rightInlined}`;
+    const code = `${varName} = ${ins} ${llDataType} ${left.valueCode}, ${right.valueCode}`;
     //console.log("bin op instruction: " + code, dataType, isFloat(dataType, context));
     topCode.push(code);
     return {
