@@ -1,6 +1,6 @@
 struct LinkedList {
     data: int
-    next: alloc LinkedList
+    next: LinkedList
 }
 
 fun main() [
@@ -10,7 +10,10 @@ fun main() [
             data = 66
             next = alloc LinkedList {
                 data = 67
-                next = null
+                next = alloc LinkedList {
+                    data = 68
+                    next = null
+                }
             }
         }
     }
@@ -19,4 +22,5 @@ fun main() [
         putchar(current.data)
         current = current.next
     ]
+    putchar(10)
 ]

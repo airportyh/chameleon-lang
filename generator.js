@@ -95,9 +95,19 @@ function generate(node, context, variables) {
         return generateStructDef(node, context, variables);
     } else if (node.type === "free") {
         return generateFree(node, context, variables);
+    } else if (node.type === "null_literal") {
+        return generateNullLiteral();
     } else {
         throw new Error("Unsupported node type: " + node.type);
     }
+}
+
+function generateNullLiteral() {
+    return {
+        topCode: [],
+        valueCode: "null",
+        dataType: "null"
+    };
 }
 
 function generateFree(node, context, variables) {
@@ -144,12 +154,7 @@ function getSizeForType(dataType, context) {
         case "void":
             return 0;
         default:
-            // assume it is a struct
-            const structDef = context.structTable.get(dataType);
-            if (!structDef) {
-                throw new Error("Unknown type: " + dataType);
-            }
-            return getStructSize(structDef, context);
+            return 8;
     }
 }
 
@@ -220,14 +225,14 @@ function generateFieldInitialization(varName, structNode, context, variables) {
 function generateStructDef(node, context, variables) {
     const structName = node.name.value;
     const llStructType = "%struct." + structName;
+    context.structTable.set(structName, node);
+    context.dataTypeMap.set(structName, llStructType + "*");
     const llStructDef = llStructType + " = type { " +
         node.entries.map(entry => {
             const fieldType = entry.field_type.value;
             const llType = context.dataTypeMap.get(fieldType);
             return llType;
         }).join(", ") + " }";
-    context.structTable.set(structName, node);
-    context.dataTypeMap.set(structName, llStructType + "*");
     return {
         topCode: [llStructDef, ""],
         valueCode: null,
@@ -565,6 +570,34 @@ function generateBinExpr(node, context, variables) {
         ...rightCode
     ];
     
+    if (isStructType(leftDataType, context) || isStructType(rightDataType, context)) {
+        if (leftDataType === rightDataType) {
+            dataType = leftDataType;
+        } else if (leftDataType === "null") {
+            dataType = rightDataType;
+        } else if (rightDataType === "null") {
+            dataType = leftDataType;
+        } else {
+            throw new Error(`${locInfo(node.left)}: Cannot compare a ${leftDataType} vs a ${rightDataType}`);
+        }
+        
+        let ins;
+        if (operator === "==") {
+            ins = "icmp eq";
+        } else if (operator === "!=") {
+            ins = "icmp ne";
+        }
+        const llDataType = context.dataTypeMap.get(dataType);
+        const varName = newTempVar(context);
+        const code = `${varName} = ${ins} ${llDataType} ${leftInlined}, ${rightInlined}`;
+        topCode.push(code);
+        return {
+            topCode: topCode, 
+            valueCode: varName,
+            dataType: "bool"
+        };
+    }
+    
     if (leftDataType != rightDataType) {
         // perform a type cast
         const leftPriority = context.dataTypePriority.get(leftDataType);
@@ -610,6 +643,8 @@ function generateBinExpr(node, context, variables) {
         ins = isFloat(dataType, context) ? "fcmp ole" : "icmp sle";
     } else if (operator === "==") {
         ins = isFloat(dataType, context) ? "fcmp oeq" : "icmp eq";
+    } else if (operator === "!=") {
+        ins = isFloat(dataType, context) ? "fcmp one" : "icmp ne";
     }
     
     if (!ins) {
@@ -724,6 +759,11 @@ function newTempVar(context) {
 
 function indent(text) {
     return text.split("\n").map(line => "  " + line).join("\n");
+}
+
+function isStructType(dataType, context) {
+    const llDataType = context.dataTypeMap.get(dataType);
+    return llDataType && llDataType.startsWith("%struct.");
 }
 
 main().catch(err => console.log(err.stack));

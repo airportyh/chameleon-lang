@@ -6,8 +6,6 @@ target triple = "x86_64-apple-macosx10.13.0"
 %struct.User = type { i8*, i8* }
 
 @.str = private unnamed_addr constant [7 x i8] c"%s, %s\00", align 1
-@.str.1 = private unnamed_addr constant [10 x i8] c"airportyh\00", align 1
-@.str.2 = private unnamed_addr constant [20 x i8] c"airportyh@gmail.com\00", align 1
 
 ; Function Attrs: noinline nounwind optnone ssp uwtable
 define void @printUser(%struct.User* %0) #0 {
@@ -45,16 +43,8 @@ define { i8*, i8* } @createUser(i8* %0, i8* %1) #0 {
 
 ; Function Attrs: noinline nounwind optnone ssp uwtable
 define i32 @main() #0 {
-  %1 = alloca %struct.User, align 8
-  %2 = call { i8*, i8* } @createUser(i8* getelementptr inbounds ([10 x i8], [10 x i8]* @.str.1, i64 0, i64 0), i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.2, i64 0, i64 0))
-  %3 = bitcast %struct.User* %1 to { i8*, i8* }*
-  %4 = getelementptr inbounds { i8*, i8* }, { i8*, i8* }* %3, i32 0, i32 0
-  %5 = extractvalue { i8*, i8* } %2, 0
-  store i8* %5, i8** %4, align 8
-  %6 = getelementptr inbounds { i8*, i8* }, { i8*, i8* }* %3, i32 0, i32 1
-  %7 = extractvalue { i8*, i8* } %2, 1
-  store i8* %7, i8** %6, align 8
-  call void @printUser(%struct.User* %1)
+  %1 = alloca %struct.User*, align 8
+  store %struct.User* null, %struct.User** %1, align 8
   ret i32 0
 }
 

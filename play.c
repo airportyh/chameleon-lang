@@ -17,7 +17,6 @@ struct User createUser(char *username, char *email) {
 }
 
 int main() {
-    struct User user = createUser("airportyh", "airportyh@gmail.com");
-    printUser(&user);
+    struct User *user = NULL;
 }
 

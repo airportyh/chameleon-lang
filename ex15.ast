@@ -220,7 +220,57 @@
                                     "col": 17
                                   },
                                   "field_value": {
-                                    "type": "null_literal"
+                                    "type": "alloc",
+                                    "struct": {
+                                      "type": "struct_literal",
+                                      "structName": {
+                                        "type": "identifier",
+                                        "value": "LinkedList",
+                                        "text": "LinkedList",
+                                        "offset": 268,
+                                        "lineBreaks": 0,
+                                        "line": 13,
+                                        "col": 30
+                                      },
+                                      "entries": [
+                                        {
+                                          "type": "struct_literal_entry",
+                                          "field_name": {
+                                            "type": "identifier",
+                                            "value": "data",
+                                            "text": "data",
+                                            "offset": 301,
+                                            "lineBreaks": 0,
+                                            "line": 14,
+                                            "col": 21
+                                          },
+                                          "field_value": {
+                                            "type": "number",
+                                            "value": "68",
+                                            "text": "68",
+                                            "offset": 308,
+                                            "lineBreaks": 0,
+                                            "line": 14,
+                                            "col": 28
+                                          }
+                                        },
+                                        {
+                                          "type": "struct_literal_entry",
+                                          "field_name": {
+                                            "type": "identifier",
+                                            "value": "next",
+                                            "text": "next",
+                                            "offset": 331,
+                                            "lineBreaks": 0,
+                                            "line": 15,
+                                            "col": 21
+                                          },
+                                          "field_value": {
+                                            "type": "null_literal"
+                                          }
+                                        }
+                                      ]
+                                    }
                                   }
                                 }
                               ]
@@ -241,18 +291,18 @@
             "type": "identifier",
             "value": "current",
             "text": "current",
-            "offset": 301,
+            "offset": 395,
             "lineBreaks": 0,
-            "line": 17,
+            "line": 20,
             "col": 5
           },
           "value": {
             "type": "identifier",
             "value": "list",
             "text": "list",
-            "offset": 311,
+            "offset": 405,
             "lineBreaks": 0,
-            "line": 17,
+            "line": 20,
             "col": 15
           }
         },
@@ -264,18 +314,18 @@
               "type": "identifier",
               "value": "current",
               "text": "current",
-              "offset": 326,
+              "offset": 420,
               "lineBreaks": 0,
-              "line": 18,
+              "line": 21,
               "col": 11
             },
             "operator": {
               "type": "operator",
               "value": "!=",
               "text": "!=",
-              "offset": 334,
+              "offset": 428,
               "lineBreaks": 0,
-              "line": 18,
+              "line": 21,
               "col": 19
             },
             "right": {
@@ -289,9 +339,9 @@
                 "type": "identifier",
                 "value": "putchar",
                 "text": "putchar",
-                "offset": 352,
+                "offset": 446,
                 "lineBreaks": 0,
-                "line": 19,
+                "line": 22,
                 "col": 9
               },
               "arguments": [
@@ -301,27 +351,27 @@
                     "type": "identifier",
                     "value": "current",
                     "text": "current",
-                    "offset": 360,
+                    "offset": 454,
                     "lineBreaks": 0,
-                    "line": 19,
+                    "line": 22,
                     "col": 17
                   },
                   "operator": {
                     "type": "operator",
                     "value": ".",
                     "text": ".",
-                    "offset": 367,
+                    "offset": 461,
                     "lineBreaks": 0,
-                    "line": 19,
+                    "line": 22,
                     "col": 24
                   },
                   "right": {
                     "type": "identifier",
                     "value": "data",
                     "text": "data",
-                    "offset": 368,
+                    "offset": 462,
                     "lineBreaks": 0,
-                    "line": 19,
+                    "line": 22,
                     "col": 25
                   }
                 }
@@ -333,9 +383,9 @@
                 "type": "identifier",
                 "value": "current",
                 "text": "current",
-                "offset": 382,
+                "offset": 476,
                 "lineBreaks": 0,
-                "line": 20,
+                "line": 23,
                 "col": 9
               },
               "value": {
@@ -344,30 +394,53 @@
                   "type": "identifier",
                   "value": "current",
                   "text": "current",
-                  "offset": 392,
+                  "offset": 486,
                   "lineBreaks": 0,
-                  "line": 20,
+                  "line": 23,
                   "col": 19
                 },
                 "operator": {
                   "type": "operator",
                   "value": ".",
                   "text": ".",
-                  "offset": 399,
+                  "offset": 493,
                   "lineBreaks": 0,
-                  "line": 20,
+                  "line": 23,
                   "col": 26
                 },
                 "right": {
                   "type": "identifier",
                   "value": "next",
                   "text": "next",
-                  "offset": 400,
+                  "offset": 494,
                   "lineBreaks": 0,
-                  "line": 20,
+                  "line": 23,
                   "col": 27
                 }
               }
+            }
+          ]
+        },
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "putchar",
+            "text": "putchar",
+            "offset": 509,
+            "lineBreaks": 0,
+            "line": 25,
+            "col": 5
+          },
+          "arguments": [
+            {
+              "type": "number",
+              "value": "10",
+              "text": "10",
+              "offset": 517,
+              "lineBreaks": 0,
+              "line": 25,
+              "col": 13
             }
           ]
         }
