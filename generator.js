@@ -166,7 +166,8 @@ function generateAlloc(node, context, variables) {
     const structNode = node.struct;
     const structName = structNode.structName.value;
     const llType = context.dataTypeMap.get(structName);
-    const size = getSizeForType(structName, context);
+    const structDef = context.structTable.get(structName);
+    const size = getStructSize(structDef, context);
     topCode.push(`${tempVar} = call i8* @malloc(i32 ${size})`);
     topCode.push(`${structPtrVar} = bitcast i8* ${tempVar} to ${llType}`);
     const fieldInit = generateFieldInitialization(structPtrVar, structNode, context, variables);

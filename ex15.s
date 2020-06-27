@@ -7,23 +7,23 @@ _main:                                  ## @main
 ## %bb.0:
 	subq	$72, %rsp
 	.cfi_def_cfa_offset 80
-	movl	$8, %edi
+	movl	$12, %edi
 	callq	_malloc
 	movq	%rax, %rcx
 	movl	$65, (%rax)
-	movl	$8, %edi
+	movl	$12, %edi
 	movq	%rax, 48(%rsp)          ## 8-byte Spill
 	movq	%rcx, 40(%rsp)          ## 8-byte Spill
 	callq	_malloc
 	movq	%rax, %rcx
 	movl	$66, (%rax)
-	movl	$8, %edi
+	movl	$12, %edi
 	movq	%rax, 32(%rsp)          ## 8-byte Spill
 	movq	%rcx, 24(%rsp)          ## 8-byte Spill
 	callq	_malloc
 	movq	%rax, %rcx
 	movl	$67, (%rax)
-	movl	$8, %edi
+	movl	$12, %edi
 	movq	%rax, 16(%rsp)          ## 8-byte Spill
 	movq	%rcx, 8(%rsp)           ## 8-byte Spill
 	callq	_malloc
@@ -58,7 +58,7 @@ LBB0_1:                                 ## %loop_top20
 LBB0_3:                                 ## %loop_exit20
 	movl	$10, %edi
 	callq	_putchar
-	xorl	%ecx, %ecx
+	movl	$10, %ecx
 	movl	%eax, 4(%rsp)           ## 4-byte Spill
 	movl	%ecx, %eax
 	addq	$72, %rsp

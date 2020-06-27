@@ -68,6 +68,15 @@
         "line": 6,
         "col": 5
       },
+      "data_type": {
+        "type": "identifier",
+        "value": "int",
+        "text": "int",
+        "offset": 70,
+        "lineBreaks": 0,
+        "line": 6,
+        "col": 13
+      },
       "parameters": [],
       "body": [
         {
@@ -76,7 +85,7 @@
             "type": "identifier",
             "value": "list",
             "text": "list",
-            "offset": 75,
+            "offset": 80,
             "lineBreaks": 0,
             "line": 7,
             "col": 5
@@ -89,7 +98,7 @@
                 "type": "identifier",
                 "value": "LinkedList",
                 "text": "LinkedList",
-                "offset": 88,
+                "offset": 93,
                 "lineBreaks": 0,
                 "line": 7,
                 "col": 18
@@ -101,7 +110,7 @@
                     "type": "identifier",
                     "value": "data",
                     "text": "data",
-                    "offset": 109,
+                    "offset": 114,
                     "lineBreaks": 0,
                     "line": 8,
                     "col": 9
@@ -110,7 +119,7 @@
                     "type": "number",
                     "value": "65",
                     "text": "65",
-                    "offset": 116,
+                    "offset": 121,
                     "lineBreaks": 0,
                     "line": 8,
                     "col": 16
@@ -122,7 +131,7 @@
                     "type": "identifier",
                     "value": "next",
                     "text": "next",
-                    "offset": 127,
+                    "offset": 132,
                     "lineBreaks": 0,
                     "line": 9,
                     "col": 9
@@ -135,7 +144,7 @@
                         "type": "identifier",
                         "value": "LinkedList",
                         "text": "LinkedList",
-                        "offset": 140,
+                        "offset": 145,
                         "lineBreaks": 0,
                         "line": 9,
                         "col": 22
@@ -147,7 +156,7 @@
                             "type": "identifier",
                             "value": "data",
                             "text": "data",
-                            "offset": 165,
+                            "offset": 170,
                             "lineBreaks": 0,
                             "line": 10,
                             "col": 13
@@ -156,7 +165,7 @@
                             "type": "number",
                             "value": "66",
                             "text": "66",
-                            "offset": 172,
+                            "offset": 177,
                             "lineBreaks": 0,
                             "line": 10,
                             "col": 20
@@ -168,7 +177,7 @@
                             "type": "identifier",
                             "value": "next",
                             "text": "next",
-                            "offset": 187,
+                            "offset": 192,
                             "lineBreaks": 0,
                             "line": 11,
                             "col": 13
@@ -181,7 +190,7 @@
                                 "type": "identifier",
                                 "value": "LinkedList",
                                 "text": "LinkedList",
-                                "offset": 200,
+                                "offset": 205,
                                 "lineBreaks": 0,
                                 "line": 11,
                                 "col": 26
@@ -193,7 +202,7 @@
                                     "type": "identifier",
                                     "value": "data",
                                     "text": "data",
-                                    "offset": 229,
+                                    "offset": 234,
                                     "lineBreaks": 0,
                                     "line": 12,
                                     "col": 17
@@ -202,7 +211,7 @@
                                     "type": "number",
                                     "value": "67",
                                     "text": "67",
-                                    "offset": 236,
+                                    "offset": 241,
                                     "lineBreaks": 0,
                                     "line": 12,
                                     "col": 24
@@ -214,7 +223,7 @@
                                     "type": "identifier",
                                     "value": "next",
                                     "text": "next",
-                                    "offset": 255,
+                                    "offset": 260,
                                     "lineBreaks": 0,
                                     "line": 13,
                                     "col": 17
@@ -227,7 +236,7 @@
                                         "type": "identifier",
                                         "value": "LinkedList",
                                         "text": "LinkedList",
-                                        "offset": 268,
+                                        "offset": 273,
                                         "lineBreaks": 0,
                                         "line": 13,
                                         "col": 30
@@ -239,7 +248,7 @@
                                             "type": "identifier",
                                             "value": "data",
                                             "text": "data",
-                                            "offset": 301,
+                                            "offset": 306,
                                             "lineBreaks": 0,
                                             "line": 14,
                                             "col": 21
@@ -248,7 +257,7 @@
                                             "type": "number",
                                             "value": "68",
                                             "text": "68",
-                                            "offset": 308,
+                                            "offset": 313,
                                             "lineBreaks": 0,
                                             "line": 14,
                                             "col": 28
@@ -260,7 +269,7 @@
                                             "type": "identifier",
                                             "value": "next",
                                             "text": "next",
-                                            "offset": 331,
+                                            "offset": 336,
                                             "lineBreaks": 0,
                                             "line": 15,
                                             "col": 21
@@ -291,7 +300,7 @@
             "type": "identifier",
             "value": "current",
             "text": "current",
-            "offset": 395,
+            "offset": 400,
             "lineBreaks": 0,
             "line": 20,
             "col": 5
@@ -300,7 +309,7 @@
             "type": "identifier",
             "value": "list",
             "text": "list",
-            "offset": 405,
+            "offset": 410,
             "lineBreaks": 0,
             "line": 20,
             "col": 15
@@ -314,7 +323,7 @@
               "type": "identifier",
               "value": "current",
               "text": "current",
-              "offset": 420,
+              "offset": 425,
               "lineBreaks": 0,
               "line": 21,
               "col": 11
@@ -323,7 +332,7 @@
               "type": "operator",
               "value": "!=",
               "text": "!=",
-              "offset": 428,
+              "offset": 433,
               "lineBreaks": 0,
               "line": 21,
               "col": 19
@@ -339,7 +348,7 @@
                 "type": "identifier",
                 "value": "putchar",
                 "text": "putchar",
-                "offset": 446,
+                "offset": 451,
                 "lineBreaks": 0,
                 "line": 22,
                 "col": 9
@@ -351,7 +360,7 @@
                     "type": "identifier",
                     "value": "current",
                     "text": "current",
-                    "offset": 454,
+                    "offset": 459,
                     "lineBreaks": 0,
                     "line": 22,
                     "col": 17
@@ -360,7 +369,7 @@
                     "type": "operator",
                     "value": ".",
                     "text": ".",
-                    "offset": 461,
+                    "offset": 466,
                     "lineBreaks": 0,
                     "line": 22,
                     "col": 24
@@ -369,7 +378,7 @@
                     "type": "identifier",
                     "value": "data",
                     "text": "data",
-                    "offset": 462,
+                    "offset": 467,
                     "lineBreaks": 0,
                     "line": 22,
                     "col": 25
@@ -383,7 +392,7 @@
                 "type": "identifier",
                 "value": "current",
                 "text": "current",
-                "offset": 476,
+                "offset": 481,
                 "lineBreaks": 0,
                 "line": 23,
                 "col": 9
@@ -394,7 +403,7 @@
                   "type": "identifier",
                   "value": "current",
                   "text": "current",
-                  "offset": 486,
+                  "offset": 491,
                   "lineBreaks": 0,
                   "line": 23,
                   "col": 19
@@ -403,7 +412,7 @@
                   "type": "operator",
                   "value": ".",
                   "text": ".",
-                  "offset": 493,
+                  "offset": 498,
                   "lineBreaks": 0,
                   "line": 23,
                   "col": 26
@@ -412,7 +421,7 @@
                   "type": "identifier",
                   "value": "next",
                   "text": "next",
-                  "offset": 494,
+                  "offset": 499,
                   "lineBreaks": 0,
                   "line": 23,
                   "col": 27
@@ -427,7 +436,7 @@
             "type": "identifier",
             "value": "putchar",
             "text": "putchar",
-            "offset": 509,
+            "offset": 514,
             "lineBreaks": 0,
             "line": 25,
             "col": 5
@@ -437,12 +446,24 @@
               "type": "number",
               "value": "10",
               "text": "10",
-              "offset": 517,
+              "offset": 522,
               "lineBreaks": 0,
               "line": 25,
               "col": 13
             }
           ]
+        },
+        {
+          "type": "return",
+          "value": {
+            "type": "number",
+            "value": "10",
+            "text": "10",
+            "offset": 537,
+            "lineBreaks": 0,
+            "line": 26,
+            "col": 12
+          }
         }
       ]
     }

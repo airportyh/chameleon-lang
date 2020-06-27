@@ -1,19 +1,19 @@
 %struct.LinkedList = type { i32, %struct.LinkedList* }
 
 define i32 @main() {
-  %tmp1 = call i8* @malloc(i32 8)
+  %tmp1 = call i8* @malloc(i32 12)
   %tmp2 = bitcast i8* %tmp1 to %struct.LinkedList*
   %tmp3 = getelementptr inbounds %struct.LinkedList, %struct.LinkedList* %tmp2, i32 0, i32 0
   store i32 65, i32* %tmp3
-  %tmp4 = call i8* @malloc(i32 8)
+  %tmp4 = call i8* @malloc(i32 12)
   %tmp5 = bitcast i8* %tmp4 to %struct.LinkedList*
   %tmp6 = getelementptr inbounds %struct.LinkedList, %struct.LinkedList* %tmp5, i32 0, i32 0
   store i32 66, i32* %tmp6
-  %tmp7 = call i8* @malloc(i32 8)
+  %tmp7 = call i8* @malloc(i32 12)
   %tmp8 = bitcast i8* %tmp7 to %struct.LinkedList*
   %tmp9 = getelementptr inbounds %struct.LinkedList, %struct.LinkedList* %tmp8, i32 0, i32 0
   store i32 67, i32* %tmp9
-  %tmp10 = call i8* @malloc(i32 8)
+  %tmp10 = call i8* @malloc(i32 12)
   %tmp11 = bitcast i8* %tmp10 to %struct.LinkedList*
   %tmp12 = getelementptr inbounds %struct.LinkedList, %struct.LinkedList* %tmp11, i32 0, i32 0
   store i32 68, i32* %tmp12
@@ -50,7 +50,7 @@ define i32 @main() {
   
   loop_exit20:
   %tmp28 = call i32 @putchar (i32 10)
-  ret i32 0
+  ret i32 10
 }
 
 declare i32 @putchar(i32)

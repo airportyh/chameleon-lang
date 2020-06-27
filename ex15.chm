@@ -3,7 +3,7 @@ struct LinkedList {
     next: LinkedList
 }
 
-fun main() [
+fun main(): int [
     list = alloc LinkedList {
         data = 65
         next = alloc LinkedList {
@@ -23,4 +23,5 @@ fun main() [
         current = current.next
     ]
     putchar(10)
+    return 10
 ]
