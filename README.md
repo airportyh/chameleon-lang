@@ -6,10 +6,13 @@ backends.
 ## Todos
 
 * improve code dealing with implicit casting (numbers and nulls)
-* make a test suite
 * garbage collector
 * arrays
 * strings (maybe implemented in the language)
+* type classes / protocols
+* lambdas and closures
+* classes
+* default function parameter values
 * default field values for structs
 * allow defining referenced functions later
 * allow main to return void
@@ -26,6 +29,7 @@ generator stage
 * closure
 * operator precedence
 
+* make a test suite (done)
 * function signature table for inferring argument types (for null for example) (done)
 * linked lists (user land?) (done)
 * pointers?? how to do linked lists wo pointers? (done)
