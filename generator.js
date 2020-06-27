@@ -435,9 +435,11 @@ function generateFunCall(node, context, variables) {
     const outputDataType = funSig.output;
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
     const argList = argResults.map((argResult, idx) => {
-        const dataType = funSig.input[idx];
-        const llDataType = context.dataTypeMap.get(dataType);
-        return llDataType + " " + argResult.valueCode;
+        const argNode = node.arguments[idx];
+        const sigDataType = funSig.input[idx];
+        const typeCast = implicitTypeCast(argResult.dataType, sigDataType, argResult.valueCode, context, argNode);
+        const llDataType = context.dataTypeMap.get(typeCast.dataType);
+        return llDataType + " " + typeCast.valueCode;
     }).join(", ");
     const tmpVarName = "%tmp" + context.nextTemp++;
     
@@ -492,45 +494,6 @@ function generateTypeCastFunCall(node, context, variables) {
     
     const topCode = [
         ...valueResult.topCode,
-        instruction
-    ];
-    return {
-        topCode,
-        valueCode: tmpVarName,
-        dataType: destDataType
-    }
-}
-
-function generateImplicitTypeCast(sourceDataType, destDataType, valueCode, context) {
-    const llDestDataType = context.dataTypeMap.get(destDataType);
-    const llSourceDataType = context.dataTypeMap.get(sourceDataType);
-    const destPriority = context.dataTypePriority.get(destDataType);
-    const sourcePriority = context.dataTypePriority.get(sourceDataType);
-    const isDestFloat = isFloat(destDataType, context);
-    const isSourceFloat = isFloat(sourceDataType, context);
-    const tmpVarName = newTempVar(context);
-    
-    let instruction;
-    
-    if (isSourceFloat && !isDestFloat) {
-        throw new Error(`Cannot implicitly cast a ${sourceDataType} to a ${destDataType}`);
-    } else if (!isSourceFloat && isDestFloat) {
-        throw new Error(`Cannot implicitly cast a ${sourceDataType} to a ${destDataType}`);
-    } else if (!isSourceFloat && !isDestFloat) {
-        if (destPriority > sourcePriority) {
-            instruction = `${tmpVarName} = zext ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-        } else {
-            throw new Error(`Cannot implicitly cast a ${sourceDataType} to a ${destDataType}`);
-        }
-    } else {
-        if (destPriority > sourcePriority) {
-            instruction = `${tmpVarName} = fpext ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-        } else {
-            throw new Error(`Cannot implicitly cast a ${sourceDataType} to a ${destDataType}`);
-        }
-    }
-    
-    const topCode = [
         instruction
     ];
     return {
@@ -630,13 +593,13 @@ function generateBinExpr(node, context, variables) {
         const rightPriority = context.dataTypePriority.get(rightDataType);
         if (leftPriority > rightPriority) {
             // cast right to the same type as left
-            const typeCastResult = generateImplicitTypeCast(rightDataType, leftDataType, rightInlined, context);
+            const typeCastResult = implicitTypeCast(rightDataType, leftDataType, rightInlined, context, node);
             topCode.push(...typeCastResult.topCode);
             rightInlined = typeCastResult.valueCode;
             dataType = leftDataType;
         } else {
             // cast left to the same type as right
-            const typeCastResult = generateImplicitTypeCast(leftDataType, rightDataType, leftInlined, context);
+            const typeCastResult = implicitTypeCast(leftDataType, rightDataType, leftInlined, context, node);
             topCode.push(...typeCastResult.topCode);
             leftInlined = typeCastResult.valueCode;
             dataType = rightDataType;
