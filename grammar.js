@@ -37,7 +37,7 @@ var grammar = {
     {"name": "statement", "symbols": ["while"], "postprocess": id},
     {"name": "statement", "symbols": ["struct_def"], "postprocess": id},
     {"name": "statement", "symbols": ["free"], "postprocess": id},
-    {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", {"literal":"="}, "_", "expr"], "postprocess": 
+    {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
                 type: "var_assign",

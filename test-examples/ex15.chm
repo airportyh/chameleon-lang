@@ -10,10 +10,7 @@ fun main(): int [
             data = 66
             next = alloc LinkedList {
                 data = 67
-                next = alloc LinkedList {
-                    data = 68
-                    next = null
-                }
+                next = null
             }
         }
     }
@@ -23,5 +20,5 @@ fun main(): int [
         current = current.next
     ]
     putchar(10)
-    return 10
+    return 0
 ]

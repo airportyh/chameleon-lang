@@ -47,7 +47,7 @@ statement
     |  free            {% id %}
 
 var_assign
-    -> %identifier _ type_def "=" _ expr
+    -> %identifier _ type_def _ "=" _ expr
         {%
             (data) => {
                 return {

@@ -22,7 +22,8 @@ async function main() {
         return;
     }
     const ast = JSON.parse((await fs.readFile(filename)).toString());
-    const outputFilename = path.basename(filename, ".ast") + ".ll";
+    const baseDir = path.dirname(filename);
+    const outputFilename = path.join(baseDir, path.basename(filename, ".ast") + ".ll");
     const funTable = new Map();
     funTable.set("putchar", {
         input: ["int"],

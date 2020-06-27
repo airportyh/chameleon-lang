@@ -3,7 +3,13 @@ struct User {
     lastInitial: int
 }
 
-fun main() [
+fun printUser(user: User) [
+    putchar(user.firstInitial)
+    putchar(user.lastInitial)
+    putchar(10)
+]
+
+fun main(): int [
     user = User {
         firstInitial = 84
         lastInitial = 72
@@ -13,10 +19,5 @@ fun main() [
         lastInitial = 72
     }
     printUser(user)
-]
-
-fun printUser(user: User) [
-    putchar(user.firstInitial)
-    putchar(user.lastInitial)
-    putchar(10)
+    return 0
 ]

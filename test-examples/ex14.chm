@@ -3,7 +3,7 @@ struct User {
     last: int
 }
 
-fun main() [
+fun main(): int [
     marty = alloc User {
         first = 77
         last = 72
@@ -12,4 +12,5 @@ fun main() [
     putchar(marty.last)
     putchar(10)
     free marty
+    return 0
 ]
