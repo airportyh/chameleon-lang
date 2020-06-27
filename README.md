@@ -5,8 +5,8 @@ backends.
 
 ## Todos
 
-* function signature table for inferring argument types (for null for example)
 * improve code dealing with implicit casting (numbers and nulls)
+* make a test suite
 * garbage collector
 * arrays
 * strings (maybe implemented in the language)
@@ -26,6 +26,7 @@ generator stage
 * closure
 * operator precedence
 
+* function signature table for inferring argument types (for null for example) (done)
 * linked lists (user land?) (done)
 * pointers?? how to do linked lists wo pointers? (done)
 * integrate malloc and free for dynamic memory (done)

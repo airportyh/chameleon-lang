@@ -9,7 +9,7 @@ _makeLL:                                ## @makeLL
 	.cfi_def_cfa_offset 32
 	movl	%edi, 20(%rsp)
 	movq	%rsi, 8(%rsp)
-	movl	$8, %edi
+	movl	$12, %edi
 	callq	_malloc
 	movq	%rax, %rcx
 	movl	20(%rsp), %edx

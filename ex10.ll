@@ -1,9 +1,10 @@
-%struct.User { i32, i32 }
+%struct.User = type { i32, i32 }
 
-define i32 @main() {
+define void @main() {
   
-  ret i32 0
 }
 
 declare i32 @putchar(i32)
 declare i32 @getchar()
+declare i8* @malloc(i32)
+declare void @free(i8*)

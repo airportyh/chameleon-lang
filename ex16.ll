@@ -5,7 +5,7 @@ define %struct.LinkedList* @makeLL(i32 %_data, %struct.LinkedList* %_next) {
   store i32 %_data, i32* %data
   %next = alloca %struct.LinkedList*
   store %struct.LinkedList* %_next, %struct.LinkedList** %next
-  %tmp1 = call i8* @malloc(i32 8)
+  %tmp1 = call i8* @malloc(i32 12)
   %tmp2 = bitcast i8* %tmp1 to %struct.LinkedList*
   %tmp3 = load i32, i32* %data
   %tmp4 = getelementptr inbounds %struct.LinkedList, %struct.LinkedList* %tmp2, i32 0, i32 0
@@ -17,7 +17,7 @@ define %struct.LinkedList* @makeLL(i32 %_data, %struct.LinkedList* %_next) {
 }
 
 define i32 @main() {
-  %tmp7 = call %struct.LinkedList* @makeLL (i32 68, i8* null)
+  %tmp7 = call %struct.LinkedList* @makeLL (i32 68, %struct.LinkedList* null)
   %tmp8 = call %struct.LinkedList* @makeLL (i32 67, %struct.LinkedList* %tmp7)
   %tmp9 = call %struct.LinkedList* @makeLL (i32 66, %struct.LinkedList* %tmp8)
   %tmp10 = call %struct.LinkedList* @makeLL (i32 65, %struct.LinkedList* %tmp9)

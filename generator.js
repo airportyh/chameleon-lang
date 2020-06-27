@@ -23,10 +23,23 @@ async function main() {
     }
     const ast = JSON.parse((await fs.readFile(filename)).toString());
     const outputFilename = path.basename(filename, ".ast") + ".ll";
-    const funTypes = new Map();
-    funTypes.set("putchar", "int");
-    
-    funTypes.set("free", "void");
+    const funTable = new Map();
+    funTable.set("putchar", {
+        input: ["int"],
+        output: "int"
+    });
+    funTable.set("getchar", {
+        input: [],
+        output: "int"
+    });
+    funTable.set("free", {
+        input: ["pointer"],
+        output: "void"
+    });
+    funTable.set("malloc", {
+        input: ["int"],
+        output: "pointer"
+    });
     const dataTypeMap = new Map();
     dataTypeMap.set("bool", "i1");
     dataTypeMap.set("byte", "i8");
@@ -36,6 +49,7 @@ async function main() {
     dataTypeMap.set("float", "float");
     dataTypeMap.set("double", "double");
     dataTypeMap.set("void", "void");
+    dataTypeMap.set("pointer", "i8*");
     const dataTypePriority = new Map();
     dataTypePriority.set("bool", 1);
     dataTypePriority.set("byte", 2);
@@ -47,7 +61,7 @@ async function main() {
     const structTable = new Map();
     const context = {
         nextTemp: 1,
-        funTypes,
+        funTable,
         dataTypeMap,
         dataTypePriority,
         structTable
@@ -349,9 +363,14 @@ function generateFunDef(node, context) {
     const variables = new Map();
     const paramList = [];
     const allocaStoreInstructions = [];
+    const funSig = {
+        input: [],
+        output: null
+    };
     for (const param of node.parameters) {
         const paramName = param.name.value;
-        const paramDataType = param.data_type && param.data_type.value;
+        const paramDataType = param.data_type && param.data_type.value || "void";
+        funSig.input.push(paramDataType);
         variables.set(paramName, paramDataType);
         const llParamDataType = context.dataTypeMap.get(paramDataType);
         paramList.push(`${llParamDataType} %_${paramName}`);
@@ -363,7 +382,8 @@ function generateFunDef(node, context) {
     const funName = node.fun_name.value;
     const outputType = node.data_type && node.data_type.value || "void";
     const llOutputType = context.dataTypeMap.get(outputType);
-    context.funTypes.set(funName, outputType);
+    funSig.output = outputType;
+    context.funTable.set(funName, funSig);
     
     const body = 
         allocaStoreInstructions.concat(
@@ -407,13 +427,15 @@ function generateFunCall(node, context, variables) {
         return generateTypeCastFunCall(node, context, variables);
     }
     const argResults = node.arguments.map(arg => generate(arg, context, variables));
-    if (!context.funTypes.has(funName)) {
+    if (!context.funTable.has(funName)) {
         throw new Error(`${locInfo(node.fun_name)}: Trying to call function ${funName} which is not defined (yet)`);
     }
-    const outputDataType = context.funTypes.get(funName);
+    const funSig = context.funTable.get(funName);
+    const outputDataType = funSig.output;
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
-    const argList = argResults.map(argResult => {
-        const llDataType = context.dataTypeMap.get(argResult.dataType);
+    const argList = argResults.map((argResult, idx) => {
+        const dataType = funSig.input[idx];
+        const llDataType = context.dataTypeMap.get(dataType);
         return llDataType + " " + argResult.valueCode;
     }).join(", ");
     const tmpVarName = "%tmp" + context.nextTemp++;
