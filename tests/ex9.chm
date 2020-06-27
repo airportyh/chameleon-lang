@@ -1,4 +1,4 @@
-fun main() [
+fun main(): int [
     x = 65
     while x < 91 [
         y = 48
@@ -10,5 +10,5 @@ fun main() [
         putchar(10)
         x = x + 1
     ]
-    putchar(10)
+    return 0
 ]

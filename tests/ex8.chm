@@ -1,4 +1,4 @@
-fun main() [
+fun main(): int [
     a = 24
     if a >= 20 [
         putchar(68)
@@ -8,4 +8,5 @@ fun main() [
         putchar(66)
     ]
     putchar(10)
+    return 0
 ]

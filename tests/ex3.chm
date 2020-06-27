@@ -2,7 +2,7 @@ fun add(x:int y:int):int [
     return x + y
 ]
 
-fun main() [
+fun main(): int [
     a = 5
     b = 60
     c = add(a b)

@@ -1,0 +1,30 @@
+fun main(): int [
+    a = 5
+    x = 0
+    y = 0
+    if a != 0 [
+        putchar(65)
+        x = 4
+    ] else [
+        putchar(33)
+        putchar(65)
+        y = 4
+    ]
+    if a != 0 [
+        putchar(65)
+        c = 4
+    ]
+    if a != 0 [
+        putchar(65)
+        x = 4
+    ] else if y != 0 [
+        putchar(89)
+        z = 4
+    ] else [
+        putchar(33)
+        putchar(65)
+        putchar(89)
+        x = 3
+    ]
+    return 0
+]

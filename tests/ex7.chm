@@ -1,4 +1,4 @@
-fun main() [
+fun main(): int [
     a = 10
     if a > 6 [
         x = 4
@@ -7,4 +7,5 @@ fun main() [
         putchar(67)
     ]
     putchar(10)
+    return 0
 ]

@@ -1,4 +1,4 @@
-fun main() [
+fun main(): int [
     x = 5.0
     y = 6.5
     z = x + y * 10.0 + 4.5

@@ -54,7 +54,7 @@ var_assign
                     type: "var_assign",
                     data_type: data[2],
                     var_name: data[0],
-                    value: data[5]
+                    value: data[6]
                 };
             }
         %}

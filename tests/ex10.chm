@@ -3,5 +3,6 @@ struct User {
     lastInitial: int
 }
 
-fun main() [
+fun main(): int [
+    return 0
 ]

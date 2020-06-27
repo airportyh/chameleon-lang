@@ -113,7 +113,7 @@ function generate(node, context, variables) {
     } else if (node.type === "null_literal") {
         return generateNullLiteral();
     } else {
-        throw new Error("Unsupported node type: " + node.type);
+        throw new Error("Unsupported node type: " + node.type + ": " + JSON.stringify(node));
     }
 }
 
