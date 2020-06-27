@@ -1,0 +1,15 @@
+struct User {
+    first: int
+    last: int
+}
+
+fun main() [
+    marty = alloc User {
+        first = 77
+        last = 72
+    }
+    putchar(marty.first)
+    putchar(marty.last)
+    putchar(10)
+    free marty
+]

@@ -36,6 +36,7 @@ var grammar = {
     {"name": "statement", "symbols": ["if"], "postprocess": id},
     {"name": "statement", "symbols": ["while"], "postprocess": id},
     {"name": "statement", "symbols": ["struct_def"], "postprocess": id},
+    {"name": "statement", "symbols": ["free"], "postprocess": id},
     {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
@@ -81,6 +82,8 @@ var grammar = {
         }
                 },
     {"name": "unary_expr", "symbols": ["struct_literal"], "postprocess": id},
+    {"name": "unary_expr", "symbols": ["alloc"], "postprocess": id},
+    {"name": "unary_expr", "symbols": ["null_literal"], "postprocess": id},
     {"name": "var_ref", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": id},
     {"name": "fun_call", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_argument_list"], "postprocess": 
         (data) => {
@@ -242,6 +245,29 @@ var grammar = {
                 field_name: data[0],
                 field_value: data[4]
             };
+        }
+                },
+    {"name": "alloc", "symbols": [{"literal":"alloc"}, "__", "struct_literal"], "postprocess": 
+        (data) => {
+            return {
+                type: "alloc",
+                struct: data[2]
+            };
+        }
+                },
+    {"name": "free", "symbols": [{"literal":"free"}, "__", "expr"], "postprocess": 
+        (data) => {
+            return {
+                type: "free",
+                value: data[2]
+            };
+        }
+                },
+    {"name": "null_literal", "symbols": [{"literal":"null"}], "postprocess":  
+        () => {
+            return {
+                type: "null_literal"
+            }
         }
                 },
     {"name": "MLWS", "symbols": ["nl_or_ws"]},

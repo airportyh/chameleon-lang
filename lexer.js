@@ -3,9 +3,17 @@ const moo = require("moo");
 const lexer = moo.compile({
   WS:      /[ \t]+/,
   comment: /\#.*?$/,
-  operator: /(?:==)|(?:>=)|(?:<=)|[\+\-\*\/\>\<\.]/,
+  operator: /(?:==)|(?:>=)|(?:<=)|(?:!=)|[\+\-\*\/\>\<\.]/,
   number:  /0|[1-9][0-9]*(?:\.[0-9]+)?/,
-  identifier:      /[a-zA-Z_][a-zA-Z0-9_]*/,
+  identifier: {
+      match: /[a-zA-Z_][a-zA-Z0-9_]*/,
+      type: moo.keywords({
+          keyword: [
+              "null", "alloc", "free", "fun", 
+              "return", "if", "else", "while", "struct"
+          ]
+      })
+  },
   string:  /"(?:\\["\\]|[^\n"\\])*"/,
   lparen:  '(',
   rparen:  ')',

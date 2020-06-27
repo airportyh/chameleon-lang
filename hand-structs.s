@@ -10,17 +10,20 @@ LCPI0_0:
 _main:                                  ## @main
 	.cfi_startproc
 ## %bb.0:
-	subq	$24, %rsp
-	.cfi_def_cfa_offset 32
+	subq	$40, %rsp
+	.cfi_def_cfa_offset 48
 	movsd	LCPI0_0(%rip), %xmm0    ## xmm0 = mem[0],zero
-	movl	$65, 8(%rsp)
-	movsd	%xmm0, 16(%rsp)
-	movl	8(%rsp), %edi
+	leaq	24(%rsp), %rax
+	movq	%rax, 16(%rsp)
+	movq	16(%rsp), %rax
+	movl	$65, (%rax)
+	movsd	%xmm0, 8(%rax)
+	movl	(%rax), %edi
 	callq	_putchar
 	xorl	%ecx, %ecx
-	movl	%eax, 4(%rsp)           ## 4-byte Spill
+	movl	%eax, 12(%rsp)          ## 4-byte Spill
 	movl	%ecx, %eax
-	addq	$24, %rsp
+	addq	$40, %rsp
 	retq
 	.cfi_endproc
                                         ## -- End function

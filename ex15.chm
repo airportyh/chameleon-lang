@@ -1,0 +1,22 @@
+struct LinkedList {
+    data: int
+    next: alloc LinkedList
+}
+
+fun main() [
+    list = alloc LinkedList {
+        data = 65
+        next = alloc LinkedList {
+            data = 66
+            next = alloc LinkedList {
+                data = 67
+                next = null
+            }
+        }
+    }
+    current = list
+    while current != null [
+        putchar(current.data)
+        current = current.next
+    ]
+]

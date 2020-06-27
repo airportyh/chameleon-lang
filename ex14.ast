@@ -1,0 +1,270 @@
+{
+  "type": "program",
+  "body": [
+    {
+      "type": "struct_def",
+      "name": {
+        "type": "identifier",
+        "value": "User",
+        "text": "User",
+        "offset": 7,
+        "lineBreaks": 0,
+        "line": 1,
+        "col": 8
+      },
+      "entries": [
+        {
+          "type": "struct_def_entry",
+          "field_name": {
+            "type": "identifier",
+            "value": "first",
+            "text": "first",
+            "offset": 18,
+            "lineBreaks": 0,
+            "line": 2,
+            "col": 5
+          },
+          "field_type": {
+            "type": "identifier",
+            "value": "int",
+            "text": "int",
+            "offset": 25,
+            "lineBreaks": 0,
+            "line": 2,
+            "col": 12
+          }
+        },
+        {
+          "type": "struct_def_entry",
+          "field_name": {
+            "type": "identifier",
+            "value": "last",
+            "text": "last",
+            "offset": 33,
+            "lineBreaks": 0,
+            "line": 3,
+            "col": 5
+          },
+          "field_type": {
+            "type": "identifier",
+            "value": "int",
+            "text": "int",
+            "offset": 39,
+            "lineBreaks": 0,
+            "line": 3,
+            "col": 11
+          }
+        }
+      ]
+    },
+    {
+      "type": "fun_def",
+      "fun_name": {
+        "type": "identifier",
+        "value": "main",
+        "text": "main",
+        "offset": 50,
+        "lineBreaks": 0,
+        "line": 6,
+        "col": 5
+      },
+      "parameters": [],
+      "body": [
+        {
+          "type": "var_assign",
+          "var_name": {
+            "type": "identifier",
+            "value": "marty",
+            "text": "marty",
+            "offset": 63,
+            "lineBreaks": 0,
+            "line": 7,
+            "col": 5
+          },
+          "value": {
+            "type": "alloc",
+            "struct": {
+              "type": "struct_literal",
+              "structName": {
+                "type": "identifier",
+                "value": "User",
+                "text": "User",
+                "offset": 77,
+                "lineBreaks": 0,
+                "line": 7,
+                "col": 19
+              },
+              "entries": [
+                {
+                  "type": "struct_literal_entry",
+                  "field_name": {
+                    "type": "identifier",
+                    "value": "first",
+                    "text": "first",
+                    "offset": 92,
+                    "lineBreaks": 0,
+                    "line": 8,
+                    "col": 9
+                  },
+                  "field_value": {
+                    "type": "number",
+                    "value": "77",
+                    "text": "77",
+                    "offset": 100,
+                    "lineBreaks": 0,
+                    "line": 8,
+                    "col": 17
+                  }
+                },
+                {
+                  "type": "struct_literal_entry",
+                  "field_name": {
+                    "type": "identifier",
+                    "value": "last",
+                    "text": "last",
+                    "offset": 111,
+                    "lineBreaks": 0,
+                    "line": 9,
+                    "col": 9
+                  },
+                  "field_value": {
+                    "type": "number",
+                    "value": "72",
+                    "text": "72",
+                    "offset": 118,
+                    "lineBreaks": 0,
+                    "line": 9,
+                    "col": 16
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "putchar",
+            "text": "putchar",
+            "offset": 131,
+            "lineBreaks": 0,
+            "line": 11,
+            "col": 5
+          },
+          "arguments": [
+            {
+              "type": "bin_expr",
+              "left": {
+                "type": "identifier",
+                "value": "marty",
+                "text": "marty",
+                "offset": 139,
+                "lineBreaks": 0,
+                "line": 11,
+                "col": 13
+              },
+              "operator": {
+                "type": "operator",
+                "value": ".",
+                "text": ".",
+                "offset": 144,
+                "lineBreaks": 0,
+                "line": 11,
+                "col": 18
+              },
+              "right": {
+                "type": "identifier",
+                "value": "first",
+                "text": "first",
+                "offset": 145,
+                "lineBreaks": 0,
+                "line": 11,
+                "col": 19
+              }
+            }
+          ]
+        },
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "putchar",
+            "text": "putchar",
+            "offset": 156,
+            "lineBreaks": 0,
+            "line": 12,
+            "col": 5
+          },
+          "arguments": [
+            {
+              "type": "bin_expr",
+              "left": {
+                "type": "identifier",
+                "value": "marty",
+                "text": "marty",
+                "offset": 164,
+                "lineBreaks": 0,
+                "line": 12,
+                "col": 13
+              },
+              "operator": {
+                "type": "operator",
+                "value": ".",
+                "text": ".",
+                "offset": 169,
+                "lineBreaks": 0,
+                "line": 12,
+                "col": 18
+              },
+              "right": {
+                "type": "identifier",
+                "value": "last",
+                "text": "last",
+                "offset": 170,
+                "lineBreaks": 0,
+                "line": 12,
+                "col": 19
+              }
+            }
+          ]
+        },
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "putchar",
+            "text": "putchar",
+            "offset": 180,
+            "lineBreaks": 0,
+            "line": 13,
+            "col": 5
+          },
+          "arguments": [
+            {
+              "type": "number",
+              "value": "10",
+              "text": "10",
+              "offset": 188,
+              "lineBreaks": 0,
+              "line": 13,
+              "col": 13
+            }
+          ]
+        },
+        {
+          "type": "free",
+          "value": {
+            "type": "identifier",
+            "value": "marty",
+            "text": "marty",
+            "offset": 201,
+            "lineBreaks": 0,
+            "line": 14,
+            "col": 10
+          }
+        }
+      ]
+    }
+  ]
+}

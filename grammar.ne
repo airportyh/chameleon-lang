@@ -44,6 +44,7 @@ statement
     |  if              {% id %}
     |  while           {% id %}
     |  struct_def      {% id %}
+    |  free            {% id %}
 
 var_assign
     -> %identifier _ type_def "=" _ expr
@@ -102,6 +103,8 @@ unary_expr
             }
         %}
     |  struct_literal  {% id %}
+    |  alloc           {% id %}
+    |  null_literal    {% id %}
     
 var_ref
     -> %identifier  {% id %}
@@ -325,6 +328,39 @@ struct_literal_entry
                 };
             }
         %}
+
+alloc
+    -> "alloc" __ struct_literal
+        {%
+            (data) => {
+                return {
+                    type: "alloc",
+                    struct: data[2]
+                };
+            }
+        %}
+        
+free
+    -> "free" __ expr
+        {%
+            (data) => {
+                return {
+                    type: "free",
+                    value: data[2]
+                };
+            }
+        %}
+
+null_literal
+    -> "null"
+        {% 
+            () => {
+                return {
+                    type: "null_literal"
+                }
+            }
+        %}
+        
 
 # Multi-line whitespace
 MLWS

@@ -1,0 +1,377 @@
+{
+  "type": "program",
+  "body": [
+    {
+      "type": "struct_def",
+      "name": {
+        "type": "identifier",
+        "value": "LinkedList",
+        "text": "LinkedList",
+        "offset": 7,
+        "lineBreaks": 0,
+        "line": 1,
+        "col": 8
+      },
+      "entries": [
+        {
+          "type": "struct_def_entry",
+          "field_name": {
+            "type": "identifier",
+            "value": "data",
+            "text": "data",
+            "offset": 24,
+            "lineBreaks": 0,
+            "line": 2,
+            "col": 5
+          },
+          "field_type": {
+            "type": "identifier",
+            "value": "int",
+            "text": "int",
+            "offset": 30,
+            "lineBreaks": 0,
+            "line": 2,
+            "col": 11
+          }
+        },
+        {
+          "type": "struct_def_entry",
+          "field_name": {
+            "type": "identifier",
+            "value": "next",
+            "text": "next",
+            "offset": 38,
+            "lineBreaks": 0,
+            "line": 3,
+            "col": 5
+          },
+          "field_type": {
+            "type": "identifier",
+            "value": "LinkedList",
+            "text": "LinkedList",
+            "offset": 44,
+            "lineBreaks": 0,
+            "line": 3,
+            "col": 11
+          }
+        }
+      ]
+    },
+    {
+      "type": "fun_def",
+      "fun_name": {
+        "type": "identifier",
+        "value": "main",
+        "text": "main",
+        "offset": 62,
+        "lineBreaks": 0,
+        "line": 6,
+        "col": 5
+      },
+      "parameters": [],
+      "body": [
+        {
+          "type": "var_assign",
+          "var_name": {
+            "type": "identifier",
+            "value": "list",
+            "text": "list",
+            "offset": 75,
+            "lineBreaks": 0,
+            "line": 7,
+            "col": 5
+          },
+          "value": {
+            "type": "alloc",
+            "struct": {
+              "type": "struct_literal",
+              "structName": {
+                "type": "identifier",
+                "value": "LinkedList",
+                "text": "LinkedList",
+                "offset": 88,
+                "lineBreaks": 0,
+                "line": 7,
+                "col": 18
+              },
+              "entries": [
+                {
+                  "type": "struct_literal_entry",
+                  "field_name": {
+                    "type": "identifier",
+                    "value": "data",
+                    "text": "data",
+                    "offset": 109,
+                    "lineBreaks": 0,
+                    "line": 8,
+                    "col": 9
+                  },
+                  "field_value": {
+                    "type": "number",
+                    "value": "65",
+                    "text": "65",
+                    "offset": 116,
+                    "lineBreaks": 0,
+                    "line": 8,
+                    "col": 16
+                  }
+                },
+                {
+                  "type": "struct_literal_entry",
+                  "field_name": {
+                    "type": "identifier",
+                    "value": "next",
+                    "text": "next",
+                    "offset": 127,
+                    "lineBreaks": 0,
+                    "line": 9,
+                    "col": 9
+                  },
+                  "field_value": {
+                    "type": "alloc",
+                    "struct": {
+                      "type": "struct_literal",
+                      "structName": {
+                        "type": "identifier",
+                        "value": "LinkedList",
+                        "text": "LinkedList",
+                        "offset": 140,
+                        "lineBreaks": 0,
+                        "line": 9,
+                        "col": 22
+                      },
+                      "entries": [
+                        {
+                          "type": "struct_literal_entry",
+                          "field_name": {
+                            "type": "identifier",
+                            "value": "data",
+                            "text": "data",
+                            "offset": 165,
+                            "lineBreaks": 0,
+                            "line": 10,
+                            "col": 13
+                          },
+                          "field_value": {
+                            "type": "number",
+                            "value": "66",
+                            "text": "66",
+                            "offset": 172,
+                            "lineBreaks": 0,
+                            "line": 10,
+                            "col": 20
+                          }
+                        },
+                        {
+                          "type": "struct_literal_entry",
+                          "field_name": {
+                            "type": "identifier",
+                            "value": "next",
+                            "text": "next",
+                            "offset": 187,
+                            "lineBreaks": 0,
+                            "line": 11,
+                            "col": 13
+                          },
+                          "field_value": {
+                            "type": "alloc",
+                            "struct": {
+                              "type": "struct_literal",
+                              "structName": {
+                                "type": "identifier",
+                                "value": "LinkedList",
+                                "text": "LinkedList",
+                                "offset": 200,
+                                "lineBreaks": 0,
+                                "line": 11,
+                                "col": 26
+                              },
+                              "entries": [
+                                {
+                                  "type": "struct_literal_entry",
+                                  "field_name": {
+                                    "type": "identifier",
+                                    "value": "data",
+                                    "text": "data",
+                                    "offset": 229,
+                                    "lineBreaks": 0,
+                                    "line": 12,
+                                    "col": 17
+                                  },
+                                  "field_value": {
+                                    "type": "number",
+                                    "value": "67",
+                                    "text": "67",
+                                    "offset": 236,
+                                    "lineBreaks": 0,
+                                    "line": 12,
+                                    "col": 24
+                                  }
+                                },
+                                {
+                                  "type": "struct_literal_entry",
+                                  "field_name": {
+                                    "type": "identifier",
+                                    "value": "next",
+                                    "text": "next",
+                                    "offset": 255,
+                                    "lineBreaks": 0,
+                                    "line": 13,
+                                    "col": 17
+                                  },
+                                  "field_value": {
+                                    "type": "null_literal"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "var_assign",
+          "var_name": {
+            "type": "identifier",
+            "value": "current",
+            "text": "current",
+            "offset": 301,
+            "lineBreaks": 0,
+            "line": 17,
+            "col": 5
+          },
+          "value": {
+            "type": "identifier",
+            "value": "list",
+            "text": "list",
+            "offset": 311,
+            "lineBreaks": 0,
+            "line": 17,
+            "col": 15
+          }
+        },
+        {
+          "type": "while",
+          "cond": {
+            "type": "bin_expr",
+            "left": {
+              "type": "identifier",
+              "value": "current",
+              "text": "current",
+              "offset": 326,
+              "lineBreaks": 0,
+              "line": 18,
+              "col": 11
+            },
+            "operator": {
+              "type": "operator",
+              "value": "!=",
+              "text": "!=",
+              "offset": 334,
+              "lineBreaks": 0,
+              "line": 18,
+              "col": 19
+            },
+            "right": {
+              "type": "null_literal"
+            }
+          },
+          "body": [
+            {
+              "type": "fun_call",
+              "fun_name": {
+                "type": "identifier",
+                "value": "putchar",
+                "text": "putchar",
+                "offset": 352,
+                "lineBreaks": 0,
+                "line": 19,
+                "col": 9
+              },
+              "arguments": [
+                {
+                  "type": "bin_expr",
+                  "left": {
+                    "type": "identifier",
+                    "value": "current",
+                    "text": "current",
+                    "offset": 360,
+                    "lineBreaks": 0,
+                    "line": 19,
+                    "col": 17
+                  },
+                  "operator": {
+                    "type": "operator",
+                    "value": ".",
+                    "text": ".",
+                    "offset": 367,
+                    "lineBreaks": 0,
+                    "line": 19,
+                    "col": 24
+                  },
+                  "right": {
+                    "type": "identifier",
+                    "value": "data",
+                    "text": "data",
+                    "offset": 368,
+                    "lineBreaks": 0,
+                    "line": 19,
+                    "col": 25
+                  }
+                }
+              ]
+            },
+            {
+              "type": "var_assign",
+              "var_name": {
+                "type": "identifier",
+                "value": "current",
+                "text": "current",
+                "offset": 382,
+                "lineBreaks": 0,
+                "line": 20,
+                "col": 9
+              },
+              "value": {
+                "type": "bin_expr",
+                "left": {
+                  "type": "identifier",
+                  "value": "current",
+                  "text": "current",
+                  "offset": 392,
+                  "lineBreaks": 0,
+                  "line": 20,
+                  "col": 19
+                },
+                "operator": {
+                  "type": "operator",
+                  "value": ".",
+                  "text": ".",
+                  "offset": 399,
+                  "lineBreaks": 0,
+                  "line": 20,
+                  "col": 26
+                },
+                "right": {
+                  "type": "identifier",
+                  "value": "next",
+                  "text": "next",
+                  "offset": 400,
+                  "lineBreaks": 0,
+                  "line": 20,
+                  "col": 27
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
