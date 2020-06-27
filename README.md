@@ -54,3 +54,23 @@ generator stage
 * strings as linked-list of characters
 * functions
 * dictionary as binary tree
+
+## Implicit Type Casts
+
+The implicit type casts that are allowed:
+
+* byte -> short -> int -> long
+* float -> double
+* null -> any struct
+
+Concept of compatibility: two types are compatible if one of them can be implicitedly casted
+to another. Examples:
+
+* byte is compatible with int
+* float is not compatible with double
+* null is compatible with any struct
+* struct User is not compatible with struct Game
+
+After it's found that they are compatible. We could use a priority number to decide the
+cast direction??? Or we already know the cast direction in the case of an assignment or
+a function argument.

@@ -703,51 +703,42 @@ function generateVarRef(node, context, variables) {
 }
 
 function generateVarAssign(node, context, variables) {
-    const code = [];
+    const topCode = [];
     const varName = node.var_name.value;
-    const explicitDataType = node.data_type && node.data_type.value;
-    let dataType = variables.get(varName);
-    if (dataType && explicitDataType) {
-        throw new Error(`${locInfo(node.var_name)}: Redefining data type of variable ${varName}.`);
-    }
-    if (explicitDataType) {
-        dataType = explicitDataType;
+    const definedDataType = node.data_type && node.data_type.value;
+    const prevDefinedDataType = variables.get(varName);
+    if (definedDataType && prevDefinedDataType) {
+        throw new Error(`${locInfo(node.var_name)}: Cannot re-define the data type of variable ${varName}.`);
     }
 
-    const valueResult = generate(node.value, context, variables);
-    let valueCode = valueResult.valueCode;
-    code.push(...valueResult.topCode);
+    const value = generate(node.value, context, variables);
+    topCode.push(...value.topCode);
     
-    if (!dataType) {
-        dataType = valueResult.dataType;
-    } else if (dataType != valueResult.dataType) {
-        const dataTypePriority = context.dataTypePriority.get(dataType);
-        const valueDataTypePriority = context.dataTypePriority.get(valueResult.dataType);
-        if (dataTypePriority > valueDataTypePriority) {
-            const llValueType = context.dataTypeMap.get(valueResult.dataType);
-            const llDataType = context.dataTypeMap.get(dataType);
-            const tmpVarName = "%tmp" + context.nextTemp++;
-            code.push(`${tmpVarName} = zext ${llValueType} ${valueResult.valueCode} to ${llDataType}`);
-            valueCode = tmpVarName;
-        } else {
-            throw new Error(`${locInfo(node.var_name)}: Data types do not match: ${dataType} vs ${valueResult.dataType}`);
-        }
+    let valueCode, dataType;
+    if (definedDataType) {
+        const typeCast = implicitTypeCast(value.dataType, definedDataType, value.valueCode, context, node);
+        topCode.push(...typeCast.topCode);
+        valueCode = typeCast.valueCode;
+        dataType = typeCast.dataType;
+    } else {
+        valueCode = value.valueCode;
+        dataType = value.dataType;
     }
     
     if (!dataType) {
         throw new Error(`${locInfo(node.var_name)}: Unable to infer data type for ${varName}`);
     }
-    const llDataType = context.dataTypeMap.get(dataType);
     
+    const llDataType = context.dataTypeMap.get(dataType);
     if (!variables.has(varName)) {
         variables.set(varName, dataType);
-        code.push(`%${varName} = alloca ${llDataType}`);
+        topCode.push(`%${varName} = alloca ${llDataType}`);
     }
-    code.push(
+    topCode.push(
         `store ${llDataType} ${valueCode}, ${llDataType}* %${varName}`
     );
     return {
-        topCode: code, 
+        topCode: topCode, 
         valueCode: "%" + varName,
         dataType
     };
@@ -787,9 +778,98 @@ function indent(text) {
     return text.split("\n").map(line => "  " + line).join("\n");
 }
 
+function implicitTypeCast(type1, type2, valueCode, context, node) {
+    if (type1 === type2) {
+        return {
+            topCode: [],
+            valueCode, 
+            dataType: type1
+        };
+    }
+    if (isIntegerType(type1) && isIntegerType(type2)) {
+        return integerTypeCast(type1, type2, valueCode, context);
+    }
+    if (isFloatType(type1) && isFloatType(type2)) {
+        return floatTypeCast(type1, type2, valueCode, context);
+    }
+    if (isStructTypeOrNull(type1, context) && isStructTypeOrNull(type2, context)) {
+        const dataType = isStructType(type1, context) ? type1 : type2;
+        return {
+            topCode: [],
+            valueCode,
+            dataType
+        };
+    }
+    throw new Error(`${locInfo(node)}: Cannot implicitly cast a ${type1} to a ${type2}`);
+}
+
+function integerTypeCast(type1, type2, valueCode, context) {
+    const tmpVarName = newTempVar(context);
+    const llType1 = context.dataTypeMap.get(type1);
+    const llType2 = context.dataTypeMap.get(type2);
+    const topCode = [
+        `${tmpVarName} = zext ${llType1} ${valueCode} to ${llType2}`
+    ];
+    return {
+        topCode,
+        valueCode: tmpVarName,
+        dataType: type2
+    };
+}
+
+function floatTypeCast(type1, type2, valueCode, context) {
+    const tmpVarName = newTempVar(context);
+    const llType1 = context.dataTypeMap.get(type1);
+    const llType2 = context.dataTypeMap.get(type2);
+    const topCode = [
+        `${tmpVarName} = fpext ${llType1} ${valueCode} to ${llType2}`
+    ];
+    return {
+        topCode,
+        valueCode: tmpVarName,
+        dataType: type2
+    };
+}
+
+function areTypesCompatible(type1, type2, context) {
+    if (type1 === type2) {
+        return true;
+    }
+    if (isIntegerType(type1) && isIntegerType(type2)) {
+        return true;
+    }
+    if (isFloatType(type1) && isFloatType(type2)) {
+        return true;
+    }
+    if (isStructTypeOrNull(type1, context) && isStructTypeOrNull(type2, context)) {
+        return true;
+    }
+    return false;
+}
+
+function isIntegerType(type) {
+    switch (type) {
+        case "byte":
+        case "short":
+        case "int":
+        case "long":
+            return true;
+        default:
+            return false;
+    }
+}
+
+function isFloatType(type) {
+    return type === "float" || type === "double";
+}
+
 function isStructType(dataType, context) {
     const llDataType = context.dataTypeMap.get(dataType);
     return llDataType && llDataType.startsWith("%struct.");
+}
+
+function isStructTypeOrNull(dataType, context) {
+    return dataType === "null" || isStructType(dataType, context);
 }
 
 main().catch(err => console.log(err.stack));
