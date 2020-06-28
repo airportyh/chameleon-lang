@@ -5,14 +5,14 @@ backends.
 
 ## Todos
 
+* strings (maybe implemented in the language)
+* garbage collector
 * implement binary trees
 * do some code challenges
 * allow void functions to work
-* garbage collector
 * modules
 * allow defining referenced functions later
 * arrays
-* strings (maybe implemented in the language)
 * type classes / protocols
 * lambdas and closures
 * classes
@@ -21,17 +21,14 @@ backends.
 * allow main to return void
 * change type casting scheme to allow opt to optimize away casting instructions if possible (maybe type hints)
 * separate type checker from generator
-* make type checker give good error messages and protect against errors in the
-generator stage
 * nested inlined structs
-* implement implicit type casting for ints to floats but not longs to floats
-* implement implicit type casting for function inputs (function signatures)
 * web assembly backend?
 * experiment with optimization
 * type checker that gives good error messages
-* closure
 * operator precedence
 
+* implement implicit type casting for ints to floats but not longs to floats(done)
+* implement implicit type casting for function inputs (function signatures) (done)
 * improve code dealing with implicit casting (numbers and nulls) (done)
 * make a test suite (done)
 * function signature table for inferring argument types (for null for example) (done)
