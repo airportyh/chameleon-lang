@@ -427,80 +427,73 @@ function generateFunCall(node, context, variables) {
     if (context.dataTypeMap.has(funName)) {
         return explicitTypeCast(node, context, variables);
     }
-    const argResults = node.arguments.map(arg => generate(arg, context, variables));
     if (!context.funTable.has(funName)) {
         throw new Error(`${locInfo(node.fun_name)}: Trying to call function ${funName} which is not defined (yet)`);
     }
+    const topCode = [];
     const funSig = context.funTable.get(funName);
     const outputDataType = funSig.output;
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
-    const argList = argResults.map((argResult, idx) => {
-        const argNode = node.arguments[idx];
-        const sigDataType = funSig.input[idx];
-        const typeCast = implicitTypeCast(argResult.dataType, sigDataType, argResult.valueCode, context, argNode);
+    const argList = [];
+    for (let i = 0; i < node.arguments.length; i++) {
+        const arg = generate(node.arguments[i], context, variables);
+        topCode.push(...arg.topCode);
+        const argNode = node.arguments[i];
+        const sigDataType = funSig.input[i];
+        const typeCast = implicitTypeCast(
+            arg.dataType, sigDataType, arg.valueCode, context, argNode);
+        topCode.push(...typeCast.topCode);
         const llDataType = context.dataTypeMap.get(typeCast.dataType);
-        return llDataType + " " + typeCast.valueCode;
-    }).join(", ");
+        argList.push(llDataType + " " + typeCast.valueCode);
+    }
     const tmpVarName = "%tmp" + context.nextTemp++;
-    
-    const childCode = argResults.reduce((childCode, argResult) => {
-        return childCode.concat(argResult.topCode);
-    }, []);
-    const code = [
-        ...childCode,
-        `${tmpVarName} = call ${llOutputDataType} @${funName} (${argList})`
-    ];
+    topCode.push(`${tmpVarName} = call ${llOutputDataType} @${funName} (${argList})`);
     return {
-        topCode: code, 
+        topCode, 
         valueCode: tmpVarName,
         dataType: outputDataType
     };
 }
 
+// An explicit type cast is issued by the programmer as a function call, i.e.: int(n)
+// Assumes the node parameter is a funCall node
+// Only handles numeric types at the moment
 function explicitTypeCast(node, context, variables) {
+    const topCode = [];
     const destDataType = node.fun_name.value;
     const llDestDataType = context.dataTypeMap.get(destDataType);
     if (node.arguments.length > 1) {
         throw new Error(`${locInfo(node.fun_name)}: A type cast expression can only handle one argument, ${node.arguments.length} was given.`);
     }
-    const value = node.arguments[0];
-    const valueResult = generate(value, context, variables);
-    const tmpVarName = newTempVar(context);
-    const llSourceDataType = context.dataTypeMap.get(valueResult.dataType);
-    let instruction;
-    const sourcePriority = context.dataTypePriority.get(valueResult.dataType);
-    const destPriority = context.dataTypePriority.get(destDataType);
-    const valueCode = valueResult.valueCode;
+    const value = generate(node.arguments[0], context, variables);
+    topCode.push(...value.topCode);
+    const srcDataType = value.dataType;
+    let typeCast;
     
-    const isSourceFloat = sourcePriority >= 6;
-    const isDestFloat = destPriority >= 6;
-    if (isSourceFloat && !isDestFloat) {
-        instruction = `${tmpVarName} = fptosi ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-    } else if (!isSourceFloat && isDestFloat) {
-        instruction = `${tmpVarName} = sitofp ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-    } else if (!isSourceFloat && !isDestFloat) {
-        if (destPriority > sourcePriority) {
-            instruction = `${tmpVarName} = zext ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-        } else {
-            instruction = `${tmpVarName} = trunc ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-        }
+    if (srcDataType === destDataType) {
+        return value;
+    } else if (isIntegerType(srcDataType) && isIntegerType(destDataType)) {
+        const srcTypePriority = getIntTypePriority(srcDataType);
+        const destTypePriority = getIntTypePriority(destDataType);
+        const downcast = srcTypePriority > destTypePriority;
+        typeCast = integerTypeCast(srcDataType, destDataType, value.valueCode, context, downcast);
+    } else if (isFloatType(srcDataType) && isFloatType(destDataType)) {
+        const downcast = srcDataType === "double";
+        typeCast = floatTypeCast(srcDataType, destDataType, value.valueCode, context, downcast);
+    } else if (isIntegerType(srcDataType) && isFloatType(destDataType)){
+        typeCast = integerToFloatTypeCast(srcDataType, destDataType, value.valueCode, context);
+    } else if (isFloatType(srcDataType) && isIntegerType(destDataType)){
+        typeCast = floatToIntegerTypeCast(srcDataType, destDataType, value.valueCode, context);
     } else {
-        if (destPriority > sourcePriority) {
-            instruction = `${tmpVarName} = fpext ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-        } else {
-            instruction = `${tmpVarName} = fptrunc ${llSourceDataType} ${valueCode} to ${llDestDataType}`;
-        }
+        throw new Error(`${locInfo(node)}: Cannot cast a ${srcDataType} to a ${destDataType}`);
     }
     
-    const topCode = [
-        ...valueResult.topCode,
-        instruction
-    ];
+    topCode.push(...typeCast.topCode);
     return {
         topCode,
-        valueCode: tmpVarName,
-        dataType: destDataType
-    }
+        valueCode: typeCast.valueCode,
+        dataType: typeCast.dataType
+    };
 }
 
 function generateFieldAccessor(node, context, variables) {
@@ -508,15 +501,19 @@ function generateFieldAccessor(node, context, variables) {
     const left = generate(node.left, context, variables);
     topCode.push(...left.topCode);
     
+    const structType = left.dataType;
+    
     if (node.right.type !== "identifier") {
         throw new Error(`${locInfo(node.right)}: Expected right hand side of the dot operator to be an identifier`);
     }
-    const structType = left.dataType;
     const fieldName = node.right.value;
+    
     const llStructPtrType = context.dataTypeMap.get(structType);
     if (!llStructPtrType.startsWith("%struct.")) {
         throw new Error(locInfo(node.left) + ": Expected left hand side of dot operator to be a struct, but was " + left.dataType);
     }
+    
+    // substring to remove the * from the end of the type: %struct.MyStruct*
     const llStructType = llStructPtrType.substring(0, llStructPtrType.length - 1);
     const structDef = context.structTable.get(structType);
     const index = indexWhere(structDef.entries, (entry) => entry.field_name.value === fieldName);
@@ -557,8 +554,7 @@ function generateBinExpr(node, context, variables) {
     ];
     
     const twoWayTypeCast = implicit2WayTypeCast(
-        left.dataType, right.dataType, 
-        left.valueCode, right.valueCode, 
+        left.dataType, right.dataType, left.valueCode, right.valueCode, 
         context, node);
     topCode.push(...twoWayTypeCast.topCode);
     
@@ -567,22 +563,16 @@ function generateBinExpr(node, context, variables) {
     let operation;
     if (isFloatType(dataType)) {
         operation = generateFloatOperation(
-            operator, dataType, 
-            twoWayTypeCast.valueCode1, 
-            twoWayTypeCast.valueCode2, 
-            context, node);
+            operator, dataType, twoWayTypeCast.valueCode1, 
+            twoWayTypeCast.valueCode2, context, node);
     } else if (isIntegerType(dataType)) {
         operation = generateIntegerOperation(
-            operator, dataType, 
-            twoWayTypeCast.valueCode1, 
-            twoWayTypeCast.valueCode2, 
-            context, node);
+            operator, dataType, twoWayTypeCast.valueCode1, 
+            twoWayTypeCast.valueCode2, context, node);
     } else {
         operation = generatePointerOperation(
-            operator, dataType, 
-            twoWayTypeCast.valueCode1, 
-            twoWayTypeCast.valueCode2, 
-            context, node);
+            operator, dataType, twoWayTypeCast.valueCode1, 
+            twoWayTypeCast.valueCode2, context, node);
     }
     
     topCode.push(...operation.topCode);
@@ -736,27 +726,16 @@ function generateProgram(node, context) {
         `declare i8* @malloc(i32)`,
         `declare void @free(i8*)`
     ];
-    const topCode = node.body.map(statement => {
-        const { topCode } = generate(statement, context, null);
-        return topCode.join("\n");
-    }).concat(builtInFuns);
+    const topCode = builtInFuns.concat(
+        node.body.map(statement => {
+            const { topCode } = generate(statement, context, null);
+            return topCode.join("\n");
+        }));
     return {
         topCode,
         valueCode: null,
         dataType: null
     };
-}
-
-function locInfo(token) {
-    return `Line ${token.line} column ${token.col}`;
-}
-
-function newTempVar(context) {
-    return "%tmp" + context.nextTemp++;
-}
-
-function indent(text) {
-    return text.split("\n").map(line => "  " + line).join("\n");
 }
 
 function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {
@@ -772,7 +751,7 @@ function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {
         const type1Priority = getIntTypePriority(type1);
         const type2Priority = getIntTypePriority(type2);
         if (type1Priority > type2Priority) {
-            const typeCast = integerTypeCast(type2, type1, value2, context);
+            const typeCast = integerTypeCast(type2, type1, value2, context, false);
             return {
                 topCode: typeCast.topCode,
                 valueCode1: value1,
@@ -780,7 +759,7 @@ function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {
                 dataType: type1
             };
         } else {
-            const typeCast = integerTypeCast(type1, type2, value1, context);
+            const typeCast = integerTypeCast(type1, type2, value1, context, false);
             return {
                 topCode: typeCast.topCode,
                 valueCode1: typeCast.valueCode,
@@ -791,7 +770,7 @@ function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {
     }
     if (isFloatType(type1) && isFloatType(type2)) {
         if (type1 === "double") {
-            const typeCast = floatTypeCast(type2, type1, value2, context);
+            const typeCast = floatTypeCast(type2, type1, value2, context, false);
             return {
                 topCode: typeCast.topCode,
                 valueCode1: value1,
@@ -799,7 +778,7 @@ function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {
                 dataType: type1
             };
         } else {
-            const typeCast = floatTypeCast(type1, type2, value1, context);
+            const typeCast = floatTypeCast(type1, type2, value1, context, false);
             return {
                 topCode: typeCast.topCode,
                 valueCode1: typeCast.valueCode,
@@ -844,10 +823,14 @@ function implicitTypeCast(type1, type2, valueCode, context, node) {
         };
     }
     if (isIntegerType(type1) && isIntegerType(type2)) {
-        return integerTypeCast(type1, type2, valueCode, context);
+        const type1Priority = getIntTypePriority(type1);
+        const type2Priority = getIntTypePriority(type2);
+        const downcast = type1Priority > type2Priority;
+        return integerTypeCast(type1, type2, valueCode, context, downcast);
     }
     if (isFloatType(type1) && isFloatType(type2)) {
-        return floatTypeCast(type1, type2, valueCode, context);
+        const downcast = type1 === "double";
+        return floatTypeCast(type1, type2, valueCode, context, downcast);
     }
     if (isStructTypeOrNull(type1, context) && isStructTypeOrNull(type2, context)) {
         const dataType = isStructType(type1, context) ? type1 : type2;
@@ -860,12 +843,30 @@ function implicitTypeCast(type1, type2, valueCode, context, node) {
     throw new Error(`${locInfo(node)}: Cannot implicitly cast a ${type1} to a ${type2}`);
 }
 
-function integerTypeCast(type1, type2, valueCode, context) {
+function integerTypeCast(type1, type2, valueCode, context, downcast) {
+    const instruction = downcast ? "trunc" : "zext";
+    return typeCast(instruction, type1, type2, valueCode, context);
+}
+
+function floatTypeCast(type1, type2, valueCode, context, downcast) {
+    const instruction = downcast ? "fptrunc" : "fpext";
+    return typeCast(instruction, type1, type2, valueCode, context);
+}
+
+function integerToFloatTypeCast(type1, type2, valueCode, context) {
+    return typeCast("sitofp", type1, type2, valueCode, context);
+}
+
+function floatToIntegerTypeCast(type1, type2, valueCode, context) {
+    return typeCast("fptosi", type1, type2, valueCode, context);
+}
+
+function typeCast(instruction, type1, type2, valueCode, context) {
     const tmpVarName = newTempVar(context);
     const llType1 = context.dataTypeMap.get(type1);
     const llType2 = context.dataTypeMap.get(type2);
     const topCode = [
-        `${tmpVarName} = zext ${llType1} ${valueCode} to ${llType2}`
+        `${tmpVarName} = ${instruction} ${llType1} ${valueCode} to ${llType2}`
     ];
     return {
         topCode,
@@ -874,34 +875,16 @@ function integerTypeCast(type1, type2, valueCode, context) {
     };
 }
 
-function floatTypeCast(type1, type2, valueCode, context) {
-    const tmpVarName = newTempVar(context);
-    const llType1 = context.dataTypeMap.get(type1);
-    const llType2 = context.dataTypeMap.get(type2);
-    const topCode = [
-        `${tmpVarName} = fpext ${llType1} ${valueCode} to ${llType2}`
-    ];
-    return {
-        topCode,
-        valueCode: tmpVarName,
-        dataType: type2
-    };
+function locInfo(token) {
+    return `Line ${token.line} column ${token.col}`;
 }
 
-function areTypesCompatible(type1, type2, context) {
-    if (type1 === type2) {
-        return true;
-    }
-    if (isIntegerType(type1) && isIntegerType(type2)) {
-        return true;
-    }
-    if (isFloatType(type1) && isFloatType(type2)) {
-        return true;
-    }
-    if (isStructTypeOrNull(type1, context) && isStructTypeOrNull(type2, context)) {
-        return true;
-    }
-    return false;
+function newTempVar(context) {
+    return "%tmp" + context.nextTemp++;
+}
+
+function indent(text) {
+    return text.split("\n").map(line => "  " + line).join("\n");
 }
 
 function isIntegerType(type) {
