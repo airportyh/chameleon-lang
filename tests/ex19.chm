@@ -1,0 +1,32 @@
+struct LinkedList {
+    data: int
+    next: LinkedList
+}
+
+fun make_ll(data:int next:LinkedList): LinkedList [
+    return alloc LinkedList {
+        data = data
+        next = next
+    }
+]
+
+fun print_int(num:int): int [
+    digit_list: LinkedList = null
+    while num > 0 [
+        rem = num % 10
+        digit_list = make_ll(rem digit_list)
+        num = num / 10
+    ]
+    current = digit_list
+    while current != null [
+        putchar(48 + current.data)
+        current = current.next
+    ]
+    return 0
+]
+
+fun main(): int [
+    print_int(1836284)
+    putchar(10)
+    return 0
+]

@@ -586,7 +586,8 @@ function generateFloatOperation(operator, dataType, valueCode1, valueCode2, cont
         ">=": "fcmp oge",
         "<=": "fcmp ole",
         "==": "fcmp oeq",
-        "!=": "fcmp one"
+        "!=": "fcmp one",
+        "%": "frem"
     };
     const ins = instructionTable[operator];
     if (!ins) {
@@ -609,13 +610,14 @@ function generateIntegerOperation(operator, dataType, valueCode1, valueCode2, co
         "+": "add",
         "-": "sub",
         "*": "mul",
-        "/": "div",
+        "/": "sdiv",
         ">": "icmp sgt",
         "<": "icmp slt",
         ">=": "icmp sge",
         "<=": "icmp sle",
         "==": "icmp eq",
-        "!=": "icmp ne"
+        "!=": "icmp ne",
+        "%": "srem"
     };
     const ins = instructionTable[operator];
     if (!ins) {

@@ -1,0 +1,5 @@
+fun main(): int [
+    n = 11 % 3
+    putchar(48 + n)
+    return 0
+]

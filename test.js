@@ -48,6 +48,9 @@ async function main() {
     await test("ex15.chm", ["ABC", ""]);
     await test("ex16.chm", ["ABCD", ""]);
     await test("ex17.chm", ["AB", ""]);
+    await test("ex18.chm", ["2"]);
+    await test("ex19.chm", ["1836284", ""]);
+    await test("ex20.chm", ["1836284", ""]);
 }
 
 async function test(filepath, expected) {

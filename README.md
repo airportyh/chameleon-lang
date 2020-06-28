@@ -5,7 +5,12 @@ backends.
 
 ## Todos
 
+* implement binary trees
+* do some code challenges
+* allow void functions to work
 * garbage collector
+* modules
+* allow defining referenced functions later
 * arrays
 * strings (maybe implemented in the language)
 * type classes / protocols
@@ -13,7 +18,6 @@ backends.
 * classes
 * default function parameter values
 * default field values for structs
-* allow defining referenced functions later
 * allow main to return void
 * change type casting scheme to allow opt to optimize away casting instructions if possible (maybe type hints)
 * separate type checker from generator

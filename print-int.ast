@@ -1,0 +1,841 @@
+{
+  "type": "program",
+  "body": [
+    {
+      "type": "struct_def",
+      "name": {
+        "type": "identifier",
+        "value": "LinkedList",
+        "text": "LinkedList",
+        "offset": 7,
+        "lineBreaks": 0,
+        "line": 1,
+        "col": 8
+      },
+      "entries": [
+        {
+          "type": "struct_def_entry",
+          "field_name": {
+            "type": "identifier",
+            "value": "data",
+            "text": "data",
+            "offset": 24,
+            "lineBreaks": 0,
+            "line": 2,
+            "col": 5
+          },
+          "field_type": {
+            "type": "identifier",
+            "value": "int",
+            "text": "int",
+            "offset": 30,
+            "lineBreaks": 0,
+            "line": 2,
+            "col": 11
+          }
+        },
+        {
+          "type": "struct_def_entry",
+          "field_name": {
+            "type": "identifier",
+            "value": "next",
+            "text": "next",
+            "offset": 38,
+            "lineBreaks": 0,
+            "line": 3,
+            "col": 5
+          },
+          "field_type": {
+            "type": "identifier",
+            "value": "LinkedList",
+            "text": "LinkedList",
+            "offset": 44,
+            "lineBreaks": 0,
+            "line": 3,
+            "col": 11
+          }
+        }
+      ]
+    },
+    {
+      "type": "fun_def",
+      "fun_name": {
+        "type": "identifier",
+        "value": "make_ll",
+        "text": "make_ll",
+        "offset": 62,
+        "lineBreaks": 0,
+        "line": 6,
+        "col": 5
+      },
+      "data_type": {
+        "type": "identifier",
+        "value": "LinkedList",
+        "text": "LinkedList",
+        "offset": 97,
+        "lineBreaks": 0,
+        "line": 6,
+        "col": 40
+      },
+      "parameters": [
+        {
+          "type": "fun_param",
+          "name": {
+            "type": "identifier",
+            "value": "data",
+            "text": "data",
+            "offset": 70,
+            "lineBreaks": 0,
+            "line": 6,
+            "col": 13
+          },
+          "data_type": {
+            "type": "identifier",
+            "value": "int",
+            "text": "int",
+            "offset": 75,
+            "lineBreaks": 0,
+            "line": 6,
+            "col": 18
+          }
+        },
+        {
+          "type": "fun_param",
+          "name": {
+            "type": "identifier",
+            "value": "next",
+            "text": "next",
+            "offset": 79,
+            "lineBreaks": 0,
+            "line": 6,
+            "col": 22
+          },
+          "data_type": {
+            "type": "identifier",
+            "value": "LinkedList",
+            "text": "LinkedList",
+            "offset": 84,
+            "lineBreaks": 0,
+            "line": 6,
+            "col": 27
+          }
+        }
+      ],
+      "body": [
+        {
+          "type": "return",
+          "value": {
+            "type": "alloc",
+            "struct": {
+              "type": "struct_literal",
+              "structName": {
+                "type": "identifier",
+                "value": "LinkedList",
+                "text": "LinkedList",
+                "offset": 127,
+                "lineBreaks": 0,
+                "line": 7,
+                "col": 18
+              },
+              "entries": [
+                {
+                  "type": "struct_literal_entry",
+                  "field_name": {
+                    "type": "identifier",
+                    "value": "data",
+                    "text": "data",
+                    "offset": 148,
+                    "lineBreaks": 0,
+                    "line": 8,
+                    "col": 9
+                  },
+                  "field_value": {
+                    "type": "identifier",
+                    "value": "data",
+                    "text": "data",
+                    "offset": 155,
+                    "lineBreaks": 0,
+                    "line": 8,
+                    "col": 16
+                  }
+                },
+                {
+                  "type": "struct_literal_entry",
+                  "field_name": {
+                    "type": "identifier",
+                    "value": "next",
+                    "text": "next",
+                    "offset": 168,
+                    "lineBreaks": 0,
+                    "line": 9,
+                    "col": 9
+                  },
+                  "field_value": {
+                    "type": "identifier",
+                    "value": "next",
+                    "text": "next",
+                    "offset": 175,
+                    "lineBreaks": 0,
+                    "line": 9,
+                    "col": 16
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "fun_def",
+      "fun_name": {
+        "type": "identifier",
+        "value": "free_ll",
+        "text": "free_ll",
+        "offset": 193,
+        "lineBreaks": 0,
+        "line": 13,
+        "col": 5
+      },
+      "data_type": {
+        "type": "identifier",
+        "value": "int",
+        "text": "int",
+        "offset": 219,
+        "lineBreaks": 0,
+        "line": 13,
+        "col": 31
+      },
+      "parameters": [
+        {
+          "type": "fun_param",
+          "name": {
+            "type": "identifier",
+            "value": "list",
+            "text": "list",
+            "offset": 201,
+            "lineBreaks": 0,
+            "line": 13,
+            "col": 13
+          },
+          "data_type": {
+            "type": "identifier",
+            "value": "LinkedList",
+            "text": "LinkedList",
+            "offset": 206,
+            "lineBreaks": 0,
+            "line": 13,
+            "col": 18
+          }
+        }
+      ],
+      "body": [
+        {
+          "type": "if",
+          "cond": {
+            "type": "bin_expr",
+            "left": {
+              "type": "identifier",
+              "value": "list",
+              "text": "list",
+              "offset": 232,
+              "lineBreaks": 0,
+              "line": 14,
+              "col": 8
+            },
+            "operator": {
+              "type": "operator",
+              "value": "!=",
+              "text": "!=",
+              "offset": 237,
+              "lineBreaks": 0,
+              "line": 14,
+              "col": 13
+            },
+            "right": {
+              "type": "null_literal"
+            }
+          },
+          "consequent": [
+            {
+              "type": "fun_call",
+              "fun_name": {
+                "type": "identifier",
+                "value": "free_ll",
+                "text": "free_ll",
+                "offset": 255,
+                "lineBreaks": 0,
+                "line": 15,
+                "col": 9
+              },
+              "arguments": [
+                {
+                  "type": "bin_expr",
+                  "left": {
+                    "type": "identifier",
+                    "value": "list",
+                    "text": "list",
+                    "offset": 263,
+                    "lineBreaks": 0,
+                    "line": 15,
+                    "col": 17
+                  },
+                  "operator": {
+                    "type": "operator",
+                    "value": ".",
+                    "text": ".",
+                    "offset": 267,
+                    "lineBreaks": 0,
+                    "line": 15,
+                    "col": 21
+                  },
+                  "right": {
+                    "type": "identifier",
+                    "value": "next",
+                    "text": "next",
+                    "offset": 268,
+                    "lineBreaks": 0,
+                    "line": 15,
+                    "col": 22
+                  }
+                }
+              ]
+            },
+            {
+              "type": "free",
+              "value": {
+                "type": "identifier",
+                "value": "list",
+                "text": "list",
+                "offset": 287,
+                "lineBreaks": 0,
+                "line": 16,
+                "col": 14
+              }
+            }
+          ],
+          "alternate": null
+        },
+        {
+          "type": "return",
+          "value": {
+            "type": "number",
+            "value": "0",
+            "text": "0",
+            "offset": 309,
+            "lineBreaks": 0,
+            "line": 18,
+            "col": 12
+          }
+        }
+      ]
+    },
+    {
+      "type": "fun_def",
+      "fun_name": {
+        "type": "identifier",
+        "value": "print_int",
+        "text": "print_int",
+        "offset": 318,
+        "lineBreaks": 0,
+        "line": 21,
+        "col": 5
+      },
+      "data_type": {
+        "type": "identifier",
+        "value": "int",
+        "text": "int",
+        "offset": 338,
+        "lineBreaks": 0,
+        "line": 21,
+        "col": 25
+      },
+      "parameters": [
+        {
+          "type": "fun_param",
+          "name": {
+            "type": "identifier",
+            "value": "num",
+            "text": "num",
+            "offset": 328,
+            "lineBreaks": 0,
+            "line": 21,
+            "col": 15
+          },
+          "data_type": {
+            "type": "identifier",
+            "value": "int",
+            "text": "int",
+            "offset": 332,
+            "lineBreaks": 0,
+            "line": 21,
+            "col": 19
+          }
+        }
+      ],
+      "body": [
+        {
+          "type": "var_assign",
+          "data_type": {
+            "type": "identifier",
+            "value": "LinkedList",
+            "text": "LinkedList",
+            "offset": 360,
+            "lineBreaks": 0,
+            "line": 22,
+            "col": 17
+          },
+          "var_name": {
+            "type": "identifier",
+            "value": "digit_list",
+            "text": "digit_list",
+            "offset": 348,
+            "lineBreaks": 0,
+            "line": 22,
+            "col": 5
+          },
+          "value": {
+            "type": "null_literal"
+          }
+        },
+        {
+          "type": "while",
+          "cond": {
+            "type": "bin_expr",
+            "left": {
+              "type": "identifier",
+              "value": "num",
+              "text": "num",
+              "offset": 388,
+              "lineBreaks": 0,
+              "line": 23,
+              "col": 11
+            },
+            "operator": {
+              "type": "operator",
+              "value": ">",
+              "text": ">",
+              "offset": 392,
+              "lineBreaks": 0,
+              "line": 23,
+              "col": 15
+            },
+            "right": {
+              "type": "number",
+              "value": "0",
+              "text": "0",
+              "offset": 394,
+              "lineBreaks": 0,
+              "line": 23,
+              "col": 17
+            }
+          },
+          "body": [
+            {
+              "type": "var_assign",
+              "var_name": {
+                "type": "identifier",
+                "value": "rem",
+                "text": "rem",
+                "offset": 406,
+                "lineBreaks": 0,
+                "line": 24,
+                "col": 9
+              },
+              "value": {
+                "type": "bin_expr",
+                "left": {
+                  "type": "identifier",
+                  "value": "num",
+                  "text": "num",
+                  "offset": 412,
+                  "lineBreaks": 0,
+                  "line": 24,
+                  "col": 15
+                },
+                "operator": {
+                  "type": "operator",
+                  "value": "%",
+                  "text": "%",
+                  "offset": 416,
+                  "lineBreaks": 0,
+                  "line": 24,
+                  "col": 19
+                },
+                "right": {
+                  "type": "number",
+                  "value": "10",
+                  "text": "10",
+                  "offset": 418,
+                  "lineBreaks": 0,
+                  "line": 24,
+                  "col": 21
+                }
+              }
+            },
+            {
+              "type": "var_assign",
+              "var_name": {
+                "type": "identifier",
+                "value": "digit_list",
+                "text": "digit_list",
+                "offset": 429,
+                "lineBreaks": 0,
+                "line": 25,
+                "col": 9
+              },
+              "value": {
+                "type": "fun_call",
+                "fun_name": {
+                  "type": "identifier",
+                  "value": "make_ll",
+                  "text": "make_ll",
+                  "offset": 442,
+                  "lineBreaks": 0,
+                  "line": 25,
+                  "col": 22
+                },
+                "arguments": [
+                  {
+                    "type": "identifier",
+                    "value": "rem",
+                    "text": "rem",
+                    "offset": 450,
+                    "lineBreaks": 0,
+                    "line": 25,
+                    "col": 30
+                  },
+                  {
+                    "type": "identifier",
+                    "value": "digit_list",
+                    "text": "digit_list",
+                    "offset": 454,
+                    "lineBreaks": 0,
+                    "line": 25,
+                    "col": 34
+                  }
+                ]
+              }
+            },
+            {
+              "type": "var_assign",
+              "var_name": {
+                "type": "identifier",
+                "value": "num",
+                "text": "num",
+                "offset": 474,
+                "lineBreaks": 0,
+                "line": 26,
+                "col": 9
+              },
+              "value": {
+                "type": "bin_expr",
+                "left": {
+                  "type": "identifier",
+                  "value": "num",
+                  "text": "num",
+                  "offset": 480,
+                  "lineBreaks": 0,
+                  "line": 26,
+                  "col": 15
+                },
+                "operator": {
+                  "type": "operator",
+                  "value": "/",
+                  "text": "/",
+                  "offset": 484,
+                  "lineBreaks": 0,
+                  "line": 26,
+                  "col": 19
+                },
+                "right": {
+                  "type": "number",
+                  "value": "10",
+                  "text": "10",
+                  "offset": 486,
+                  "lineBreaks": 0,
+                  "line": 26,
+                  "col": 21
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "var_assign",
+          "var_name": {
+            "type": "identifier",
+            "value": "current",
+            "text": "current",
+            "offset": 499,
+            "lineBreaks": 0,
+            "line": 28,
+            "col": 5
+          },
+          "value": {
+            "type": "identifier",
+            "value": "digit_list",
+            "text": "digit_list",
+            "offset": 509,
+            "lineBreaks": 0,
+            "line": 28,
+            "col": 15
+          }
+        },
+        {
+          "type": "while",
+          "cond": {
+            "type": "bin_expr",
+            "left": {
+              "type": "identifier",
+              "value": "current",
+              "text": "current",
+              "offset": 530,
+              "lineBreaks": 0,
+              "line": 29,
+              "col": 11
+            },
+            "operator": {
+              "type": "operator",
+              "value": "!=",
+              "text": "!=",
+              "offset": 538,
+              "lineBreaks": 0,
+              "line": 29,
+              "col": 19
+            },
+            "right": {
+              "type": "null_literal"
+            }
+          },
+          "body": [
+            {
+              "type": "fun_call",
+              "fun_name": {
+                "type": "identifier",
+                "value": "putchar",
+                "text": "putchar",
+                "offset": 556,
+                "lineBreaks": 0,
+                "line": 30,
+                "col": 9
+              },
+              "arguments": [
+                {
+                  "type": "bin_expr",
+                  "left": {
+                    "type": "number",
+                    "value": "48",
+                    "text": "48",
+                    "offset": 564,
+                    "lineBreaks": 0,
+                    "line": 30,
+                    "col": 17
+                  },
+                  "operator": {
+                    "type": "operator",
+                    "value": "+",
+                    "text": "+",
+                    "offset": 567,
+                    "lineBreaks": 0,
+                    "line": 30,
+                    "col": 20
+                  },
+                  "right": {
+                    "type": "bin_expr",
+                    "left": {
+                      "type": "identifier",
+                      "value": "current",
+                      "text": "current",
+                      "offset": 569,
+                      "lineBreaks": 0,
+                      "line": 30,
+                      "col": 22
+                    },
+                    "operator": {
+                      "type": "operator",
+                      "value": ".",
+                      "text": ".",
+                      "offset": 576,
+                      "lineBreaks": 0,
+                      "line": 30,
+                      "col": 29
+                    },
+                    "right": {
+                      "type": "identifier",
+                      "value": "data",
+                      "text": "data",
+                      "offset": 577,
+                      "lineBreaks": 0,
+                      "line": 30,
+                      "col": 30
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "var_assign",
+              "var_name": {
+                "type": "identifier",
+                "value": "current",
+                "text": "current",
+                "offset": 591,
+                "lineBreaks": 0,
+                "line": 31,
+                "col": 9
+              },
+              "value": {
+                "type": "bin_expr",
+                "left": {
+                  "type": "identifier",
+                  "value": "current",
+                  "text": "current",
+                  "offset": 601,
+                  "lineBreaks": 0,
+                  "line": 31,
+                  "col": 19
+                },
+                "operator": {
+                  "type": "operator",
+                  "value": ".",
+                  "text": ".",
+                  "offset": 608,
+                  "lineBreaks": 0,
+                  "line": 31,
+                  "col": 26
+                },
+                "right": {
+                  "type": "identifier",
+                  "value": "next",
+                  "text": "next",
+                  "offset": 609,
+                  "lineBreaks": 0,
+                  "line": 31,
+                  "col": 27
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "free_ll",
+            "text": "free_ll",
+            "offset": 624,
+            "lineBreaks": 0,
+            "line": 33,
+            "col": 5
+          },
+          "arguments": [
+            {
+              "type": "identifier",
+              "value": "digit_list",
+              "text": "digit_list",
+              "offset": 632,
+              "lineBreaks": 0,
+              "line": 33,
+              "col": 13
+            }
+          ]
+        },
+        {
+          "type": "return",
+          "value": {
+            "type": "number",
+            "value": "0",
+            "text": "0",
+            "offset": 655,
+            "lineBreaks": 0,
+            "line": 34,
+            "col": 12
+          }
+        }
+      ]
+    },
+    {
+      "type": "fun_def",
+      "fun_name": {
+        "type": "identifier",
+        "value": "main",
+        "text": "main",
+        "offset": 664,
+        "lineBreaks": 0,
+        "line": 37,
+        "col": 5
+      },
+      "data_type": {
+        "type": "identifier",
+        "value": "int",
+        "text": "int",
+        "offset": 672,
+        "lineBreaks": 0,
+        "line": 37,
+        "col": 13
+      },
+      "parameters": [],
+      "body": [
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "print_int",
+            "text": "print_int",
+            "offset": 682,
+            "lineBreaks": 0,
+            "line": 38,
+            "col": 5
+          },
+          "arguments": [
+            {
+              "type": "number",
+              "value": "1836284",
+              "text": "1836284",
+              "offset": 692,
+              "lineBreaks": 0,
+              "line": 38,
+              "col": 15
+            }
+          ]
+        },
+        {
+          "type": "fun_call",
+          "fun_name": {
+            "type": "identifier",
+            "value": "putchar",
+            "text": "putchar",
+            "offset": 705,
+            "lineBreaks": 0,
+            "line": 39,
+            "col": 5
+          },
+          "arguments": [
+            {
+              "type": "number",
+              "value": "10",
+              "text": "10",
+              "offset": 713,
+              "lineBreaks": 0,
+              "line": 39,
+              "col": 13
+            }
+          ]
+        },
+        {
+          "type": "return",
+          "value": {
+            "type": "number",
+            "value": "0",
+            "text": "0",
+            "offset": 728,
+            "lineBreaks": 0,
+            "line": 40,
+            "col": 12
+          }
+        }
+      ]
+    }
+  ]
+}
