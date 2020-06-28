@@ -548,114 +548,135 @@ function generateBinExpr(node, context, variables) {
     if (operator === ".") {
         return generateFieldAccessor(node, context, variables);
     }
-    let left = generate(node.left, context, variables);
-    let right = generate(node.right, context, variables);
+    const left = generate(node.left, context, variables);
+    const right = generate(node.right, context, variables);
     
-    let dataType;
     const topCode = [
         ...left.topCode,
         ...right.topCode
     ];
     
-    if (isStructType(left.dataType, context) || isStructType(right.dataType, context)) {
-        if (left.dataType === right.dataType) {
-            dataType = left.dataType;
-        } else if (left.dataType === "null") {
-            dataType = right.dataType;
-        } else if (right.dataType === "null") {
-            dataType = left.dataType;
-        } else {
-            throw new Error(`${locInfo(node.left)}: Cannot compare a ${left.dataType} vs a ${right.dataType}`);
-        }
-        
-        let ins;
-        if (operator === "==") {
-            ins = "icmp eq";
-        } else if (operator === "!=") {
-            ins = "icmp ne";
-        }
-        if (!ins) {
-            throw new Error(`${locInfo(node.left)}: Unable to find instruction for operator ${operator}`);
-        }
-        const llDataType = context.dataTypeMap.get(dataType);
-        const varName = newTempVar(context);
-        const code = `${varName} = ${ins} ${llDataType} ${left.valueCode}, ${right.valueCode}`;
-        topCode.push(code);
-        return {
-            topCode: topCode, 
-            valueCode: varName,
-            dataType: "bool"
-        };
-    }
+    const twoWayTypeCast = implicit2WayTypeCast(
+        left.dataType, right.dataType, 
+        left.valueCode, right.valueCode, 
+        context, node);
+    topCode.push(...twoWayTypeCast.topCode);
     
-    if (left.dataType != right.dataType) {
-        // perform a type cast
-        const leftPriority = context.dataTypePriority.get(left.dataType);
-        const rightPriority = context.dataTypePriority.get(right.dataType);
-        if (leftPriority > rightPriority) {
-            // cast right to the same type as left
-            const typeCastResult = implicitTypeCast(right.dataType, left.dataType, right.valueCode, context, node);
-            topCode.push(...typeCastResult.topCode);
-            right.valueCode = typeCastResult.valueCode;
-            dataType = typeCastResult.dataType;
-        } else {
-            // cast left to the same type as right
-            const typeCastResult = implicitTypeCast(left.dataType, right.dataType, left.valueCode, context, node);
-            topCode.push(...typeCastResult.topCode);
-            right.valueCode = typeCastResult.valueCode;
-            dataType = typeCastResult.dataType;
-        }
+    const dataType = twoWayTypeCast.dataType;
+    
+    let operation;
+    if (isFloatType(dataType)) {
+        operation = generateFloatOperation(
+            operator, dataType, 
+            twoWayTypeCast.valueCode1, 
+            twoWayTypeCast.valueCode2, 
+            context, node);
+    } else if (isIntegerType(dataType)) {
+        operation = generateIntegerOperation(
+            operator, dataType, 
+            twoWayTypeCast.valueCode1, 
+            twoWayTypeCast.valueCode2, 
+            context, node);
     } else {
-        dataType = left.dataType;
+        operation = generatePointerOperation(
+            operator, dataType, 
+            twoWayTypeCast.valueCode1, 
+            twoWayTypeCast.valueCode2, 
+            context, node);
     }
     
-    if (!dataType) {
-        throw new Error(`${locInfo(node.left)}: cannot determine data type for binary operation.`);
+    topCode.push(...operation.topCode);
+    return {
+        topCode,
+        valueCode: operation.valueCode,
+        dataType: operation.dataType
+    };
+}
+
+function generateFloatOperation(operator, dataType, valueCode1, valueCode2, context, node) {
+    const tempVar = newTempVar(context);
+    const instructionTable = {
+        "+": "fadd",
+        "-": "fsub",
+        "*": "fmul",
+        "/": "fdiv",
+        ">": "fcmp ogt",
+        "<": "fcmp olt",
+        ">=": "fcmp oge",
+        "<=": "fcmp ole",
+        "==": "fcmp oeq",
+        "!=": "fcmp one"
+    };
+    const ins = instructionTable[operator];
+    if (!ins) {
+        throw new Error(`${locInfo(node)}: Unable to find float instruction for operator ${operator}`);
     }
     const llDataType = context.dataTypeMap.get(dataType);
-    const varName = newTempVar(context);
-    let ins;
-    if (operator === "+") {
-        ins = isFloat(dataType, context) ? "fadd" : "add";
-    } else if (operator === "-") {
-        ins = isFloat(dataType, context) ? "fsub" : "sub";
-    } else if (operator === "*") {
-        ins = isFloat(dataType, context) ? "fmul" : "mul";
-    } else if (operator === "+") {
-        ins = isFloat(dataType, context) ? "fdiv" : "div";
-    } else if (operator === ">") {
-        ins = isFloat(dataType, context) ? "fcmp ogt" : "icmp sgt";
-    } else if (operator === "<") {
-        ins = isFloat(dataType, context) ? "fcmp olt" : "icmp slt";
-    } else if (operator === ">=") {
-        ins = isFloat(dataType, context) ? "fcmp oge" : "icmp sge";
-    } else if (operator === "<=") {
-        ins = isFloat(dataType, context) ? "fcmp ole" : "icmp sle";
-    } else if (operator === "==") {
-        ins = isFloat(dataType, context) ? "fcmp oeq" : "icmp eq";
-    } else if (operator === "!=") {
-        ins = isFloat(dataType, context) ? "fcmp one" : "icmp ne";
-    }
-    
-    if (!ins) {
-        throw new Error(`${locInfo(node.operator)}: Unable to find instruction for operator ${node.operator.value}`);
-    }
-    
-    const code = `${varName} = ${ins} ${llDataType} ${left.valueCode}, ${right.valueCode}`;
-    //console.log("bin op instruction: " + code, dataType, isFloat(dataType, context));
-    topCode.push(code);
+    const topCode = [
+        `${tempVar} = ${ins} ${llDataType} ${valueCode1}, ${valueCode2}`
+    ];
     return {
-        topCode: topCode, 
-        valueCode: varName,
-        dataType
+        topCode,
+        valueCode: tempVar,
+        dataType: dataType
+    };
+}
+
+function generateIntegerOperation(operator, dataType, valueCode1, valueCode2, context, node) {
+    const tempVar = newTempVar(context);
+    const instructionTable = {
+        "+": "add",
+        "-": "sub",
+        "*": "mul",
+        "/": "div",
+        ">": "icmp sgt",
+        "<": "icmp slt",
+        ">=": "icmp sge",
+        "<=": "icmp sle",
+        "==": "icmp eq",
+        "!=": "icmp ne"
+    };
+    const ins = instructionTable[operator];
+    if (!ins) {
+        throw new Error(`${locInfo(node)}: Unable to find integer instruction for operator ${operator}`);
+    }
+    const llDataType = context.dataTypeMap.get(dataType);
+    const topCode = [
+        `${tempVar} = ${ins} ${llDataType} ${valueCode1}, ${valueCode2}`
+    ];
+    return {
+        topCode,
+        valueCode: tempVar,
+        dataType: dataType
+    };
+}
+
+function generatePointerOperation(operator, dataType, valueCode1, valueCode2, context, node) {
+    const tempVar = newTempVar(context);
+    const instructionTable = {
+        "==": "icmp eq",
+        "!=": "icmp ne"
+    };
+    const ins = instructionTable[operator];
+    if (!ins) {
+        throw new Error(`${locInfo(node)}: Unable to find pointer instruction for operator ${operator}`);
+    }
+    const llDataType = context.dataTypeMap.get(dataType);
+    const topCode = [
+        `${tempVar} = ${ins} ${llDataType} ${valueCode1}, ${valueCode2}`
+    ];
+    return {
+        topCode,
+        valueCode: tempVar,
+        dataType: dataType
     };
 }
 
 function generateVarRef(node, context, variables) {
     const varName = node.value;
     const dataType = variables.get(node.value);
-    const tempVarName = "%tmp" + context.nextTemp++;
     const llDataType = context.dataTypeMap.get(dataType);
+    const tempVarName = "%tmp" + context.nextTemp++;
     const code = [
         `${tempVarName} = load ${llDataType}, ${llDataType}* %${varName}`
     ];
@@ -730,16 +751,88 @@ function locInfo(token) {
     return `Line ${token.line} column ${token.col}`;
 }
 
-function isFloat(dataType, context) {
-    return context.dataTypePriority.get(dataType) >= 6;
-}
-
 function newTempVar(context) {
     return "%tmp" + context.nextTemp++;
 }
 
 function indent(text) {
     return text.split("\n").map(line => "  " + line).join("\n");
+}
+
+function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {
+    if (type1 === type2) {
+        return {
+            topCode: [],
+            valueCode1: value1,
+            valueCode2: value2, 
+            dataType: type1
+        };
+    }
+    if (isIntegerType(type1) && isIntegerType(type2)) {
+        const type1Priority = getIntTypePriority(type1);
+        const type2Priority = getIntTypePriority(type2);
+        if (type1Priority > type2Priority) {
+            const typeCast = integerTypeCast(type2, type1, value2, context);
+            return {
+                topCode: typeCast.topCode,
+                valueCode1: value1,
+                valueCode2: typeCast.valueCode,
+                dataType: type1
+            };
+        } else {
+            const typeCast = integerTypeCast(type1, type2, value1, context);
+            return {
+                topCode: typeCast.topCode,
+                valueCode1: typeCast.valueCode,
+                valueCode2: value2,
+                dataType: type2
+            };
+        }
+    }
+    if (isFloatType(type1) && isFloatType(type2)) {
+        if (type1 === "double") {
+            const typeCast = floatTypeCast(type2, type1, value2, context);
+            return {
+                topCode: typeCast.topCode,
+                valueCode1: value1,
+                valueCode2: typeCast.valueCode,
+                dataType: type1
+            };
+        } else {
+            const typeCast = floatTypeCast(type1, type2, value1, context);
+            return {
+                topCode: typeCast.topCode,
+                valueCode1: typeCast.valueCode,
+                valueCode2: value2,
+                dataType: type2
+            };
+        }
+    }
+    if (isStructTypeOrNull(type1, context) && isStructTypeOrNull(type2, context)) {
+        const dataType = isStructType(type1, context) ? type1 : type2;
+        return {
+            topCode: [],
+            valueCode1: value1,
+            valueCode2: value2,
+            dataType
+        };
+    }
+    throw new Error(`${locInfo(node)}: Cannot implicitly cast a ${type1} from/to a ${type2}`);
+}
+
+function getIntTypePriority(dataType) {
+    switch (dataType) {
+        case "byte":
+            return 1;
+        case "short":
+            return 2;
+        case "int":
+            return 3;
+        case "long":
+            return 4;
+        default:
+            throw new Error("Cannot get int type priority for non-int type: " + dataType);
+    }
 }
 
 function implicitTypeCast(type1, type2, valueCode, context, node) {

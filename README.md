@@ -5,7 +5,6 @@ backends.
 
 ## Todos
 
-* improve code dealing with implicit casting (numbers and nulls)
 * garbage collector
 * arrays
 * strings (maybe implemented in the language)
@@ -29,6 +28,7 @@ generator stage
 * closure
 * operator precedence
 
+* improve code dealing with implicit casting (numbers and nulls) (done)
 * make a test suite (done)
 * function signature table for inferring argument types (for null for example) (done)
 * linked lists (user land?) (done)
