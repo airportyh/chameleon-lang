@@ -382,12 +382,16 @@ function generateFunDef(node, context) {
         node.body.map(statement => {
             const { topCode } = generate(statement, context, variables);
             return topCode.join("\n");
-        })).join("\n");
+        }));
+    if (outputType === "void") {
+        body.push("ret void");
+    }
     
     const topCode = [
         `define ${llOutputType} @${funName}(${paramList.join(", ")}) {`,
-        indent(body)
+        indent(body.join("\n"))
     ];
+    
     topCode.push(    
         "}",
         ""
@@ -437,13 +441,22 @@ function generateFunCall(node, context, variables) {
         const llDataType = context.dataTypeMap.get(typeCast.dataType);
         argList.push(llDataType + " " + typeCast.valueCode);
     }
-    const tmpVarName = "%tmp" + context.nextTemp++;
-    topCode.push(`${tmpVarName} = call ${llOutputDataType} @${funName} (${argList})`);
-    return {
-        topCode, 
-        valueCode: tmpVarName,
-        dataType: outputDataType
-    };
+    if (outputDataType === "void") {
+        topCode.push(`call ${llOutputDataType} @${funName} (${argList})`);
+        return {
+            topCode, 
+            valueCode: null,
+            dataType: outputDataType
+        };
+    } else {
+        const tmpVarName = "%tmp" + context.nextTemp++;
+        topCode.push(`${tmpVarName} = call ${llOutputDataType} @${funName} (${argList})`);
+        return {
+            topCode, 
+            valueCode: tmpVarName,
+            dataType: outputDataType
+        };
+    }
 }
 
 // An explicit type cast is issued by the programmer as a function call, i.e.: int(n)

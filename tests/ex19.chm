@@ -10,7 +10,7 @@ fun make_ll(data:int next:LinkedList): LinkedList [
     }
 ]
 
-fun print_int(num:int): int [
+fun print_int(num:int) [
     digit_list: LinkedList = null
     while num > 0 [
         rem = num % 10
@@ -22,7 +22,6 @@ fun print_int(num:int): int [
         putchar(48 + current.data)
         current = current.next
     ]
-    return 0
 ]
 
 fun main(): int [

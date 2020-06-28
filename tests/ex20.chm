@@ -10,15 +10,14 @@ fun make_ll(data:int next:LinkedList): LinkedList [
     }
 ]
 
-fun free_ll(list:LinkedList): int [
+fun free_ll(list:LinkedList) [
     if list != null [
         free_ll(list.next)
         free list
     ]
-    return 0
 ]
 
-fun print_int(num:int): int [
+fun print_int(num:int) [
     digit_list: LinkedList = null
     while num > 0 [
         rem = num % 10
@@ -31,7 +30,6 @@ fun print_int(num:int): int [
         current = current.next
     ]
     free_ll(digit_list)
-    return 0
 ]
 
 fun main(): int [

@@ -22,8 +22,8 @@ fun print_int(num:int): int [
     digit_list: LinkedList = null
     while num > 0 [
         rem = num % 10
-        digit_list = make_ll(rem digit_list)
         num = num / 10
+        digit_list = make_ll(rem digit_list)
     ]
     current = digit_list
     while current != null [

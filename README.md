@@ -9,7 +9,7 @@ backends.
 * garbage collector
 * implement binary trees
 * do some code challenges
-* allow void functions to work
+* multiple return values for functions
 * modules
 * allow defining referenced functions later
 * arrays
@@ -27,6 +27,7 @@ backends.
 * type checker that gives good error messages
 * operator precedence
 
+* allow void functions to work (done)
 * implement implicit type casting for ints to floats but not longs to floats(done)
 * implement implicit type casting for function inputs (function signatures) (done)
 * improve code dealing with implicit casting (numbers and nulls) (done)
