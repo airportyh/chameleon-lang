@@ -51,20 +51,11 @@ async function main() {
     dataTypeMap.set("double", "double");
     dataTypeMap.set("void", "void");
     dataTypeMap.set("pointer", "i8*");
-    const dataTypePriority = new Map();
-    dataTypePriority.set("bool", 1);
-    dataTypePriority.set("byte", 2);
-    dataTypePriority.set("short", 3);
-    dataTypePriority.set("int", 4);
-    dataTypePriority.set("long", 5);
-    dataTypePriority.set("float", 6);
-    dataTypePriority.set("double", 7);
     const structTable = new Map();
     const context = {
         nextTemp: 1,
         funTable,
         dataTypeMap,
-        dataTypePriority,
         structTable
     };
     const { topCode } = generate(ast, context, null);
