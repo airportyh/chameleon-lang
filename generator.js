@@ -730,7 +730,8 @@ function generateProgram(node, context) {
         `declare i32 @putchar(i32)`,
         `declare i32 @getchar()`,
         `declare i8* @malloc(i32)`,
-        `declare void @free(i8*)`
+        `declare void @free(i8*)`,
+        ""
     ];
     const topCode = builtInFuns.concat(
         node.body.map(statement => {

@@ -52,6 +52,7 @@ async function main() {
     await test("ex19.chm", ["1836284", ""]);
     await test("ex20.chm", ["1836284", ""]);
     await test("ex21.chm", ["Hello", ""]);
+    await test("ex22.chm", ["1836284", ""]);
 }
 
 async function test(filepath, expected) {

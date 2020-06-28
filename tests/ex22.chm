@@ -1,0 +1,13 @@
+fun print_int(num:int) [
+    if num > 0 [
+        digit = num % 10
+        print_int(num / 10)
+        putchar(48 + digit)
+    ]
+]
+
+fun main(): int [
+    print_int(1836284)
+    putchar(10)
+    return 0
+]
