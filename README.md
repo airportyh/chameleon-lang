@@ -5,6 +5,13 @@ backends.
 
 ## Todos
 
+* break statement for while
+* check for fun call arguments mismatch
+* allow assigning to struct fields
+* prompt for input
+* implicit type cast for return statements
+* automatic ret instruct generated for LL if needed (when all paths already return for example),
+also return my error message instead of going through to LL
 * strings (maybe implemented in the language)
 * garbage collector
 * implement binary trees
@@ -27,6 +34,7 @@ backends.
 * type checker that gives good error messages
 * operator precedence
 
+* write a test for exec that needs stdin (done)
 * allow void functions to work (done)
 * implement implicit type casting for ints to floats but not longs to floats(done)
 * implement implicit type casting for function inputs (function signatures) (done)

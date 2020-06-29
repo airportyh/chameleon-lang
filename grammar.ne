@@ -105,6 +105,7 @@ unary_expr
     |  struct_literal  {% id %}
     |  alloc           {% id %}
     |  null_literal    {% id %}
+    |  bool_literal    {% id %}
     
 var_ref
     -> %identifier  {% id %}
@@ -354,13 +355,35 @@ free
 null_literal
     -> "null"
         {% 
-            () => {
+            (data) => {
                 return {
+                    ...data[0],
                     type: "null_literal"
-                }
+                };
             }
         %}
         
+bool_literal
+    -> "true"
+        {%
+            (data) => {
+                return {
+                    ...data[0],
+                    type: "bool_literal",
+                    value: true
+                };
+            }
+        %}
+    |  "false"
+        {%
+            (data) => {
+                return {
+                    ...data[0],
+                    type: "bool_literal",
+                    value: false
+                };
+            }
+        %}
 
 # Multi-line whitespace
 MLWS

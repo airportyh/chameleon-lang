@@ -10,7 +10,8 @@ const lexer = moo.compile({
       type: moo.keywords({
           keyword: [
               "null", "alloc", "free", "fun", 
-              "return", "if", "else", "while", "struct"
+              "return", "if", "else", "while", "struct",
+              "true", "false"
           ]
       })
   },

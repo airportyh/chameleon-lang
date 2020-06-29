@@ -1,0 +1,3 @@
+node parse.js $1
+node generator.js ${1%.chm}.ast
+./ll-to-bin ${1%.chm}.ll

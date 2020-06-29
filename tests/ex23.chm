@@ -1,0 +1,67 @@
+struct LinkedList {
+    data: int
+    next: LinkedList
+}
+
+fun make_ll(data:int next:LinkedList): LinkedList [
+    return alloc LinkedList {
+        data = data
+        next = next
+    }
+]
+
+fun free_ll(list:LinkedList) [
+    if list != null [
+        free_ll(list.next)
+        free list
+    ]
+]
+
+fun print(string:LinkedList) [
+    if string != null [
+        putchar(string.data)
+        print(string.next)
+    ]
+]
+
+fun reverse(list:LinkedList): LinkedList [
+    reversed:LinkedList = null
+    current = list
+    while current != null [
+        reversed = make_ll(current.data reversed)
+        current = current.next
+    ]
+    return reversed
+]
+
+fun user_input(): LinkedList [
+    chars:LinkedList = null
+    not_done = true
+    while not_done [
+        char = getchar()
+        if char == 10 [
+            not_done = false
+        ] else [
+            chars = make_ll(char chars)
+        ]
+    ]
+    reversed = reverse(chars)
+    free_ll(chars)
+    return reversed
+]
+
+fun prompt(message:LinkedList): LinkedList [
+    print(message)
+    return user_input()
+]
+
+fun main(): int [
+    message = make_ll(78 make_ll(97 make_ll(109 make_ll(101 make_ll(58 make_ll(32 null))))))
+    name = prompt(message)
+    hello = make_ll(72 make_ll(101 make_ll(108 make_ll(108 make_ll(111 make_ll(44 make_ll(32 null)))))))
+    print(hello)
+    print(name)
+    putchar(33)
+    putchar(10)
+    return 0
+]

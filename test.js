@@ -1,6 +1,7 @@
 const util = require("util");
 const fs = require("mz/fs");
 const exec = util.promisify(require("child_process").exec);
+const spawn = require("child_process").spawn;
 
 async function main() {
     await test("ex1.chm", ["ep", ""]);
@@ -53,9 +54,10 @@ async function main() {
     await test("ex20.chm", ["1836284", ""]);
     await test("ex21.chm", ["Hello", ""]);
     await test("ex22.chm", ["1836284", ""]);
+    await test("ex23.chm", ["Name: Hello, Marty!", ""], "Marty\n");
 }
 
-async function test(filepath, expected) {
+async function test(filepath, expected, optionalInput) {
     try {
         const astFilePath = `tests/${filepath.replace('.chm', '.ast')}`;
         const llFilePath = `tests/${filepath.replace('.chm', '.ll')}`;
@@ -66,18 +68,15 @@ async function test(filepath, expected) {
         await removeFile(asmFilePath);
         await removeFile(binFilePath);
         
-        const cmd = `./run tests/${filepath}`;
-        const output = await exec(cmd);
-        const allExpected = [
-            `Wrote ${astFilePath}.`,
-            `Wrote ${llFilePath}.`,
-            ...expected
-        ].join("\n");
-        if (output.stdout !== allExpected) {
+        const cmd = `./compile tests/${filepath}`;
+        await exec(cmd);
+        const output = await execProgram(binFilePath, optionalInput);
+        const expectedString = expected.join("\n");
+        if (output.stdout !== expectedString) {
             console.error(`Test ${filepath} failed:`);
             console.log(indent([
                 `Expected:`,
-                indent(allExpected),
+                indent(expectedString),
                 `Actual:`,
                 indent(output.stdout)
             ].join("\n")))
@@ -101,6 +100,50 @@ async function removeFile(filePath) {
 
 function indent(text) {
     return text.split("\n").map(line => "  " + line).join("\n");
+}
+
+async function execProgram(program, input) {
+    return new Promise((accept, reject) => {
+        let stdout = "";
+        let stderr = "";
+        const process = spawn(program);
+    
+        if (input) {
+            process.stdin.write(input);
+        }
+        process.stdout.on("data", (data) => {
+            stdout += data.toString();
+        });
+        process.stderr.on("data", (data) => {
+            stderr += data.toString();
+        });
+        process.on("error", (e) => {
+            if (e.code === "ENOENT") {
+                const error = new Error("Program not found: " + e.message);
+                error.code = e.code;
+                reject(error);
+            } else {
+                reject(e);
+            }
+        });
+        process.on("exit", (code) => {
+            if (code === 0) {
+                // success
+                accept({
+                    code,
+                    stdout,
+                    stderr
+                });
+            } else {
+                const output = [stdout, stderr].filter(o => o);
+                const error = new Error("Program exited with status " + code + " " + output.join("\n"));
+                error.code = code;
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
+            }
+        });
+    });
 }
 
 main().catch(err => console.log(err.stack));

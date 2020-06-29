@@ -103,6 +103,8 @@ function generate(node, context, variables) {
         return generateFree(node, context, variables);
     } else if (node.type === "null_literal") {
         return generateNullLiteral();
+    } else if (node.type === "bool_literal") {
+        return generateBoolLiteral(node);
     } else {
         throw new Error("Unsupported node type: " + node.type + ": " + JSON.stringify(node));
     }
@@ -113,6 +115,15 @@ function generateNullLiteral() {
         topCode: [],
         valueCode: "null",
         dataType: "null"
+    };
+}
+
+function generateBoolLiteral(node) {
+    const value = node.value;
+    return {
+        topCode: [],
+        valueCode: value ? "1" : "0",
+        dataType: "bool"
     };
 }
 
@@ -524,6 +535,9 @@ function generateFieldAccessor(node, context, variables) {
     const fieldDef = structDef.entries[index];
     const fieldType = fieldDef.field_type.value;
     const llFieldType = context.dataTypeMap.get(fieldType);
+    if (!llFieldType) {
+        throw new Error(`${locInfo(node)}: Unable to resolve field type ${fieldType}`);
+    }
     const ptrVarName = newTempVar(context);
     const valVarName = newTempVar(context);
     topCode.push(`${ptrVarName} = getelementptr inbounds ${llStructType}, ${llStructPtrType} ${left.valueCode}, i32 0, i32 ${index}`);
@@ -670,9 +684,15 @@ function generatePointerOperation(operator, dataType, valueCode1, valueCode2, co
 
 function generateVarRef(node, context, variables) {
     const varName = node.value;
-    const dataType = variables.get(node.value);
+    if (!variables.has(varName)) {
+        throw new Error(`${locInfo(node)}: Reference to unknown variable ${varName}`);
+    }
+    const dataType = variables.get(varName);
     const llDataType = context.dataTypeMap.get(dataType);
     const tempVarName = "%tmp" + context.nextTemp++;
+    if (!llDataType) {
+        throw new Error(`${locInfo(node)}: Unable to resolve type ${dataType}`);
+    }
     const code = [
         `${tempVarName} = load ${llDataType}, ${llDataType}* %${varName}`
     ];

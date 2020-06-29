@@ -84,6 +84,7 @@ var grammar = {
     {"name": "unary_expr", "symbols": ["struct_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["alloc"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["null_literal"], "postprocess": id},
+    {"name": "unary_expr", "symbols": ["bool_literal"], "postprocess": id},
     {"name": "var_ref", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": id},
     {"name": "fun_call", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_argument_list"], "postprocess": 
         (data) => {
@@ -264,10 +265,29 @@ var grammar = {
         }
                 },
     {"name": "null_literal", "symbols": [{"literal":"null"}], "postprocess":  
-        () => {
+        (data) => {
             return {
+                ...data[0],
                 type: "null_literal"
-            }
+            };
+        }
+                },
+    {"name": "bool_literal", "symbols": [{"literal":"true"}], "postprocess": 
+        (data) => {
+            return {
+                ...data[0],
+                type: "bool_literal",
+                value: true
+            };
+        }
+                },
+    {"name": "bool_literal", "symbols": [{"literal":"false"}], "postprocess": 
+        (data) => {
+            return {
+                ...data[0],
+                type: "bool_literal",
+                value: false
+            };
         }
                 },
     {"name": "MLWS", "symbols": ["nl_or_ws"]},
