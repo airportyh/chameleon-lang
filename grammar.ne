@@ -1,39 +1,5 @@
 @{%
 const lexer = require("./lexer.js");
-
-function tokenStart(token) {
-    return {
-        line: token.line,
-        col: token.col - 1,
-        offset: token.offset
-    };
-}
-
-function tokenEnd(token) {
-    const lastNewLine = token.text.lastIndexOf("\n");
-    if (lastNewLine !== -1) {
-        throw new Error("Unsupported case: token with line breaks");
-    }
-    return {
-        line: token.line,
-        col: token.col + token.text.length - 1,
-        offset: token.offset + token.text.length
-    };
-}
-
-function simplifyToken(token) {
-    return {
-        type: token.type,
-        value: token.value,
-        start: tokenStart(token),
-        end: tokenEnd(token)
-    };
-}
-
-function idSimplifyToken(data) {
-    return simplifyToken(data[0]);
-}
-
 %}
 
 @lexer lexer
@@ -122,13 +88,39 @@ bin_expr
     |  unary_expr _ %operator _ bin_expr
         {%
             (data) => {
+                const left = data[0];
+                const right = data[4];
+                const operator = data[2];
+                if (right.type === "bin_expr") {
+                    // Shunting Yard Algorithm
+                    const myPrec = OperatorPrecedence[operator.value];
+                    const theirPrec = OperatorPrecedence[right.operator.value];
+                    if (myPrec > theirPrec) {
+                        const newLeft = {
+                            type: "bin_expr",
+                            start: left.start,
+                            end: right.left.end,
+                            left: left,
+                            operator: operator,
+                            right: right.left
+                        }
+                        return {
+                            type: "bin_expr",
+                            start: left.start,
+                            end: right.end,
+                            left: newLeft,
+                            operator: right.operator,
+                            right: right.right
+                        };
+                    }
+                }
                 return {
                     type: "bin_expr",
-                    start: data[0].start,
-                    end: data[4].end,
-                    left: data[0],
-                    operator: data[2],
-                    right: data[4]
+                    start: left.start,
+                    end: right.end,
+                    left: left,
+                    operator: operator,
+                    right: right
                 };
             }
         %}
@@ -137,18 +129,13 @@ unary_expr
     -> number          {% id %}
     |  var_ref         {% id %}
     |  fun_call        {% id %}
-    |  "(" expr ")"
-        {%
-            (data) => {
-                return data[1];
-            }
-        %}
+    |  "(" expr ")"    {%  data => data[1] %}
     |  struct_literal  {% id %}
     |  alloc           {% id %}
     |  null_literal    {% id %}
     |  bool_literal    {% id %}
     |  char_literal    {% id %}
-    |  not   {% id %}
+    |  not             {% id %}
     
 var_ref
     -> %identifier     {% idSimplifyToken %}
@@ -463,3 +450,56 @@ nl_or_ws
 __ -> %WS:+
 
 _  -> %WS:*
+
+@{%
+    
+// Loosely based on: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
+const OperatorPrecedence = {
+    ".": 20,
+    "*": 15,
+    "/": 15,
+    "%": 15,
+    "-": 14,
+    "+": 14,
+    ">=": 12,
+    "<=": 12,
+    "==": 11,
+    "!=": 11,
+    "and": 7,
+    "or": 6
+};
+
+function tokenStart(token) {
+    return {
+        line: token.line,
+        col: token.col - 1,
+        offset: token.offset
+    };
+}
+
+function tokenEnd(token) {
+    const lastNewLine = token.text.lastIndexOf("\n");
+    if (lastNewLine !== -1) {
+        throw new Error("Unsupported case: token with line breaks");
+    }
+    return {
+        line: token.line,
+        col: token.col + token.text.length - 1,
+        offset: token.offset + token.text.length
+    };
+}
+
+function simplifyToken(token) {
+    return {
+        type: token.type,
+        value: token.value,
+        start: tokenStart(token),
+        end: tokenEnd(token)
+    };
+}
+
+function idSimplifyToken(data) {
+    return simplifyToken(data[0]);
+}
+
+%}

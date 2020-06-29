@@ -5,6 +5,24 @@ function id(x) { return x[0]; }
 
 const lexer = require("./lexer.js");
 
+
+    
+// Loosely based on: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_Precedence
+const OperatorPrecedence = {
+    ".": 20,
+    "*": 15,
+    "/": 15,
+    "%": 15,
+    "-": 14,
+    "+": 14,
+    ">=": 12,
+    "<=": 12,
+    "==": 11,
+    "!=": 11,
+    "and": 7,
+    "or": 6
+};
+
 function tokenStart(token) {
     return {
         line: token.line,
@@ -104,24 +122,45 @@ var grammar = {
     {"name": "bin_expr", "symbols": ["unary_expr"], "postprocess": id},
     {"name": "bin_expr", "symbols": ["unary_expr", "_", (lexer.has("operator") ? {type: "operator"} : operator), "_", "bin_expr"], "postprocess": 
         (data) => {
+            const left = data[0];
+            const right = data[4];
+            const operator = data[2];
+            if (right.type === "bin_expr") {
+                const myPrec = OperatorPrecedence[operator.value];
+                const theirPrec = OperatorPrecedence[right.operator.value];
+                if (myPrec > theirPrec) {
+                    const newLeft = {
+                        type: "bin_expr",
+                        start: left.start,
+                        end: right.left.end,
+                        left: left,
+                        operator: operator,
+                        right: right.left
+                    }
+                    return {
+                        type: "bin_expr",
+                        start: left.start,
+                        end: right.end,
+                        left: newLeft,
+                        operator: right.operator,
+                        right: right.right
+                    };
+                }
+            }
             return {
                 type: "bin_expr",
-                start: data[0].start,
-                end: data[4].end,
-                left: data[0],
-                operator: data[2],
-                right: data[4]
+                start: left.start,
+                end: right.end,
+                left: left,
+                operator: operator,
+                right: right
             };
         }
                 },
     {"name": "unary_expr", "symbols": ["number"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["var_ref"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["fun_call"], "postprocess": id},
-    {"name": "unary_expr", "symbols": [{"literal":"("}, "expr", {"literal":")"}], "postprocess": 
-        (data) => {
-            return data[1];
-        }
-                },
+    {"name": "unary_expr", "symbols": [{"literal":"("}, "expr", {"literal":")"}], "postprocess": data => data[1]},
     {"name": "unary_expr", "symbols": ["struct_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["alloc"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["null_literal"], "postprocess": id},

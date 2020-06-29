@@ -335,6 +335,9 @@ function genBreak(node, context, scope) {
 function genIf(node, context, scope) {
     const topCode = [];
     const cond = gen(node.cond, context, scope);
+    if (cond.dataType !== "bool") {
+        throw new Error(`${locInfo(node)}: Expected if conditional to be a bool but here it is a ${cond.dataType}`);
+    }
     topCode.push(...cond.topCode);
     const id = context.nextTemp++;
     const trueLabel = "if_true" + id;
@@ -680,6 +683,14 @@ function genFloatOperation(operator, dataType, valueCode1, valueCode2, context, 
         "!=": "fcmp one",
         "%": "frem"
     };
+    const binaryOperations = new Set([
+        ">",
+        "<",
+        ">=",
+        "<=",
+        "==",
+        "!="
+    ]);
     const ins = instructionTable[operator];
     if (!ins) {
         throw new Error(`${locInfo(node)}: Unable to find float instruction for operator ${operator}`);
@@ -688,6 +699,9 @@ function genFloatOperation(operator, dataType, valueCode1, valueCode2, context, 
     const topCode = [
         `${tempVar} = ${ins} ${llDataType} ${valueCode1}, ${valueCode2}`
     ];
+    if (binaryOperations.has(operator)) {
+        dataType = "bool";
+    }
     return {
         topCode,
         valueCode: tempVar,
@@ -710,6 +724,15 @@ function genIntegerOperation(operator, dataType, valueCode1, valueCode2, context
         "!=": "icmp ne",
         "%": "srem"
     };
+    
+    const binaryOperations = new Set([
+        ">",
+        "<",
+        ">=",
+        "<=",
+        "==",
+        "!="
+    ]);
     const ins = instructionTable[operator];
     if (!ins) {
         throw new Error(`${locInfo(node)}: Unable to find integer instruction for operator ${operator}`);
@@ -718,6 +741,9 @@ function genIntegerOperation(operator, dataType, valueCode1, valueCode2, context
     const topCode = [
         `${tempVar} = ${ins} ${llDataType} ${valueCode1}, ${valueCode2}`
     ];
+    if (binaryOperations.has(operator)) {
+        dataType = "bool";
+    }
     return {
         topCode,
         valueCode: tempVar,
@@ -742,7 +768,7 @@ function genPointerOperation(operator, dataType, valueCode1, valueCode2, context
     return {
         topCode,
         valueCode: tempVar,
-        dataType: dataType
+        dataType: "bool"
     };
 }
 

@@ -1,0 +1,167 @@
+struct LList {
+    char: int
+    next: LList
+}
+
+struct BTreeMap {
+    key: long
+    value: LList
+    left: BTreeMap
+    right: BTreeMap
+}
+
+fun main(): int [
+    tree:BTreeMap = null
+    while true [
+        input = prompt(llist('>' llist(' ' null)))
+        if input != null [
+            if input.char == 'q' [
+                break
+            ]
+            if input.char == 's' [
+                tree = user_insert(tree)
+            ]
+            if input.char == 'p' [
+                print_tree(tree 0)
+            ]
+            if input.char == 'd' [
+                tree = user_delete(tree)
+            ]
+        ]
+    ]
+    return 0
+]
+
+fun user_insert(tree:BTreeMap): BTreeMap [
+    print_string(llist('K' llist('e' llist('y' llist(':' llist(' ' null))))))
+    key = read_long()
+    print_string(llist('V' llist('a' llist('l' llist(':' llist(' ' null))))))
+    value = user_input(null)
+    return btmap_set(key value tree)
+]
+
+fun user_delete(tree:BTreeMap): BTreeMap [
+    print_string(llist('K' llist('e' llist('y' llist(':' llist(' ' null))))))
+    key = read_long()
+    return btmap_delete(key tree)
+]
+
+fun prompt(message:LList): LList [
+    print_string(message)
+    return user_input(null)
+]
+
+fun user_input(chars:LList): LList [
+    char = getchar()
+    if char == 10 [
+        return chars
+    ]
+    return llist(char user_input(chars))
+]
+
+fun print_tree(tree:BTreeMap level:int) [
+    if tree != null [
+        print_indent(level)
+        print_long(tree.key)
+        putchar(58)
+        print_string(tree.value)
+        putchar(10)
+        print_tree(tree.left level + 1)
+        print_tree(tree.right level + 1)
+    ]
+]
+
+fun print_long(num:long) [
+    if num > 0 [
+        digit = num % 10
+        print_long(num / 10)
+        putchar(48 + digit)
+    ]
+]
+
+fun read_long(): long [
+    num = 0
+    while true [
+        digit = getchar()
+        if digit == 10 [
+            break
+        ]
+        num = num * 10
+        num = num + (digit - 48)
+    ]
+    return num
+]
+
+fun print_indent(amount:int) [
+    while amount > 0 [
+        putchar(32)
+        putchar(32)
+        putchar(32)
+        putchar(32)
+        amount = amount - 1
+    ]
+]
+
+fun print_string(string:LList) [
+    if string != null [
+        putchar(string.char)
+        print_string(string.next)
+    ]
+]
+
+fun btmap_set(key:long value:LList btree:BTreeMap): BTreeMap [
+    if btree == null [
+        return btmap(key value null null)
+    ]
+    if key == btree.key [
+        return btmap(key value btree.left btree.right)
+    ] else if key > btree.key [
+        new_right = btmap_set(key value btree.right)
+        return btmap(btree.key btree.value btree.left new_right)
+    ]
+    new_left = btmap_set(key value btree.left)
+    return btmap(btree.key btree.value new_left btree.right)
+]
+
+fun btmap_delete(key:long tree:BTreeMap): BTreeMap [
+    if tree == null [
+        return null
+    ]
+    if key == tree.key [
+        right_min = btmap_min(tree.right)
+        return btmap(right_min.key right_min.value tree.left btmap_delete_min(tree.right))
+    ] else if key > tree.key [
+        return btmap(tree.key tree.value tree.left btmap_delete(key tree.right))
+    ]
+    return btmap(tree.key tree.value btmap_delete(key tree.left) tree.right)
+]
+
+fun btmap_min(tree:BTreeMap): BTreeMap [
+    if tree.left != null [
+        return btmap_min(tree.left)
+    ]
+    return tree
+]
+
+fun btmap_delete_min(tree:BTreeMap): BTreeMap [
+    if tree.left != null [
+        return btmap(tree.key tree.value btmap_delete_min(tree.left) tree.right)
+    ]
+    return tree.right
+]
+
+fun btmap(key:long value:LList left:BTreeMap right:BTreeMap): BTreeMap [
+    return alloc BTreeMap {
+        key = key
+        value = value
+        left = left
+        right = right
+    }
+]
+
+fun llist(char:int next:LList): LList [
+    return alloc LList {
+        char = char
+        next = next
+    }
+]

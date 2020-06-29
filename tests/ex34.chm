@@ -1,0 +1,17 @@
+fun main(): int [
+    a = 2 + 3 * 4
+    b = 2 * 3 + 4
+    print_int(a)
+    putchar(10)
+    print_int(b)
+    putchar(10)
+    return 0
+]
+
+fun print_int(num:int) [
+    if num > 0 [
+        digit = num % 10
+        print_int(num / 10)
+        putchar(48 + digit)
+    ]
+]

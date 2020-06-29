@@ -6,9 +6,12 @@ backends.
 ## Todos
 
 * comments
-* operator precedence
-
+* newline and tab literals
 * implement binary trees
+    * delete
+    * rotations (auto-balancing)
+    * iteration
+
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
 * error due to forgetting to alloc (and then dereferencing)
@@ -35,6 +38,7 @@ also return my error message instead of going through to LL
 * experiment with optimization
 * type checker that gives good error messages
 
+* operator precedence (done)
 * not operators (done)
 * and, or operators (done)
 * check for fun call arguments mismatch (done)
