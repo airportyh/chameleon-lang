@@ -58,7 +58,7 @@ async function main() {
         dataTypeMap,
         structTable
     };
-    const { topCode } = generate(ast, context, []);
+    const { topCode } = gen(ast, context, []);
     await fs.writeFile(outputFilename, topCode.join("\n"));
     console.log(`Wrote ${outputFilename}.`);
 }
@@ -72,49 +72,49 @@ returns {
 }
 
 */
-function generate(node, context, scope) {
+function gen(node, context, scope) {
     if (node.type === "program") {
-        return generateProgram(node, context, scope);
+        return genProgram(node, context, scope);
     } else if (node.type === "var_assign") {
-        return generateVarAssign(node, context, scope);
+        return genVarAssign(node, context, scope);
     } else if (node.type === "identifier") {
-        return generateVarRef(node, context, scope);
+        return genVarRef(node, context, scope);
     } else if (node.type === "bin_expr") {
-        return generateBinExpr(node, context, scope);
+        return genBinExpr(node, context, scope);
     } else if (node.type === "fun_call") {
-        return generateFunCall(node, context, scope);
+        return genFunCall(node, context, scope);
     } else if (node.type === "number") {
-        return generateNumberConstant(node, context, scope);
+        return genNumberConstant(node, context, scope);
     } else if (node.type === "fun_def") {
-        return generateFunDef(node, context, scope);
+        return genFunDef(node, context, scope);
     } else if (node.type === "return") {
-        return generateReturn(node, context, scope);
+        return genReturn(node, context, scope);
     } else if (node.type === "if") {
-        return generateIf(node, context, scope);
+        return genIf(node, context, scope);
     } else if (node.type === "while") {
-        return generateWhile(node, context, scope);
+        return genWhile(node, context, scope);
     } else if (node.type === "break_statement") {
-        return generateBreak(node, context, scope);
+        return genBreak(node, context, scope);
     } else if (node.type === "struct_literal") {
-        return generateStructLiteral(node, context, scope);
+        return genStructLiteral(node, context, scope);
     } else if (node.type === "alloc") {
-        return generateAlloc(node, context, scope);
+        return genAlloc(node, context, scope);
     } else if (node.type === "struct_def") {
-        return generateStructDef(node, context, scope);
+        return genStructDef(node, context, scope);
     } else if (node.type === "free") {
-        return generateFree(node, context, scope);
+        return genFree(node, context, scope);
     } else if (node.type === "null_literal") {
-        return generateNullLiteral();
+        return genNullLiteral();
     } else if (node.type === "bool_literal") {
-        return generateBoolLiteral(node);
+        return genBoolLiteral(node);
     } else if (node.type === "char_literal") {
-        return generateCharLiteral(node);
+        return genCharLiteral(node);
     } else {
         throw new Error("Unsupported node type: " + node.type + ": " + JSON.stringify(node));
     }
 }
 
-function generateNullLiteral() {
+function genNullLiteral() {
     return {
         topCode: [],
         valueCode: "null",
@@ -122,7 +122,7 @@ function generateNullLiteral() {
     };
 }
 
-function generateBoolLiteral(node) {
+function genBoolLiteral(node) {
     const value = node.value;
     return {
         topCode: [],
@@ -131,7 +131,7 @@ function generateBoolLiteral(node) {
     };
 }
 
-function generateCharLiteral(node) {
+function genCharLiteral(node) {
     return {
         topCode: [],
         valueCode: node.value.charCodeAt(0),
@@ -139,8 +139,8 @@ function generateCharLiteral(node) {
     };
 }
 
-function generateFree(node, context, scope) {
-    const value = generate(node.value, context, scope);
+function genFree(node, context, scope) {
+    const value = gen(node.value, context, scope);
     const llDataType = context.dataTypeMap.get(value.dataType);
     const topCode = [
         ...value.topCode
@@ -188,7 +188,7 @@ function getSizeForType(dataType, context) {
 }
 
 // varName is passed in as the variable name to assign the struct pointer to
-function generateAlloc(node, context, scope) {
+function genAlloc(node, context, scope) {
     const topCode = [];
     const tempVar = newTempVar(context);
     const structPtrVar = newTempVar(context);
@@ -199,7 +199,7 @@ function generateAlloc(node, context, scope) {
     const size = getStructSize(structDef, context);
     topCode.push(`${tempVar} = call i8* @malloc(i32 ${size})`);
     topCode.push(`${structPtrVar} = bitcast i8* ${tempVar} to ${llType}`);
-    const fieldInit = generateFieldInitialization(structPtrVar, structNode, context, scope);
+    const fieldInit = genFieldInitialization(structPtrVar, structNode, context, scope);
     topCode.push(...fieldInit.topCode);
     return {
         topCode,
@@ -210,7 +210,7 @@ function generateAlloc(node, context, scope) {
 
 // Precondition: node.value is a struct_literal node
 // varName is passed in as the variable name to assign the struct pointer to
-function generateStructLiteral(node, context, scope) {
+function genStructLiteral(node, context, scope) {
     const topCode = [];
     const structName = node.structName.value;
     const structId = `%struct.${structName}`;
@@ -220,7 +220,7 @@ function generateStructLiteral(node, context, scope) {
     if (!structDef) {
         throw new Error(`Undefined struct ${structName}`);
     }
-    const fieldInit = generateFieldInitialization(tempVarName, node, context, scope);
+    const fieldInit = genFieldInitialization(tempVarName, node, context, scope);
     topCode.push(...fieldInit.topCode);
     const retval = {
         topCode,
@@ -230,7 +230,7 @@ function generateStructLiteral(node, context, scope) {
     return retval;
 }
 
-function generateFieldInitialization(varName, structNode, context, scope) {
+function genFieldInitialization(varName, structNode, context, scope) {
     const topCode = [];
     const structName = structNode.structName.value;
     const structId = `%struct.${structName}`;
@@ -239,7 +239,7 @@ function generateFieldInitialization(varName, structNode, context, scope) {
         const fieldDef = structDef.entries[i];
         const fieldType = fieldDef.field_type.value;
         const llFieldType = context.dataTypeMap.get(fieldType);
-        const fieldValue = generate(structNode.entries[i].field_value, context, scope);
+        const fieldValue = gen(structNode.entries[i].field_value, context, scope);
         const fieldValueTempVar = newTempVar(context);
         topCode.push(...fieldValue.topCode);
         topCode.push(`${fieldValueTempVar} = getelementptr inbounds ${structId}, ${structId}* ${varName}, i32 0, i32 ${i}`);
@@ -252,7 +252,7 @@ function generateFieldInitialization(varName, structNode, context, scope) {
     };
 }
 
-function generateStructDef(node, context, scope) {
+function genStructDef(node, context, scope) {
     const structName = node.name.value;
     const llStructType = "%struct." + structName;
     context.structTable.set(structName, node);
@@ -270,8 +270,8 @@ function generateStructDef(node, context, scope) {
     };
 }
 
-function generateWhile(node, context, scope) {
-    const cond = generate(node.cond, context, scope);
+function genWhile(node, context, scope) {
+    const cond = gen(node.cond, context, scope);
     const id = context.nextTemp++;
     const loopTopLabel = "loop_top" + id;
     const loopBodyLabel = "loop_body" + id;
@@ -289,7 +289,7 @@ function generateWhile(node, context, scope) {
     };
     
     const bodyTopCode = node.body.reduce((allTopCode, statement) => {
-        const result = generate(statement, context, [newScope, ...scope]);
+        const result = gen(statement, context, [newScope, ...scope]);
         return allTopCode.concat(result.topCode);
     }, []);
     topCode.push("");
@@ -305,7 +305,7 @@ function generateWhile(node, context, scope) {
     }
 }
 
-function generateBreak(node, context, scope) {
+function genBreak(node, context, scope) {
     const whileScope = getCurrentLoop(scope);
     if (!whileScope) {
         throw new Error(`${locInfo(node)}: Break statement used outside of a loop`);
@@ -317,9 +317,9 @@ function generateBreak(node, context, scope) {
     };
 }
 
-function generateIf(node, context, scope) {
+function genIf(node, context, scope) {
     const topCode = [];
-    const cond = generate(node.cond, context, scope);
+    const cond = gen(node.cond, context, scope);
     topCode.push(...cond.topCode);
     const id = context.nextTemp++;
     const trueLabel = "if_true" + id;
@@ -327,9 +327,9 @@ function generateIf(node, context, scope) {
     const exitLabel = "if_exit" + id;
     if (!node.alternate) {
         topCode.push(`br i1 ${cond.valueCode}, label %${trueLabel}, label %${exitLabel}`);
-        // generate 2 blocks: if_true and if_exit
+        // gen 2 blocks: if_true and if_exit
         const consequentTopCode = node.consequent.reduce((allTopCode, statement) => {
-            const result = generate(statement, context, scope);
+            const result = gen(statement, context, scope);
             return allTopCode.concat(result.topCode);
         }, []);
         
@@ -343,7 +343,7 @@ function generateIf(node, context, scope) {
         topCode.push(`br i1 ${cond.valueCode}, label %${trueLabel}, label %${falseLabel}`);
         
         const consequentTopCode = node.consequent.reduce((allTopCode, statement) => {
-            const result = generate(statement, context, scope);
+            const result = gen(statement, context, scope);
             return allTopCode.concat(result.topCode);
         }, []);
         
@@ -351,11 +351,11 @@ function generateIf(node, context, scope) {
         
         if (Array.isArray(node.alternate)) {
             alternateTopCode = node.alternate.reduce((allTopCode, statement) => {
-                const result = generate(statement, context, scope);
+                const result = gen(statement, context, scope);
                 return allTopCode.concat(result.topCode);
             }, []);
         } else if (node.alternate.type === "if") {
-            const alternate = generate(node.alternate, context, scope);
+            const alternate = gen(node.alternate, context, scope);
             alternateTopCode = alternate.topCode;
         } else {
             throw new Error(`Unexpected alternate type`);
@@ -378,8 +378,8 @@ function generateIf(node, context, scope) {
     };
 }
 
-function generateReturn(node, context, scope) {
-    const value = generate(node.value, context, scope);
+function genReturn(node, context, scope) {
+    const value = gen(node.value, context, scope);
     const fun = getCurrentFun(scope);
     const funSig = context.funTable.get(fun.funName);
     const outputType = funSig.output;
@@ -397,7 +397,7 @@ function generateReturn(node, context, scope) {
     };
 }
 
-function generateFunDef(node, context, scope) {
+function genFunDef(node, context, scope) {
     const variables = new Map();
     const paramList = [];
     const allocaStoreInstructions = [];
@@ -427,7 +427,7 @@ function generateFunDef(node, context, scope) {
     const body = 
         allocaStoreInstructions.concat(
         node.body.map(statement => {
-            const { topCode } = generate(statement, context, [newScope, ...scope]);
+            const { topCode } = gen(statement, context, [newScope, ...scope]);
             return topCode.join("\n");
         }));
     if (outputType === "void") {
@@ -450,7 +450,7 @@ function generateFunDef(node, context, scope) {
     };
 }
 
-function generateNumberConstant(node, context) {
+function genNumberConstant(node, context) {
     let dataType;
     if (node.value.indexOf(".") === -1) {
         dataType = "int";
@@ -464,7 +464,7 @@ function generateNumberConstant(node, context) {
     };
 }
 
-function generateFunCall(node, context, scope) {
+function genFunCall(node, context, scope) {
     const funName = node.fun_name.value;
     if (context.dataTypeMap.has(funName)) {
         return explicitTypeCast(node, context, scope);
@@ -478,7 +478,7 @@ function generateFunCall(node, context, scope) {
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
     const argList = [];
     for (let i = 0; i < node.arguments.length; i++) {
-        const arg = generate(node.arguments[i], context, scope);
+        const arg = gen(node.arguments[i], context, scope);
         topCode.push(...arg.topCode);
         const argNode = node.arguments[i];
         const sigDataType = funSig.input[i];
@@ -516,7 +516,7 @@ function explicitTypeCast(node, context, scope) {
     if (node.arguments.length > 1) {
         throw new Error(`${locInfo(node.fun_name)}: A type cast expression can only handle one argument, ${node.arguments.length} was given.`);
     }
-    const value = generate(node.arguments[0], context, scope);
+    const value = gen(node.arguments[0], context, scope);
     topCode.push(...value.topCode);
     const srcDataType = value.dataType;
     let typeCast;
@@ -547,9 +547,9 @@ function explicitTypeCast(node, context, scope) {
     };
 }
 
-function generateFieldAccessor(node, context, scope) {
+function genFieldAccessor(node, context, scope) {
     const topCode = [];
-    const left = generate(node.left, context, scope);
+    const left = gen(node.left, context, scope);
     topCode.push(...left.topCode);
     
     const structType = left.dataType;
@@ -597,13 +597,13 @@ function indexWhere(arr, pred) {
     return -1;
 }
 
-function generateBinExpr(node, context, scope) {
+function genBinExpr(node, context, scope) {
     const operator = node.operator.value;
     if (operator === ".") {
-        return generateFieldAccessor(node, context, scope);
+        return genFieldAccessor(node, context, scope);
     }
-    const left = generate(node.left, context, scope);
-    const right = generate(node.right, context, scope);
+    const left = gen(node.left, context, scope);
+    const right = gen(node.right, context, scope);
     
     const topCode = [
         ...left.topCode,
@@ -619,15 +619,15 @@ function generateBinExpr(node, context, scope) {
     
     let operation;
     if (isFloatType(dataType)) {
-        operation = generateFloatOperation(
+        operation = genFloatOperation(
             operator, dataType, twoWayTypeCast.valueCode1, 
             twoWayTypeCast.valueCode2, context, node);
     } else if (isIntegerType(dataType)) {
-        operation = generateIntegerOperation(
+        operation = genIntegerOperation(
             operator, dataType, twoWayTypeCast.valueCode1, 
             twoWayTypeCast.valueCode2, context, node);
     } else {
-        operation = generatePointerOperation(
+        operation = genPointerOperation(
             operator, dataType, twoWayTypeCast.valueCode1, 
             twoWayTypeCast.valueCode2, context, node);
     }
@@ -640,7 +640,7 @@ function generateBinExpr(node, context, scope) {
     };
 }
 
-function generateFloatOperation(operator, dataType, valueCode1, valueCode2, context, node) {
+function genFloatOperation(operator, dataType, valueCode1, valueCode2, context, node) {
     const tempVar = newTempVar(context);
     const instructionTable = {
         "+": "fadd",
@@ -670,7 +670,7 @@ function generateFloatOperation(operator, dataType, valueCode1, valueCode2, cont
     };
 }
 
-function generateIntegerOperation(operator, dataType, valueCode1, valueCode2, context, node) {
+function genIntegerOperation(operator, dataType, valueCode1, valueCode2, context, node) {
     const tempVar = newTempVar(context);
     const instructionTable = {
         "+": "add",
@@ -700,7 +700,7 @@ function generateIntegerOperation(operator, dataType, valueCode1, valueCode2, co
     };
 }
 
-function generatePointerOperation(operator, dataType, valueCode1, valueCode2, context, node) {
+function genPointerOperation(operator, dataType, valueCode1, valueCode2, context, node) {
     const tempVar = newTempVar(context);
     const instructionTable = {
         "==": "icmp eq",
@@ -721,7 +721,7 @@ function generatePointerOperation(operator, dataType, valueCode1, valueCode2, co
     };
 }
 
-function generateVarRef(node, context, scope) {
+function genVarRef(node, context, scope) {
     const varName = node.value;
     const dataType = getVariableType(varName, scope);
     if (!dataType) {
@@ -742,7 +742,7 @@ function generateVarRef(node, context, scope) {
     };
 }
 
-function generateVarAssign(node, context, scope) {
+function genVarAssign(node, context, scope) {
     const topCode = [];
     const varName = node.var_name.value;
     const definedDataType = node.data_type && node.data_type.value;
@@ -751,7 +751,7 @@ function generateVarAssign(node, context, scope) {
         throw new Error(`${locInfo(node.var_name)}: Cannot re-define the data type of variable ${varName}.`);
     }
 
-    const value = generate(node.value, context, scope);
+    const value = gen(node.value, context, scope);
     topCode.push(...value.topCode);
     
     let valueCode, dataType;
@@ -785,7 +785,7 @@ function generateVarAssign(node, context, scope) {
     };
 }
 
-function generateProgram(node, context, scope) {
+function genProgram(node, context, scope) {
     const builtInFuns = [
         `declare i32 @putchar(i32)`,
         `declare i32 @getchar()`,
@@ -798,7 +798,7 @@ function generateProgram(node, context, scope) {
     
     const topCode = builtInFuns.concat(
         node.body.map(statement => {
-            const { topCode } = generate(statement, context, scope);
+            const { topCode } = gen(statement, context, scope);
             return topCode.join("\n");
         }));
     return {

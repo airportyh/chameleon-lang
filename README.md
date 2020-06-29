@@ -5,7 +5,6 @@ backends.
 
 ## Todos
 
-* attach line number info with each AST node (like fun lang and play lang)
 * check for fun call arguments mismatch
 * and, or, and not operators
 * comments
@@ -38,6 +37,7 @@ also return my error message instead of going through to LL
 * type checker that gives good error messages
 * operator precedence
 
+* attach line number info with each AST node (like fun lang and play lang) (done)
 * character literals (done)
 * allow defining referenced functions later (done)
 * prompt for input (done)
