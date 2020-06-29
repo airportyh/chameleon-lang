@@ -107,6 +107,7 @@ unary_expr
     |  alloc           {% id %}
     |  null_literal    {% id %}
     |  bool_literal    {% id %}
+    |  char_literal    {% id %}
     
 var_ref
     -> %identifier  {% id %}
@@ -393,6 +394,18 @@ bool_literal
                     type: "bool_literal",
                     value: false
                 };
+            }
+        %}
+
+char_literal
+    -> %character
+        {%
+            (data) => {
+                return {
+                    ...data[0],
+                    type: "char_literal",
+                    value: data[0].value[1]
+                }
             }
         %}
 

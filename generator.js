@@ -107,6 +107,8 @@ function generate(node, context, scope) {
         return generateNullLiteral();
     } else if (node.type === "bool_literal") {
         return generateBoolLiteral(node);
+    } else if (node.type === "char_literal") {
+        return generateCharLiteral(node);
     } else {
         throw new Error("Unsupported node type: " + node.type + ": " + JSON.stringify(node));
     }
@@ -126,6 +128,14 @@ function generateBoolLiteral(node) {
         topCode: [],
         valueCode: value ? "1" : "0",
         dataType: "bool"
+    };
+}
+
+function generateCharLiteral(node) {
+    return {
+        topCode: [],
+        valueCode: node.value.charCodeAt(0),
+        dataType: "int"
     };
 }
 

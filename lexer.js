@@ -15,6 +15,7 @@ const lexer = moo.compile({
           ]
       })
   },
+  character: /'[^\n"\\]'/,
   string:  /"(?:\\["\\]|[^\n"\\])*"/,
   lparen:  '(',
   rparen:  ')',

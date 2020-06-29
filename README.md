@@ -9,7 +9,6 @@ backends.
 * check for fun call arguments mismatch
 * attach line number info with each AST node (like fun lang and play lang)
 * and, or, and not operators
-* character literals
 * comments
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
@@ -37,6 +36,7 @@ also return my error message instead of going through to LL
 * type checker that gives good error messages
 * operator precedence
 
+* character literals (done)
 * allow defining referenced functions later (done)
 * prompt for input (done)
 * break statement for while (done)
