@@ -371,7 +371,8 @@ function generateIf(node, context, scope) {
 function generateReturn(node, context, scope) {
     const value = generate(node.value, context, scope);
     const fun = getCurrentFun(scope);
-    const outputType = fun.funSig.output;
+    const funSig = context.funTable.get(fun.funName);
+    const outputType = funSig.output;
     const typeCast = implicitTypeCast(value.dataType, outputType, value.valueCode, context, node);
     const llDataType = context.dataTypeMap.get(typeCast.dataType);
     const topCode = [
@@ -390,14 +391,9 @@ function generateFunDef(node, context, scope) {
     const variables = new Map();
     const paramList = [];
     const allocaStoreInstructions = [];
-    const funSig = {
-        input: [],
-        output: null
-    };
     for (const param of node.parameters) {
         const paramName = param.name.value;
         const paramDataType = param.data_type && param.data_type.value || "void";
-        funSig.input.push(paramDataType);
         variables.set(paramName, paramDataType);
         const llParamDataType = context.dataTypeMap.get(paramDataType);
         paramList.push(`${llParamDataType} %_${paramName}`);
@@ -407,15 +403,14 @@ function generateFunDef(node, context, scope) {
         );
     }
     const funName = node.fun_name.value;
-    const outputType = node.data_type && node.data_type.value || "void";
+    //context.funTable.set(funName, funSig);
+    const funSig = context.funTable.get(funName);
+    const outputType = funSig.output;
     const llOutputType = context.dataTypeMap.get(outputType);
-    funSig.output = outputType;
-    context.funTable.set(funName, funSig);
     
     const newScope = {
         type: "fun",
         funName,
-        funSig,
         variables
     };
     
@@ -785,6 +780,9 @@ function generateProgram(node, context, scope) {
         `declare void @free(i8*)`,
         ""
     ];
+    
+    loadFunDefs(node.body, context);
+    
     const topCode = builtInFuns.concat(
         node.body.map(statement => {
             const { topCode } = generate(statement, context, scope);
@@ -795,6 +793,27 @@ function generateProgram(node, context, scope) {
         valueCode: null,
         dataType: null
     };
+}
+
+function loadFunDefs(statements, context) {
+    for (let node of statements) {
+        if (node.type === "fun_def") {
+            const funName = node.fun_name.value;
+            const funSig = {
+                input: [],
+                output: null
+            };
+            for (const param of node.parameters) {
+                const paramName = param.name.value;
+                const paramDataType = param.data_type && param.data_type.value || "void";
+                funSig.input.push(paramDataType);
+                const llParamDataType = context.dataTypeMap.get(paramDataType);
+            }
+            const outputType = node.data_type && node.data_type.value || "void";
+            funSig.output = outputType;
+            context.funTable.set(funName, funSig);
+        }
+    }
 }
 
 function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {

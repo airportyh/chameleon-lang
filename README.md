@@ -7,16 +7,18 @@ backends.
 
 * check for fun call arguments mismatch
 * and, or, and not operators
+* error handling - what if segfault? stackoverflow (looks like this results in segfault anyway)
 * allow assigning to struct fields
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
 * strings (maybe implemented in the language)
 * garbage collector
+* character literals
+* string literals
 * implement binary trees
 * do some code challenges
 * multiple return values for functions
 * modules
-* allow defining referenced functions later
 * arrays
 * type classes / protocols
 * lambdas and closures
@@ -32,6 +34,7 @@ also return my error message instead of going through to LL
 * type checker that gives good error messages
 * operator precedence
 
+* allow defining referenced functions later (done)
 * prompt for input (done)
 * break statement for while (done)
 * implicit type cast for return statements (done)

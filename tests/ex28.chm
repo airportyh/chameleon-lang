@@ -1,0 +1,22 @@
+fun main(): int [
+    x = read_int()
+    if x > 100 [
+        putchar(65)
+    ] else [
+        putchar(66)
+    ]
+    return 0
+]
+
+fun read_int(): int [
+    num = 0
+    while true [
+        digit = getchar()
+        if digit == 10 [
+            break
+        ]
+        num = num * 10
+        num = num + (digit - 48)
+    ]
+    return num
+]
