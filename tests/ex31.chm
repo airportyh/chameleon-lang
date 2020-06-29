@@ -1,4 +1,6 @@
 fun main(): int [
+    putchar('\t')
     putchar('a')
+    putchar('\n')
     return 0
 ]

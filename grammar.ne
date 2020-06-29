@@ -46,6 +46,7 @@ statement
     |  struct_def      {% id %}
     |  free            {% id %}
     |  break           {% id %}
+    |  comment         {% id %}
 
 var_assign
     -> %identifier _ type_def _ "=" _ expr
@@ -437,6 +438,9 @@ char_literal
 
 number
     -> %number          {% idSimplifyToken %}
+
+comment
+    -> %comment         {% idSimplifyToken %}
 
 # Multi-line whitespace
 MLWS

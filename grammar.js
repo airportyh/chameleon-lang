@@ -90,6 +90,7 @@ var grammar = {
     {"name": "statement", "symbols": ["struct_def"], "postprocess": id},
     {"name": "statement", "symbols": ["free"], "postprocess": id},
     {"name": "statement", "symbols": ["break"], "postprocess": id},
+    {"name": "statement", "symbols": ["comment"], "postprocess": id},
     {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
@@ -126,6 +127,7 @@ var grammar = {
             const right = data[4];
             const operator = data[2];
             if (right.type === "bin_expr") {
+                // Shunting Yard Algorithm
                 const myPrec = OperatorPrecedence[operator.value];
                 const theirPrec = OperatorPrecedence[right.operator.value];
                 if (myPrec > theirPrec) {
@@ -389,6 +391,7 @@ var grammar = {
     {"name": "bool_literal", "symbols": [(lexer.has("bool_literal") ? {type: "bool_literal"} : bool_literal)], "postprocess": idSimplifyToken},
     {"name": "char_literal", "symbols": [(lexer.has("char_literal") ? {type: "char_literal"} : char_literal)], "postprocess": idSimplifyToken},
     {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": idSimplifyToken},
+    {"name": "comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": idSimplifyToken},
     {"name": "MLWS", "symbols": ["nl_or_ws"]},
     {"name": "MLWS", "symbols": ["nl_or_ws", "MLWS"]},
     {"name": "nl_or_ws", "symbols": ["__"]},

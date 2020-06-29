@@ -5,13 +5,14 @@ backends.
 
 ## Todos
 
-* comments
-* newline and tab literals
+* write test for ex35.chm
 * implement binary trees
-    * delete
+    * delete (done)
     * rotations (auto-balancing)
     * iteration
-
+    * union
+    * difference
+* tests for erroring test cases
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
 * error due to forgetting to alloc (and then dereferencing)
@@ -38,6 +39,8 @@ also return my error message instead of going through to LL
 * experiment with optimization
 * type checker that gives good error messages
 
+* comments (done)
+* newline and tab literals (done)
 * operator precedence (done)
 * not operators (done)
 * and, or operators (done)

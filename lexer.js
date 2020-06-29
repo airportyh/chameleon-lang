@@ -24,7 +24,21 @@ const lexer = moo.compile({
       })
   },
   char_literal: {
-      match: /'[^\n"\\]'/, value: (value) => value[1]
+      match: /'(?:\\[nt]|[^\n'\\])'/, value: (value) => {
+          if (value.length == 4) {
+              console.log("value", value);
+              const escapeCode = value[2];
+              if (escapeCode === 'n') {
+                  return 10;
+              } else if (escapeCode === 't') {
+                  return 9;
+              } else {
+                  throw new Error("Unexpected escape code: " + escapeCode);
+              }
+          } else {
+              return value[1].charCodeAt(0);
+          }
+      }
   },
   string:  /"(?:\\["\\]|[^\n"\\])*"/,
   lparen:  '(',

@@ -1,0 +1,11 @@
+# This is a comment
+
+fun main(): int [
+    putchar('Y')
+    putchar('e')
+    putchar('s')
+    putchar('\n')
+    return 0
+]
+
+# This is another comment

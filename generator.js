@@ -111,8 +111,18 @@ function gen(node, context, scope) {
         return genBoolLiteral(node);
     } else if (node.type === "char_literal") {
         return genCharLiteral(node);
+    } else if (node.type === "comment") {
+        return genComment();
     } else {
         throw new Error("Unsupported node type: " + node.type + ": " + JSON.stringify(node));
+    }
+}
+
+function genComment() {
+    return {
+        topCode: [],
+        valueCode: null,
+        dataType: null
     }
 }
 
@@ -149,7 +159,7 @@ function genBoolLiteral(node) {
 function genCharLiteral(node) {
     return {
         topCode: [],
-        valueCode: node.value.charCodeAt(0),
+        valueCode: node.value,
         dataType: "int"
     };
 }

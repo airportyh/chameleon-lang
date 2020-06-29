@@ -5,7 +5,7 @@ const spawn = require("child_process").spawn;
 
 async function main() {
     await test("ex1.chm", ["ep", ""]);
-    await test("ex2.chm", ["c"]);
+    await test("ex2.chm", ["J"]);
     await test("ex3.chm", ["A"]);
     await test("ex4.chm", [""]);
     await test("ex5.chm", ["AAA"]);
@@ -86,9 +86,11 @@ async function main() {
             ""
         ].join("\n")
     );
-    await test("ex31.chm", ["a"]);
+    await test("ex31.chm", ["\ta", ""]);
     await test("ex32.chm", ["BC"]);
     await test("ex33.chm", ["bd"]);
+    await test("ex34.chm", ["14", "10", ""]);
+    await test("ex36.chm", ["Yes", ""]);
 }
 
 async function test(filepath, expected, optionalInput) {
