@@ -460,7 +460,7 @@ function generateFunCall(node, context, scope) {
         return explicitTypeCast(node, context, scope);
     }
     if (!context.funTable.has(funName)) {
-        throw new Error(`${locInfo(node.fun_name)}: Trying to call function ${funName} which is not defined (yet)`);
+        throw new Error(`${locInfo(node.fun_name)}: Trying to call function ${funName} which is not defined`);
     }
     const topCode = [];
     const funSig = context.funTable.get(funName);
@@ -558,6 +558,9 @@ function generateFieldAccessor(node, context, scope) {
     const llStructType = llStructPtrType.substring(0, llStructPtrType.length - 1);
     const structDef = context.structTable.get(structType);
     const index = indexWhere(structDef.entries, (entry) => entry.field_name.value === fieldName);
+    if (index === -1) {
+        throw new Error(`${locInfo(node.left)}: Cannot find field ${fieldName} on struct ${structType}`);
+    }
     const fieldDef = structDef.entries[index];
     const fieldType = fieldDef.field_type.value;
     const llFieldType = context.dataTypeMap.get(fieldType);

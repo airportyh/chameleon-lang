@@ -5,17 +5,20 @@ backends.
 
 ## Todos
 
+* implement binary trees
 * check for fun call arguments mismatch
+* attach line number info with each AST node (like fun lang and play lang)
 * and, or, and not operators
-* error handling - what if segfault? stackoverflow (looks like this results in segfault anyway)
-* allow assigning to struct fields
+* character literals
+* comments
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
-* strings (maybe implemented in the language)
+* error due to forgetting to alloc (and then dereferencing)
+* error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
 * garbage collector
-* character literals
+* allow assigning to struct fields
+* strings (maybe implemented in the language)
 * string literals
-* implement binary trees
 * do some code challenges
 * multiple return values for functions
 * modules

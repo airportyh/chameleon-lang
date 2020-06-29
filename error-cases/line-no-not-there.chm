@@ -1,0 +1,106 @@
+struct LList {
+    char: int
+    next: LList
+}
+
+struct BTreeMap {
+    key: long
+    value: LList
+    left: BTreeMap
+    right: BTreeMap
+}
+
+fun main(): int [
+    tree:BTreeMap = null
+    tree = btree_insert(5 llist(65 null) tree)
+    tree = btree_insert(1 llist(66 null) tree)
+    tree = btree_insert(10 llist(67 null) tree)
+    while true [
+        input = prompt(llist(62 llist(32 null)))
+        if input != null [
+            if input.char == 113 [
+                break
+            ]
+        ]
+    ]
+    print_tree(tree 0)
+    return 0
+]
+
+fun prompt(message:LList): LList [
+    print_string(message)
+    return user_input(null)
+]
+
+fun user_input(chars:LList): LList [
+    char = getchar()
+    if char == 10 [
+        return chars
+    ]
+    return llist(char user_input(chars))
+]
+
+fun print_tree(tree:BTreeMap level:int) [
+    if tree != null [
+        print_indent(level)
+        print_long(tree.key)
+        putchar(58)
+        print_string(tree.value)
+        putchar(10)
+        print_tree(tree.left level + 1)
+        print_tree(tree.right level + 1)
+    ]
+]
+
+fun print_long(num:long) [
+    if num > 0 [
+        digit = num % 10
+        print_long(num / 10)
+        putchar(48 + digit)
+    ]
+]
+
+fun print_indent(amount:int) [
+    while amount > 0 [
+        putchar(32)
+        putchar(32)
+        putchar(32)
+        putchar(32)
+        amount = amount - 1
+    ]
+]
+
+fun print_string(string:LList) [
+    if string != null [
+        putchar(string.char)
+        print_string(string.next)
+    ]
+]
+
+fun btree_insert(key:long value:LList btree:BTreeMap): BTreeMap [
+    if btree == null [
+        return btree(key value null null)
+    ]
+    if key > btree.key [
+        new_right = btree_insert(key value btree.right)
+        return btree(btree.key btree.value btree.left new_right)
+    ]
+    new_left = btree_insert(key value btree.left)
+    return btree(btree.key btree.value new_left btree.right)
+]
+
+fun btree(key:long value:LList left:BTreeMap right:BTreeMap): BTreeMap [
+    return alloc BTreeMap {
+        key = key
+        value = value
+        left = left
+        right = right
+    }
+]
+
+fun llist(char:int next:LList): LList [
+    return alloc LList {
+        char = char
+        next = next
+    }
+]

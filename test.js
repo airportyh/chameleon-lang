@@ -60,6 +60,32 @@ async function main() {
     await test("ex27.chm", ["Name: Hello, Linus!", ""], "Linus\n");
     await test("ex28.chm", ["A"], "134\n");
     await test("ex28.chm", ["B"], "13\n");
+    await test("ex30.chm", 
+        [
+            "> > Key:Val:> Key:Val:> 10:Marty",
+            "    7:Linus",
+            "> Key:Val:> 10:Marty",
+            "    7:Linus",
+            "    12:Emma",
+            "> "
+        ],
+        [
+            "p",
+            "i",
+            "10",
+            "Marty",
+            "i",
+            "7",
+            "Linus",
+            "p",
+            "i",
+            "12",
+            "Emma",
+            "p",
+            "q",
+            ""
+        ].join("\n")
+    );
 }
 
 async function test(filepath, expected, optionalInput) {
@@ -85,6 +111,7 @@ async function test(filepath, expected, optionalInput) {
                 `Actual:`,
                 indent(output.stdout)
             ].join("\n")))
+            console.log(indent(JSON.stringify(output.stdout.split("\n"), null, "    ")));
         } else {
             console.error(`Test ${filepath} OK`);
         }
