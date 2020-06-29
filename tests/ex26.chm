@@ -1,0 +1,19 @@
+struct LinkedList {
+    data: int
+    next: LinkedList
+}
+
+fun empty(): LinkedList [
+    return null
+]
+
+fun convert(num:long): int [
+    return num
+]
+
+fun main(): int [
+    list = empty()
+    x:long = 67
+    putchar(convert(x))
+    return 0
+]

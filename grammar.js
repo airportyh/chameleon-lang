@@ -37,6 +37,7 @@ var grammar = {
     {"name": "statement", "symbols": ["while"], "postprocess": id},
     {"name": "statement", "symbols": ["struct_def"], "postprocess": id},
     {"name": "statement", "symbols": ["free"], "postprocess": id},
+    {"name": "statement", "symbols": ["break"], "postprocess": id},
     {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
@@ -186,7 +187,7 @@ var grammar = {
                 alternate: data[5] && data[5][3]
             };
         }
-            },
+                },
     {"name": "if_alternate", "symbols": ["if"], "postprocess": id},
     {"name": "if_alternate", "symbols": ["code_block"], "postprocess": id},
     {"name": "while", "symbols": [{"literal":"while"}, "__", "expr", "__", "code_block"], "postprocess": 
@@ -197,7 +198,14 @@ var grammar = {
                 body: data[4]
             };
         }
-            },
+                },
+    {"name": "break", "symbols": [{"literal":"break"}], "postprocess": 
+        () => {
+            return {
+                type: "break"
+            };
+        }
+                },
     {"name": "struct_def", "symbols": [{"literal":"struct"}, "__", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"{"}, "MLWS", "struct_def_entry_list", "MLWS", {"literal":"}"}], "postprocess": 
         (data) => {
             return {

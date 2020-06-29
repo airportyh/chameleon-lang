@@ -58,7 +58,7 @@ async function main() {
         dataTypeMap,
         structTable
     };
-    const { topCode } = generate(ast, context, null);
+    const { topCode } = generate(ast, context, []);
     await fs.writeFile(outputFilename, topCode.join("\n"));
     console.log(`Wrote ${outputFilename}.`);
 }
@@ -72,35 +72,37 @@ returns {
 }
 
 */
-function generate(node, context, variables) {
+function generate(node, context, scope) {
     if (node.type === "program") {
-        return generateProgram(node, context, null);
+        return generateProgram(node, context, scope);
     } else if (node.type === "var_assign") {
-        return generateVarAssign(node, context, variables);
+        return generateVarAssign(node, context, scope);
     } else if (node.type === "identifier") {
-        return generateVarRef(node, context, variables);
+        return generateVarRef(node, context, scope);
     } else if (node.type === "bin_expr") {
-        return generateBinExpr(node, context, variables);
+        return generateBinExpr(node, context, scope);
     } else if (node.type === "fun_call") {
-        return generateFunCall(node, context, variables);
+        return generateFunCall(node, context, scope);
     } else if (node.type === "number") {
-        return generateNumberConstant(node, context, variables);
+        return generateNumberConstant(node, context, scope);
     } else if (node.type === "fun_def") {
-        return generateFunDef(node, context, variables);
+        return generateFunDef(node, context, scope);
     } else if (node.type === "return") {
-        return generateReturn(node, context, variables);
+        return generateReturn(node, context, scope);
     } else if (node.type === "if") {
-        return generateIf(node, context, variables);
+        return generateIf(node, context, scope);
     } else if (node.type === "while") {
-        return generateWhile(node, context, variables);
+        return generateWhile(node, context, scope);
+    } else if (node.type === "break") {
+        return generateBreak(node, context, scope);
     } else if (node.type === "struct_literal") {
-        return generateStructLiteral(node, context, variables);
+        return generateStructLiteral(node, context, scope);
     } else if (node.type === "alloc") {
-        return generateAlloc(node, context, variables);
+        return generateAlloc(node, context, scope);
     } else if (node.type === "struct_def") {
-        return generateStructDef(node, context, variables);
+        return generateStructDef(node, context, scope);
     } else if (node.type === "free") {
-        return generateFree(node, context, variables);
+        return generateFree(node, context, scope);
     } else if (node.type === "null_literal") {
         return generateNullLiteral();
     } else if (node.type === "bool_literal") {
@@ -127,8 +129,8 @@ function generateBoolLiteral(node) {
     };
 }
 
-function generateFree(node, context, variables) {
-    const value = generate(node.value, context, variables);
+function generateFree(node, context, scope) {
+    const value = generate(node.value, context, scope);
     const llDataType = context.dataTypeMap.get(value.dataType);
     const topCode = [
         ...value.topCode
@@ -176,7 +178,7 @@ function getSizeForType(dataType, context) {
 }
 
 // varName is passed in as the variable name to assign the struct pointer to
-function generateAlloc(node, context, variables) {
+function generateAlloc(node, context, scope) {
     const topCode = [];
     const tempVar = newTempVar(context);
     const structPtrVar = newTempVar(context);
@@ -187,7 +189,7 @@ function generateAlloc(node, context, variables) {
     const size = getStructSize(structDef, context);
     topCode.push(`${tempVar} = call i8* @malloc(i32 ${size})`);
     topCode.push(`${structPtrVar} = bitcast i8* ${tempVar} to ${llType}`);
-    const fieldInit = generateFieldInitialization(structPtrVar, structNode, context, variables);
+    const fieldInit = generateFieldInitialization(structPtrVar, structNode, context, scope);
     topCode.push(...fieldInit.topCode);
     return {
         topCode,
@@ -198,7 +200,7 @@ function generateAlloc(node, context, variables) {
 
 // Precondition: node.value is a struct_literal node
 // varName is passed in as the variable name to assign the struct pointer to
-function generateStructLiteral(node, context, variables) {
+function generateStructLiteral(node, context, scope) {
     const topCode = [];
     const structName = node.structName.value;
     const structId = `%struct.${structName}`;
@@ -208,7 +210,7 @@ function generateStructLiteral(node, context, variables) {
     if (!structDef) {
         throw new Error(`Undefined struct ${structName}`);
     }
-    const fieldInit = generateFieldInitialization(tempVarName, node, context, variables);
+    const fieldInit = generateFieldInitialization(tempVarName, node, context, scope);
     topCode.push(...fieldInit.topCode);
     const retval = {
         topCode,
@@ -218,7 +220,7 @@ function generateStructLiteral(node, context, variables) {
     return retval;
 }
 
-function generateFieldInitialization(varName, structNode, context, variables) {
+function generateFieldInitialization(varName, structNode, context, scope) {
     const topCode = [];
     const structName = structNode.structName.value;
     const structId = `%struct.${structName}`;
@@ -227,7 +229,7 @@ function generateFieldInitialization(varName, structNode, context, variables) {
         const fieldDef = structDef.entries[i];
         const fieldType = fieldDef.field_type.value;
         const llFieldType = context.dataTypeMap.get(fieldType);
-        const fieldValue = generate(structNode.entries[i].field_value, context, variables);
+        const fieldValue = generate(structNode.entries[i].field_value, context, scope);
         const fieldValueTempVar = newTempVar(context);
         topCode.push(...fieldValue.topCode);
         topCode.push(`${fieldValueTempVar} = getelementptr inbounds ${structId}, ${structId}* ${varName}, i32 0, i32 ${i}`);
@@ -240,7 +242,7 @@ function generateFieldInitialization(varName, structNode, context, variables) {
     };
 }
 
-function generateStructDef(node, context, variables) {
+function generateStructDef(node, context, scope) {
     const structName = node.name.value;
     const llStructType = "%struct." + structName;
     context.structTable.set(structName, node);
@@ -258,8 +260,8 @@ function generateStructDef(node, context, variables) {
     };
 }
 
-function generateWhile(node, context, variables) {
-    const cond = generate(node.cond, context, variables);
+function generateWhile(node, context, scope) {
+    const cond = generate(node.cond, context, scope);
     const id = context.nextTemp++;
     const loopTopLabel = "loop_top" + id;
     const loopBodyLabel = "loop_body" + id;
@@ -270,8 +272,14 @@ function generateWhile(node, context, variables) {
     topCode.push(`${loopTopLabel}:`);
     topCode.push(...cond.topCode);
     topCode.push(`br i1 ${cond.valueCode}, label %${loopBodyLabel}, label %${loopExitLabel}`);
+    
+    const newScope = {
+        type: "loop",
+        exitLabel: loopExitLabel
+    };
+    
     const bodyTopCode = node.body.reduce((allTopCode, statement) => {
-        const result = generate(statement, context, variables);
+        const result = generate(statement, context, [newScope, ...scope]);
         return allTopCode.concat(result.topCode);
     }, []);
     topCode.push("");
@@ -287,9 +295,21 @@ function generateWhile(node, context, variables) {
     }
 }
 
-function generateIf(node, context, variables) {
+function generateBreak(node, context, scope) {
+    const whileScope = getCurrentLoop(scope);
+    if (!whileScope) {
+        throw new Error(`${locInfo(node)}: Break statement used outside of a loop`);
+    }
+    return {
+        topCode: [`br label %${whileScope.exitLabel}`],
+        valueCode: null,
+        dataType: null
+    };
+}
+
+function generateIf(node, context, scope) {
     const topCode = [];
-    const cond = generate(node.cond, context, variables);
+    const cond = generate(node.cond, context, scope);
     topCode.push(...cond.topCode);
     const id = context.nextTemp++;
     const trueLabel = "if_true" + id;
@@ -299,7 +319,7 @@ function generateIf(node, context, variables) {
         topCode.push(`br i1 ${cond.valueCode}, label %${trueLabel}, label %${exitLabel}`);
         // generate 2 blocks: if_true and if_exit
         const consequentTopCode = node.consequent.reduce((allTopCode, statement) => {
-            const result = generate(statement, context, variables);
+            const result = generate(statement, context, scope);
             return allTopCode.concat(result.topCode);
         }, []);
         
@@ -313,7 +333,7 @@ function generateIf(node, context, variables) {
         topCode.push(`br i1 ${cond.valueCode}, label %${trueLabel}, label %${falseLabel}`);
         
         const consequentTopCode = node.consequent.reduce((allTopCode, statement) => {
-            const result = generate(statement, context, variables);
+            const result = generate(statement, context, scope);
             return allTopCode.concat(result.topCode);
         }, []);
         
@@ -321,11 +341,11 @@ function generateIf(node, context, variables) {
         
         if (Array.isArray(node.alternate)) {
             alternateTopCode = node.alternate.reduce((allTopCode, statement) => {
-                const result = generate(statement, context, variables);
+                const result = generate(statement, context, scope);
                 return allTopCode.concat(result.topCode);
             }, []);
         } else if (node.alternate.type === "if") {
-            const alternate = generate(node.alternate, context, variables);
+            const alternate = generate(node.alternate, context, scope);
             alternateTopCode = alternate.topCode;
         } else {
             throw new Error(`Unexpected alternate type`);
@@ -348,21 +368,25 @@ function generateIf(node, context, variables) {
     };
 }
 
-function generateReturn(node, context, variables) {
-    const valueResult = generate(node.value, context, variables);
-    const llDataType = context.dataTypeMap.get(valueResult.dataType);
+function generateReturn(node, context, scope) {
+    const value = generate(node.value, context, scope);
+    const fun = getCurrentFun(scope);
+    const outputType = fun.funSig.output;
+    const typeCast = implicitTypeCast(value.dataType, outputType, value.valueCode, context, node);
+    const llDataType = context.dataTypeMap.get(typeCast.dataType);
     const topCode = [
-        ...valueResult.topCode,
-        `ret ${llDataType} ${valueResult.valueCode}`
+        ...value.topCode,
+        ...typeCast.topCode,
+        `ret ${llDataType} ${typeCast.valueCode}`
     ];
     return {
         topCode,
         valueCode: null,
-        dataType: valueResult.dataType
+        dataType: typeCast.dataType
     };
 }
 
-function generateFunDef(node, context) {
+function generateFunDef(node, context, scope) {
     const variables = new Map();
     const paramList = [];
     const allocaStoreInstructions = [];
@@ -388,10 +412,17 @@ function generateFunDef(node, context) {
     funSig.output = outputType;
     context.funTable.set(funName, funSig);
     
+    const newScope = {
+        type: "fun",
+        funName,
+        funSig,
+        variables
+    };
+    
     const body = 
         allocaStoreInstructions.concat(
         node.body.map(statement => {
-            const { topCode } = generate(statement, context, variables);
+            const { topCode } = generate(statement, context, [newScope, ...scope]);
             return topCode.join("\n");
         }));
     if (outputType === "void") {
@@ -414,7 +445,7 @@ function generateFunDef(node, context) {
     };
 }
 
-function generateNumberConstant(node, context, variables) {
+function generateNumberConstant(node, context) {
     let dataType;
     if (node.value.indexOf(".") === -1) {
         dataType = "int";
@@ -428,10 +459,10 @@ function generateNumberConstant(node, context, variables) {
     };
 }
 
-function generateFunCall(node, context, variables) {
+function generateFunCall(node, context, scope) {
     const funName = node.fun_name.value;
     if (context.dataTypeMap.has(funName)) {
-        return explicitTypeCast(node, context, variables);
+        return explicitTypeCast(node, context, scope);
     }
     if (!context.funTable.has(funName)) {
         throw new Error(`${locInfo(node.fun_name)}: Trying to call function ${funName} which is not defined (yet)`);
@@ -442,7 +473,7 @@ function generateFunCall(node, context, variables) {
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
     const argList = [];
     for (let i = 0; i < node.arguments.length; i++) {
-        const arg = generate(node.arguments[i], context, variables);
+        const arg = generate(node.arguments[i], context, scope);
         topCode.push(...arg.topCode);
         const argNode = node.arguments[i];
         const sigDataType = funSig.input[i];
@@ -473,14 +504,14 @@ function generateFunCall(node, context, variables) {
 // An explicit type cast is issued by the programmer as a function call, i.e.: int(n)
 // Assumes the node parameter is a funCall node
 // Only handles numeric types at the moment
-function explicitTypeCast(node, context, variables) {
+function explicitTypeCast(node, context, scope) {
     const topCode = [];
     const destDataType = node.fun_name.value;
     const llDestDataType = context.dataTypeMap.get(destDataType);
     if (node.arguments.length > 1) {
         throw new Error(`${locInfo(node.fun_name)}: A type cast expression can only handle one argument, ${node.arguments.length} was given.`);
     }
-    const value = generate(node.arguments[0], context, variables);
+    const value = generate(node.arguments[0], context, scope);
     topCode.push(...value.topCode);
     const srcDataType = value.dataType;
     let typeCast;
@@ -511,9 +542,9 @@ function explicitTypeCast(node, context, variables) {
     };
 }
 
-function generateFieldAccessor(node, context, variables) {
+function generateFieldAccessor(node, context, scope) {
     const topCode = [];
-    const left = generate(node.left, context, variables);
+    const left = generate(node.left, context, scope);
     topCode.push(...left.topCode);
     
     const structType = left.dataType;
@@ -558,13 +589,13 @@ function indexWhere(arr, pred) {
     return -1;
 }
 
-function generateBinExpr(node, context, variables) {
+function generateBinExpr(node, context, scope) {
     const operator = node.operator.value;
     if (operator === ".") {
-        return generateFieldAccessor(node, context, variables);
+        return generateFieldAccessor(node, context, scope);
     }
-    const left = generate(node.left, context, variables);
-    const right = generate(node.right, context, variables);
+    const left = generate(node.left, context, scope);
+    const right = generate(node.right, context, scope);
     
     const topCode = [
         ...left.topCode,
@@ -682,12 +713,12 @@ function generatePointerOperation(operator, dataType, valueCode1, valueCode2, co
     };
 }
 
-function generateVarRef(node, context, variables) {
+function generateVarRef(node, context, scope) {
     const varName = node.value;
-    if (!variables.has(varName)) {
+    const dataType = getVariableType(varName, scope);
+    if (!dataType) {
         throw new Error(`${locInfo(node)}: Reference to unknown variable ${varName}`);
     }
-    const dataType = variables.get(varName);
     const llDataType = context.dataTypeMap.get(dataType);
     const tempVarName = "%tmp" + context.nextTemp++;
     if (!llDataType) {
@@ -703,16 +734,16 @@ function generateVarRef(node, context, variables) {
     };
 }
 
-function generateVarAssign(node, context, variables) {
+function generateVarAssign(node, context, scope) {
     const topCode = [];
     const varName = node.var_name.value;
     const definedDataType = node.data_type && node.data_type.value;
-    const prevDefinedDataType = variables.get(varName);
+    const prevDefinedDataType = getVariableType(varName, scope);
     if (definedDataType && prevDefinedDataType) {
         throw new Error(`${locInfo(node.var_name)}: Cannot re-define the data type of variable ${varName}.`);
     }
 
-    const value = generate(node.value, context, variables);
+    const value = generate(node.value, context, scope);
     topCode.push(...value.topCode);
     
     let valueCode, dataType;
@@ -731,8 +762,9 @@ function generateVarAssign(node, context, variables) {
     }
     
     const llDataType = context.dataTypeMap.get(dataType);
-    if (!variables.has(varName)) {
-        variables.set(varName, dataType);
+    if (!getVariableType(varName, scope)) {
+        const currentFun = getCurrentFun(scope);
+        currentFun.variables.set(varName, dataType);
         topCode.push(`%${varName} = alloca ${llDataType}`);
     }
     topCode.push(
@@ -745,7 +777,7 @@ function generateVarAssign(node, context, variables) {
     };
 }
 
-function generateProgram(node, context) {
+function generateProgram(node, context, scope) {
     const builtInFuns = [
         `declare i32 @putchar(i32)`,
         `declare i32 @getchar()`,
@@ -755,7 +787,7 @@ function generateProgram(node, context) {
     ];
     const topCode = builtInFuns.concat(
         node.body.map(statement => {
-            const { topCode } = generate(statement, context, null);
+            const { topCode } = generate(statement, context, scope);
             return topCode.join("\n");
         }));
     return {
@@ -938,5 +970,36 @@ function isStructType(dataType, context) {
 function isStructTypeOrNull(dataType, context) {
     return dataType === "null" || isStructType(dataType, context);
 }
+
+function getVariableType(varName, scope) {
+    for (let i = 0; i < scope.length; i++) {
+        const current = scope[i];
+        if (current.variables && current.variables.has(varName)) {            
+            return current.variables.get(varName);
+        }
+    }
+    return null;
+}
+
+function getCurrentFun(scope) {
+    for (let i = 0; i < scope.length; i++) {
+        const current = scope[i];
+        if (current.type === "fun") {            
+            return current;
+        }
+    }
+    return null;
+}
+
+function getCurrentLoop(scope) {
+    for (let i = 0; i < scope.length; i++) {
+        const current = scope[i];
+        if (current.type === "loop") {            
+            return current;
+        }
+    }
+    return null;
+}
+
 
 main().catch(err => console.log(err.stack));

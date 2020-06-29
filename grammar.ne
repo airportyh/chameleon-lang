@@ -45,6 +45,7 @@ statement
     |  while           {% id %}
     |  struct_def      {% id %}
     |  free            {% id %}
+    |  break           {% id %}
 
 var_assign
     -> %identifier _ type_def _ "=" _ expr
@@ -233,16 +234,16 @@ return
 if
     -> "if" __ expr __ code_block
        (_ "else" _ if_alternate):?
-    {%
-        (data) => {
-            return {
-                type: "if",
-                cond: data[2],
-                consequent: data[4],
-                alternate: data[5] && data[5][3]
-            };
-        }
-    %}
+        {%
+            (data) => {
+                return {
+                    type: "if",
+                    cond: data[2],
+                    consequent: data[4],
+                    alternate: data[5] && data[5][3]
+                };
+            }
+        %}
 
 if_alternate
     -> if          {% id %}
@@ -250,15 +251,25 @@ if_alternate
 
 while
     -> "while" __ expr __ code_block
-    {%
-        (data) => {
-            return {
-                type: "while",
-                cond: data[2],
-                body: data[4]
-            };
-        }
-    %}
+        {%
+            (data) => {
+                return {
+                    type: "while",
+                    cond: data[2],
+                    body: data[4]
+                };
+            }
+        %}
+
+break
+    -> "break"
+        {%
+            () => {
+                return {
+                    type: "break"
+                };
+            }
+        %}
 
 struct_def
     -> "struct" __ %identifier _ "{" MLWS struct_def_entry_list MLWS "}"

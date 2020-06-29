@@ -5,11 +5,10 @@ backends.
 
 ## Todos
 
-* break statement for while
 * check for fun call arguments mismatch
+* and, or, and not operators
 * allow assigning to struct fields
 * prompt for input
-* implicit type cast for return statements
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
 * strings (maybe implemented in the language)
@@ -34,6 +33,8 @@ also return my error message instead of going through to LL
 * type checker that gives good error messages
 * operator precedence
 
+* break statement for while (done)
+* implicit type cast for return statements (done)
 * write a test for exec that needs stdin (done)
 * allow void functions to work (done)
 * implement implicit type casting for ints to floats but not longs to floats(done)
