@@ -470,12 +470,15 @@ function genFunCall(node, context, scope) {
         return explicitTypeCast(node, context, scope);
     }
     if (!context.funTable.has(funName)) {
-        throw new Error(`${locInfo(node.fun_name)}: Trying to call function ${funName} which is not defined`);
+        throw new Error(`${locInfo(node)}: Trying to call function ${funName} which is not defined`);
     }
     const topCode = [];
     const funSig = context.funTable.get(funName);
     const outputDataType = funSig.output;
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
+    if (funSig.input.length !== node.arguments.length) {
+        throw new Error(`${locInfo(node)}: Function ${funName} accepts ${funSig.input.length} arguments, but was given ${node.arguments.length}`);
+    }
     const argList = [];
     for (let i = 0; i < node.arguments.length; i++) {
         const arg = gen(node.arguments[i], context, scope);
@@ -626,10 +629,17 @@ function genBinExpr(node, context, scope) {
         operation = genIntegerOperation(
             operator, dataType, twoWayTypeCast.valueCode1, 
             twoWayTypeCast.valueCode2, context, node);
-    } else {
+    } else if (isStructTypeOrNull(dataType, context)) {
         operation = genPointerOperation(
             operator, dataType, twoWayTypeCast.valueCode1, 
             twoWayTypeCast.valueCode2, context, node);
+    } else if (dataType === "bool") {
+        operation = genBoolOperation(
+            operator, twoWayTypeCast.valueCode1,
+            twoWayTypeCast.valueCode2, context, node
+        );
+    } else {
+        throw new Error(`${locInfo(node)}: Unable to find instruction for operator ${operator} for type ${dataType}`);
     }
     
     topCode.push(...operation.topCode);
@@ -718,6 +728,26 @@ function genPointerOperation(operator, dataType, valueCode1, valueCode2, context
         topCode,
         valueCode: tempVar,
         dataType: dataType
+    };
+}
+
+function genBoolOperation(operator, valueCode1, valueCode2, context, node) {
+    const instructionTable = {
+        "and": "and",
+        "or": "or"
+    };
+    const ins = instructionTable[operator];
+    if (!ins) {
+        throw new Error(`${locInfo(node)}: Unable to find bool instruction for operator ${operator}`);
+    }
+    const tempVar = newTempVar(context);
+    const topCode = [
+        `${tempVar} = ${ins} i1 ${valueCode1}, ${valueCode2}`
+    ];
+    return {
+        topCode,
+        valueCode: tempVar,
+        dataType: "bool"
     };
 }
 

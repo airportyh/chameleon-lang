@@ -18,7 +18,9 @@ const lexer = moo.compile({
           null_literal: [
               "null"
           ],
-          break_statement: [ "break" ]
+          break_statement: [ "break" ],
+          operator: ["and", "or"],
+          unary_operator: ["not"]
       })
   },
   char_literal: {

@@ -87,6 +87,7 @@ async function main() {
         ].join("\n")
     );
     await test("ex31.chm", ["a"]);
+    await test("ex32.chm", ["BC"]);
 }
 
 async function test(filepath, expected, optionalInput) {

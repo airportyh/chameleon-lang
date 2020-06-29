@@ -1,0 +1,19 @@
+fun main(): int [
+    a = true
+    b = false
+    c = true
+    d = false
+    if a and b [
+        putchar('A')
+    ]
+    if a and c [
+        putchar('B')
+    ]
+    if a or b [
+        putchar('C')
+    ]
+    if b or d [
+        putchar('D')
+    ]
+    return 0
+]

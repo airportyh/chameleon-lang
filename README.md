@@ -5,18 +5,18 @@ backends.
 
 ## Todos
 
-* check for fun call arguments mismatch
-* and, or, and not operators
+* not operators
 * comments
+* operator precedence
 
 * implement binary trees
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
-* code blocks to have end pos info
 * error due to forgetting to alloc (and then dereferencing)
 * error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
 * garbage collector
 * allow assigning to struct fields
+* code blocks to have end pos info
 * strings (maybe implemented in the language)
 * string literals
 * do some code challenges
@@ -35,8 +35,9 @@ also return my error message instead of going through to LL
 * web assembly backend?
 * experiment with optimization
 * type checker that gives good error messages
-* operator precedence
 
+* and, or operators (done)
+* check for fun call arguments mismatch (done)
 * attach line number info with each AST node (like fun lang and play lang) (done)
 * character literals (done)
 * allow defining referenced functions later (done)
