@@ -148,6 +148,7 @@ unary_expr
     |  null_literal    {% id %}
     |  bool_literal    {% id %}
     |  char_literal    {% id %}
+    |  not   {% id %}
     
 var_ref
     -> %identifier     {% idSimplifyToken %}
@@ -421,6 +422,19 @@ free
                     start: tokenStart(data[0]),
                     end: data[2].end,
                     value: data[2]
+                };
+            }
+        %}
+
+not
+    -> "not" __ expr
+        {%
+            (data) => {
+                return {
+                    type: "not",
+                    start: tokenStart(data[0]),
+                    end: data[2].end,
+                    operand: data[2]
                 };
             }
         %}

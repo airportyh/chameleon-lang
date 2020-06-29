@@ -103,6 +103,8 @@ function gen(node, context, scope) {
         return genStructDef(node, context, scope);
     } else if (node.type === "free") {
         return genFree(node, context, scope);
+    } else if (node.type === "not") {
+        return genNot(node, context, scope);
     } else if (node.type === "null_literal") {
         return genNullLiteral();
     } else if (node.type === "bool_literal") {
@@ -112,6 +114,19 @@ function gen(node, context, scope) {
     } else {
         throw new Error("Unsupported node type: " + node.type + ": " + JSON.stringify(node));
     }
+}
+
+function genNot(node, context, scope) {
+    const operand = gen(node.operand, context, scope);
+    const tempVar = newTempVar(context);
+    return {
+        topCode: [
+            ...operand.topCode,
+            `${tempVar} = icmp eq i1 ${operand.valueCode}, 0`
+        ],
+        valueCode: tempVar,
+        dataType: "bool"
+    };
 }
 
 function genNullLiteral() {

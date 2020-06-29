@@ -5,7 +5,6 @@ backends.
 
 ## Todos
 
-* not operators
 * comments
 * operator precedence
 
@@ -36,6 +35,7 @@ also return my error message instead of going through to LL
 * experiment with optimization
 * type checker that gives good error messages
 
+* not operators (done)
 * and, or operators (done)
 * check for fun call arguments mismatch (done)
 * attach line number info with each AST node (like fun lang and play lang) (done)

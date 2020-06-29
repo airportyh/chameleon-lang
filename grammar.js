@@ -127,6 +127,7 @@ var grammar = {
     {"name": "unary_expr", "symbols": ["null_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["bool_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["char_literal"], "postprocess": id},
+    {"name": "unary_expr", "symbols": ["not"], "postprocess": id},
     {"name": "var_ref", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": idSimplifyToken},
     {"name": "fun_call", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_argument_list"], "postprocess": 
         (data) => {
@@ -332,6 +333,16 @@ var grammar = {
                 start: tokenStart(data[0]),
                 end: data[2].end,
                 value: data[2]
+            };
+        }
+                },
+    {"name": "not", "symbols": [{"literal":"not"}, "__", "expr"], "postprocess": 
+        (data) => {
+            return {
+                type: "not",
+                start: tokenStart(data[0]),
+                end: data[2].end,
+                operand: data[2]
             };
         }
                 },
