@@ -4,6 +4,40 @@
 function id(x) { return x[0]; }
 
 const lexer = require("./lexer.js");
+
+function tokenStart(token) {
+    return {
+        line: token.line,
+        col: token.col - 1,
+        offset: token.offset
+    };
+}
+
+function tokenEnd(token) {
+    const lastNewLine = token.text.lastIndexOf("\n");
+    if (lastNewLine !== -1) {
+        throw new Error("Unsupported case: token with line breaks");
+    }
+    return {
+        line: token.line,
+        col: token.col + token.text.length - 1,
+        offset: token.offset + token.text.length
+    };
+}
+
+function simplifyToken(token) {
+    return {
+        type: token.type,
+        value: token.value,
+        start: tokenStart(token),
+        end: tokenEnd(token)
+    };
+}
+
+function idSimplifyToken(data) {
+    return simplifyToken(data[0]);
+}
+
 var grammar = {
     Lexer: lexer,
     ParserRules: [
@@ -42,6 +76,8 @@ var grammar = {
         (data) => {
             return {
                 type: "var_assign",
+                start: tokenStart(data[0]),
+                end: data[6].end,
                 data_type: data[2],
                 var_name: data[0],
                 value: data[6]
@@ -52,6 +88,8 @@ var grammar = {
         (data) => {
             return {
                 type: "var_assign",
+                start: tokenStart(data[0]),
+                end: data[4].end,
                 var_name: data[0],
                 value: data[4]
             };
@@ -68,13 +106,15 @@ var grammar = {
         (data) => {
             return {
                 type: "bin_expr",
+                start: data[0].start,
+                end: data[4].end,
                 left: data[0],
                 operator: data[2],
                 right: data[4]
             };
         }
                 },
-    {"name": "unary_expr", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": id},
+    {"name": "unary_expr", "symbols": ["number"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["var_ref"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["fun_call"], "postprocess": id},
     {"name": "unary_expr", "symbols": [{"literal":"("}, "expr", {"literal":")"}], "postprocess": 
@@ -87,11 +127,13 @@ var grammar = {
     {"name": "unary_expr", "symbols": ["null_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["bool_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["char_literal"], "postprocess": id},
-    {"name": "var_ref", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": id},
+    {"name": "var_ref", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": idSimplifyToken},
     {"name": "fun_call", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_argument_list"], "postprocess": 
         (data) => {
             return {
                 type: "fun_call",
+                start: tokenStart(data[0]),
+                end: data[2].end,
                 fun_name: data[0],
                 arguments: data[2]
             };
@@ -115,6 +157,8 @@ var grammar = {
         (data) => {
             return {
                 type: "fun_def",
+                start: tokenStart(data[0]),
+                end: data[8].end,
                 fun_name: data[2],
                 data_type: data[6],
                 parameters: data[4],
@@ -126,6 +170,8 @@ var grammar = {
         (data) => {
             return {
                 type: "fun_def",
+                start: tokenStart(data[0]),
+                end: data[6].end,
                 fun_name: data[2],
                 parameters: data[4],
                 body: data[6]
@@ -150,6 +196,8 @@ var grammar = {
         (data) => {
             return {
                 type: "fun_param",
+                start: tokenStart(data[0]),
+                end: data[2].end,
                 name: data[0],
                 data_type: data[2]
             }
@@ -159,6 +207,8 @@ var grammar = {
         (data) => {
             return {
                 type: "fun_param",
+                start: tokenStart(data[0]),
+                end: tokenEnd(data[0]),
                 name: data[0]
             }
         }
@@ -172,6 +222,8 @@ var grammar = {
         (data) => {
             return {
                 type: "return",
+                start: tokenStart(data[0]),
+                end: data[2].end,
                 value: data[2]
             };
         }
@@ -184,6 +236,8 @@ var grammar = {
             return {
                 type: "if",
                 cond: data[2],
+                start: tokenStart(data[0]),
+                end: data[5] ? data[5][3].end : data[4].end,
                 consequent: data[4],
                 alternate: data[5] && data[5][3]
             };
@@ -195,22 +249,20 @@ var grammar = {
         (data) => {
             return {
                 type: "while",
+                start: tokenStart(data[0]),
+                end: data[4].end,
                 cond: data[2],
                 body: data[4]
             };
         }
                 },
-    {"name": "break", "symbols": [{"literal":"break"}], "postprocess": 
-        () => {
-            return {
-                type: "break"
-            };
-        }
-                },
+    {"name": "break", "symbols": [(lexer.has("break_statement") ? {type: "break_statement"} : break_statement)], "postprocess": idSimplifyToken},
     {"name": "struct_def", "symbols": [{"literal":"struct"}, "__", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"{"}, "MLWS", "struct_def_entry_list", "MLWS", {"literal":"}"}], "postprocess": 
         (data) => {
             return {
                 type: "struct_def",
+                start: tokenStart(data[0]),
+                end: tokenEnd(data[8]),
                 name: data[2],
                 entries: data[6]
             };
@@ -228,6 +280,8 @@ var grammar = {
         (data) => {
             return {
                 type: "struct_def_entry",
+                start: tokenStart(data[0]),
+                end: data[2].end,
                 field_name: data[0],
                 field_type: data[2]
             };
@@ -237,6 +291,8 @@ var grammar = {
         (data) => {
             return {
                 type: "struct_literal",
+                start: tokenStart(data[0]),
+                end: tokenEnd(data[6]),
                 structName: data[0],
                 entries: data[4]
             };
@@ -252,6 +308,8 @@ var grammar = {
         (data) => {
             return {
                 type: "struct_literal_entry",
+                start: tokenStart(data[0]),
+                end: data[4].end,
                 field_name: data[0],
                 field_value: data[4]
             };
@@ -261,6 +319,8 @@ var grammar = {
         (data) => {
             return {
                 type: "alloc",
+                start: tokenStart(data[0]),
+                end: data[2].end,
                 struct: data[2]
             };
         }
@@ -269,45 +329,16 @@ var grammar = {
         (data) => {
             return {
                 type: "free",
+                start: tokenStart(data[0]),
+                end: data[2].end,
                 value: data[2]
             };
         }
                 },
-    {"name": "null_literal", "symbols": [{"literal":"null"}], "postprocess":  
-        (data) => {
-            return {
-                ...data[0],
-                type: "null_literal"
-            };
-        }
-                },
-    {"name": "bool_literal", "symbols": [{"literal":"true"}], "postprocess": 
-        (data) => {
-            return {
-                ...data[0],
-                type: "bool_literal",
-                value: true
-            };
-        }
-                },
-    {"name": "bool_literal", "symbols": [{"literal":"false"}], "postprocess": 
-        (data) => {
-            return {
-                ...data[0],
-                type: "bool_literal",
-                value: false
-            };
-        }
-                },
-    {"name": "char_literal", "symbols": [(lexer.has("character") ? {type: "character"} : character)], "postprocess": 
-        (data) => {
-            return {
-                ...data[0],
-                type: "char_literal",
-                value: data[0].value[1]
-            }
-        }
-                },
+    {"name": "null_literal", "symbols": [(lexer.has("null_literal") ? {type: "null_literal"} : null_literal)], "postprocess": idSimplifyToken},
+    {"name": "bool_literal", "symbols": [(lexer.has("bool_literal") ? {type: "bool_literal"} : bool_literal)], "postprocess": idSimplifyToken},
+    {"name": "char_literal", "symbols": [(lexer.has("char_literal") ? {type: "char_literal"} : char_literal)], "postprocess": idSimplifyToken},
+    {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": idSimplifyToken},
     {"name": "MLWS", "symbols": ["nl_or_ws"]},
     {"name": "MLWS", "symbols": ["nl_or_ws", "MLWS"]},
     {"name": "nl_or_ws", "symbols": ["__"]},

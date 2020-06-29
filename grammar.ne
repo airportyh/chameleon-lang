@@ -1,5 +1,39 @@
 @{%
 const lexer = require("./lexer.js");
+
+function tokenStart(token) {
+    return {
+        line: token.line,
+        col: token.col - 1,
+        offset: token.offset
+    };
+}
+
+function tokenEnd(token) {
+    const lastNewLine = token.text.lastIndexOf("\n");
+    if (lastNewLine !== -1) {
+        throw new Error("Unsupported case: token with line breaks");
+    }
+    return {
+        line: token.line,
+        col: token.col + token.text.length - 1,
+        offset: token.offset + token.text.length
+    };
+}
+
+function simplifyToken(token) {
+    return {
+        type: token.type,
+        value: token.value,
+        start: tokenStart(token),
+        end: tokenEnd(token)
+    };
+}
+
+function idSimplifyToken(data) {
+    return simplifyToken(data[0]);
+}
+
 %}
 
 @lexer lexer
@@ -53,6 +87,8 @@ var_assign
             (data) => {
                 return {
                     type: "var_assign",
+                    start: tokenStart(data[0]),
+                    end: data[6].end,
                     data_type: data[2],
                     var_name: data[0],
                     value: data[6]
@@ -64,6 +100,8 @@ var_assign
             (data) => {
                 return {
                     type: "var_assign",
+                    start: tokenStart(data[0]),
+                    end: data[4].end,
                     var_name: data[0],
                     value: data[4]
                 };
@@ -86,6 +124,8 @@ bin_expr
             (data) => {
                 return {
                     type: "bin_expr",
+                    start: data[0].start,
+                    end: data[4].end,
                     left: data[0],
                     operator: data[2],
                     right: data[4]
@@ -94,9 +134,9 @@ bin_expr
         %}
 
 unary_expr
-    -> %number      {% id %}
-    |  var_ref      {% id %}
-    |  fun_call     {% id %}
+    -> number          {% id %}
+    |  var_ref         {% id %}
+    |  fun_call        {% id %}
     |  "(" expr ")"
         {%
             (data) => {
@@ -110,7 +150,7 @@ unary_expr
     |  char_literal    {% id %}
     
 var_ref
-    -> %identifier  {% id %}
+    -> %identifier     {% idSimplifyToken %}
 
 fun_call
     -> %identifier _ paranthesized_argument_list
@@ -118,6 +158,8 @@ fun_call
             (data) => {
                 return {
                     type: "fun_call",
+                    start: tokenStart(data[0]),
+                    end: data[2].end,
                     fun_name: data[0],
                     arguments: data[2]
                 };
@@ -151,6 +193,8 @@ fun_def
             (data) => {
                 return {
                     type: "fun_def",
+                    start: tokenStart(data[0]),
+                    end: data[8].end,
                     fun_name: data[2],
                     data_type: data[6],
                     parameters: data[4],
@@ -163,6 +207,8 @@ fun_def
             (data) => {
                 return {
                     type: "fun_def",
+                    start: tokenStart(data[0]),
+                    end: data[6].end,
                     fun_name: data[2],
                     parameters: data[4],
                     body: data[6]
@@ -198,6 +244,8 @@ fun_param
             (data) => {
                 return {
                     type: "fun_param",
+                    start: tokenStart(data[0]),
+                    end: data[2].end,
                     name: data[0],
                     data_type: data[2]
                 }
@@ -208,6 +256,8 @@ fun_param
             (data) => {
                 return {
                     type: "fun_param",
+                    start: tokenStart(data[0]),
+                    end: tokenEnd(data[0]),
                     name: data[0]
                 }
             }
@@ -227,6 +277,8 @@ return
             (data) => {
                 return {
                     type: "return",
+                    start: tokenStart(data[0]),
+                    end: data[2].end,
                     value: data[2]
                 };
             }
@@ -240,6 +292,8 @@ if
                 return {
                     type: "if",
                     cond: data[2],
+                    start: tokenStart(data[0]),
+                    end: data[5] ? data[5][3].end : data[4].end,
                     consequent: data[4],
                     alternate: data[5] && data[5][3]
                 };
@@ -256,6 +310,8 @@ while
             (data) => {
                 return {
                     type: "while",
+                    start: tokenStart(data[0]),
+                    end: data[4].end,
                     cond: data[2],
                     body: data[4]
                 };
@@ -263,14 +319,7 @@ while
         %}
 
 break
-    -> "break"
-        {%
-            () => {
-                return {
-                    type: "break"
-                };
-            }
-        %}
+    -> %break_statement      {% idSimplifyToken %}
 
 struct_def
     -> "struct" __ %identifier _ "{" MLWS struct_def_entry_list MLWS "}"
@@ -278,6 +327,8 @@ struct_def
             (data) => {
                 return {
                     type: "struct_def",
+                    start: tokenStart(data[0]),
+                    end: tokenEnd(data[8]),
                     name: data[2],
                     entries: data[6]
                 };
@@ -302,6 +353,8 @@ struct_def_entry
             (data) => {
                 return {
                     type: "struct_def_entry",
+                    start: tokenStart(data[0]),
+                    end: data[2].end,
                     field_name: data[0],
                     field_type: data[2]
                 };
@@ -314,6 +367,8 @@ struct_literal
             (data) => {
                 return {
                     type: "struct_literal",
+                    start: tokenStart(data[0]),
+                    end: tokenEnd(data[6]),
                     structName: data[0],
                     entries: data[4]
                 };
@@ -336,6 +391,8 @@ struct_literal_entry
             (data) => {
                 return {
                     type: "struct_literal_entry",
+                    start: tokenStart(data[0]),
+                    end: data[4].end,
                     field_name: data[0],
                     field_value: data[4]
                 };
@@ -348,6 +405,8 @@ alloc
             (data) => {
                 return {
                     type: "alloc",
+                    start: tokenStart(data[0]),
+                    end: data[2].end,
                     struct: data[2]
                 };
             }
@@ -359,55 +418,24 @@ free
             (data) => {
                 return {
                     type: "free",
+                    start: tokenStart(data[0]),
+                    end: data[2].end,
                     value: data[2]
                 };
             }
         %}
 
 null_literal
-    -> "null"
-        {% 
-            (data) => {
-                return {
-                    ...data[0],
-                    type: "null_literal"
-                };
-            }
-        %}
+    -> %null_literal    {% idSimplifyToken %}
         
 bool_literal
-    -> "true"
-        {%
-            (data) => {
-                return {
-                    ...data[0],
-                    type: "bool_literal",
-                    value: true
-                };
-            }
-        %}
-    |  "false"
-        {%
-            (data) => {
-                return {
-                    ...data[0],
-                    type: "bool_literal",
-                    value: false
-                };
-            }
-        %}
+    -> %bool_literal    {% idSimplifyToken %}
 
 char_literal
-    -> %character
-        {%
-            (data) => {
-                return {
-                    ...data[0],
-                    type: "char_literal",
-                    value: data[0].value[1]
-                }
-            }
-        %}
+    -> %char_literal    {% idSimplifyToken %}
+
+number
+    -> %number          {% idSimplifyToken %}
 
 # Multi-line whitespace
 MLWS

@@ -5,13 +5,15 @@ backends.
 
 ## Todos
 
-* implement binary trees
-* check for fun call arguments mismatch
 * attach line number info with each AST node (like fun lang and play lang)
+* check for fun call arguments mismatch
 * and, or, and not operators
 * comments
+
+* implement binary trees
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
+* code blocks to have end pos info
 * error due to forgetting to alloc (and then dereferencing)
 * error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
 * garbage collector

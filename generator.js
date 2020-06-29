@@ -93,7 +93,7 @@ function generate(node, context, scope) {
         return generateIf(node, context, scope);
     } else if (node.type === "while") {
         return generateWhile(node, context, scope);
-    } else if (node.type === "break") {
+    } else if (node.type === "break_statement") {
         return generateBreak(node, context, scope);
     } else if (node.type === "struct_literal") {
         return generateStructLiteral(node, context, scope);
@@ -126,7 +126,7 @@ function generateBoolLiteral(node) {
     const value = node.value;
     return {
         topCode: [],
-        valueCode: value ? "1" : "0",
+        valueCode: value === "true" ? "1" : "0",
         dataType: "bool"
     };
 }
@@ -966,8 +966,8 @@ function typeCast(instruction, type1, type2, valueCode, context) {
     };
 }
 
-function locInfo(token) {
-    return `Line ${token.line} column ${token.col}`;
+function locInfo(node) {
+    return `Line ${node.start.line} column ${node.start.col}`;
 }
 
 function newTempVar(context) {

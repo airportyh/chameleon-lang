@@ -9,13 +9,21 @@ const lexer = moo.compile({
       match: /[a-zA-Z_][a-zA-Z0-9_]*/,
       type: moo.keywords({
           keyword: [
-              "null", "alloc", "free", "fun", 
-              "return", "if", "else", "while", "struct",
-              "true", "false", "break"
-          ]
+              "alloc", "free", "fun", 
+              "return", "if", "else", "while", "struct"
+          ],
+          bool_literal: [
+              "true", "false"
+          ],
+          null_literal: [
+              "null"
+          ],
+          break_statement: [ "break" ]
       })
   },
-  character: /'[^\n"\\]'/,
+  char_literal: {
+      match: /'[^\n"\\]'/, value: (value) => value[1]
+  },
   string:  /"(?:\\["\\]|[^\n"\\])*"/,
   lparen:  '(',
   rparen:  ')',
