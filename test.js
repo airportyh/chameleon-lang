@@ -57,6 +57,7 @@ async function main() {
     await test("ex23.chm", ["Name: Hello, Marty!", ""], "Marty\n");
     await test("ex25.chm", ["0123456789:"]);
     await test("ex26.chm", ["C"]);
+    await test("ex27.chm", ["Name: Hello, Linus!", ""], "Linus\n");
 }
 
 async function test(filepath, expected, optionalInput) {
