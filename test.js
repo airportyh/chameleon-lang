@@ -91,6 +91,40 @@ async function main() {
     await test("ex33.chm", ["bd"]);
     await test("ex34.chm", ["14", "10", ""]);
     await test("ex36.chm", ["Yes", ""]);
+    await test("ex35.chm", 
+        [
+          "> > Key: Val: > Key: Val: > 10:Marty",
+          "    7:Linus",
+          "> Key: Val: > Key: Val: > 10:Martin",
+          "    7:Linus",
+          "    12:Emma",
+          "> Key: > 12:Emma",
+          "    7:Linus",
+          "> "
+        ],
+        [
+            "p",
+            "s",
+            "10",
+            "Marty",
+            "s",
+            "7",
+            "Linus",
+            "p",
+            "s",
+            "12",
+            "Emma",
+            "s",
+            "10",
+            "Martin",
+            "p",
+            "d",
+            "10",
+            "p",
+            "q",
+            ""
+        ].join("\n")
+    );
 }
 
 async function test(filepath, expected, optionalInput) {

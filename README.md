@@ -12,6 +12,7 @@ backends.
     * iteration
     * union
     * difference
+* modules
 * tests for erroring test cases
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL
@@ -24,7 +25,6 @@ also return my error message instead of going through to LL
 * string literals
 * do some code challenges
 * multiple return values for functions
-* modules
 * arrays
 * type classes / protocols
 * lambdas and closures

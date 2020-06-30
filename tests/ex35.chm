@@ -94,10 +94,10 @@ fun read_long(): long [
 
 fun print_indent(amount:int) [
     while amount > 0 [
-        putchar(32)
-        putchar(32)
-        putchar(32)
-        putchar(32)
+        putchar(' ')
+        putchar(' ')
+        putchar(' ')
+        putchar(' ')
         amount = amount - 1
     ]
 ]
