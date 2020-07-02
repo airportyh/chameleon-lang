@@ -1,0 +1,19 @@
+struct LList {
+    char: int
+    next: LList
+}
+
+struct Product {
+    name: LList
+    price: float
+}
+
+fun main(): int [
+    product: Product = null
+    putchar('A')
+    putchar('B')
+    putchar('C')
+    price = product.price
+    putchar('\n')
+    return 0
+]

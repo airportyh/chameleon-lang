@@ -26,7 +26,6 @@ const lexer = moo.compile({
   char_literal: {
       match: /'(?:\\[nt]|[^\n'\\])'/, value: (value) => {
           if (value.length == 4) {
-              console.log("value", value);
               const escapeCode = value[2];
               if (escapeCode === 'n') {
                   return 10;

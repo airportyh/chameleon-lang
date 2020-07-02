@@ -1,5 +1,5 @@
 fun main(): int [
-    a: long = (6 * 10) + 5
+    a: long = (6 * 2) + 5
     b = a + 4 - 2
     c = (b - 2) * (a + 4) - 2 + int(30.5)
     d = int(c)

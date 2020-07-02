@@ -1,0 +1,4 @@
+time node parse.js $1
+time node generator.js ${1%.chm}.ast
+time ./ll-to-bin ${1%.chm}.ll
+time ./${1%.chm}.bin

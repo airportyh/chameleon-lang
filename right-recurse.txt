@@ -1,0 +1,39 @@
+
+> chameleon@1.0.0 gen-parser /Users/airportyh/Home/Playground/chameleon
+> nearleyc grammar.ne -o grammar.js
+
+parsed tree . left
+parsed left . size
+parsed tree . (left.size)
+. = 20  . = 20
+fixing tree to: ((tree.left).size)
+parsed size + graph
+parsed left . (size+graph)
+. = 20  + = 14
+fixing tree to: ((left.size)+graph)
+parsed tree . ((left.size)+graph)
+. = 20  + = 14
+fixing tree to: ((tree.(left.size))+graph)
+parsed graph . top
+parsed size + (graph.top)
++ = 14  . = 20
+parsed left . (size+(graph.top))
+. = 20  + = 14
+fixing tree to: ((left.size)+(graph.top))
+parsed tree . ((left.size)+(graph.top))
+. = 20  + = 14
+fixing tree to: ((tree.(left.size))+(graph.top))
+parsed top . count
+parsed graph . (top.count)
+. = 20  . = 20
+fixing tree to: ((graph.top).count)
+parsed size + ((graph.top).count)
++ = 14  . = 20
+parsed left . (size+((graph.top).count))
+. = 20  + = 14
+fixing tree to: ((left.size)+((graph.top).count))
+parsed tree . ((left.size)+((graph.top).count))
+. = 20  + = 14
+fixing tree to: ((tree.(left.size))+((graph.top).count))
+Wrote tests/ex39.ast.
+putchar(((tree.(left.size))+((graph.top).count)))

@@ -5,7 +5,6 @@ backends.
 
 ## Todos
 
-* write test for ex35.chm
 * implement binary trees
     * delete (done)
     * rotations (auto-balancing)
@@ -39,6 +38,7 @@ also return my error message instead of going through to LL
 * experiment with optimization
 * type checker that gives good error messages
 
+* write test for ex35.chm (done)
 * comments (done)
 * newline and tab literals (done)
 * operator precedence (done)

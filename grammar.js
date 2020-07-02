@@ -56,6 +56,33 @@ function idSimplifyToken(data) {
     return simplifyToken(data[0]);
 }
 
+
+function print(node) {
+    switch (node.type) {
+        case "program":
+            return node.body
+                .map(statement => 
+                    print(statement)).join("\n");
+            break;
+        case "fun_call":
+            return `${node.fun_name.value}(` +
+                node.arguments
+                    .map(arg => print(arg)).join(", ") +
+                ")";
+            break;
+        case "bin_expr":
+            return `(${print(node.left)}${node.operator.value}${print(node.right)})`;
+            break;
+        default:
+            if (node.value) {
+                return node.value;
+            } else {
+                throw new Error(`Unsupported: ${node.type}`);
+            }
+    }
+}
+
+
 var grammar = {
     Lexer: lexer,
     ParserRules: [
@@ -126,11 +153,16 @@ var grammar = {
             const left = data[0];
             const right = data[4];
             const operator = data[2];
+            console.log("parsed " + print(left) + " " + operator.value + " " + print(right));
+            
             if (right.type === "bin_expr") {
                 // Shunting Yard Algorithm
-                const myPrec = OperatorPrecedence[operator.value];
-                const theirPrec = OperatorPrecedence[right.operator.value];
-                if (myPrec > theirPrec) {
+                const op1 = operator.value;
+                const op2 = right.operator.value;
+                const myPrec = OperatorPrecedence[op1];
+                const theirPrec = OperatorPrecedence[op2];
+                console.log(`${op1} = ${myPrec}  ${op2} = ${theirPrec}`);
+                if (myPrec >= theirPrec) {
                     const newLeft = {
                         type: "bin_expr",
                         start: left.start,
@@ -139,7 +171,7 @@ var grammar = {
                         operator: operator,
                         right: right.left
                     }
-                    return {
+                    const fixed =  {
                         type: "bin_expr",
                         start: left.start,
                         end: right.end,
@@ -147,6 +179,9 @@ var grammar = {
                         operator: right.operator,
                         right: right.right
                     };
+                    console.log(`fixing tree to: ${print(fixed)}`);
+                    
+                    return fixed;
                 }
             }
             return {
@@ -181,8 +216,8 @@ var grammar = {
             };
         }
                 },
-    {"name": "paranthesized_argument_list", "symbols": [{"literal":"("}, "_", {"literal":")"}], "postprocess": () => []},
-    {"name": "paranthesized_argument_list", "symbols": [{"literal":"("}, "_", "argument_list", "_", {"literal":")"}], "postprocess": 
+    {"name": "paranthesized_argument_list", "symbols": [{"literal":"("}, "_MLWS_", {"literal":")"}], "postprocess": () => []},
+    {"name": "paranthesized_argument_list", "symbols": [{"literal":"("}, "_MLWS_", "argument_list", "_MLWS_", {"literal":")"}], "postprocess": 
         (data) => data[2]
                 },
     {"name": "argument_list", "symbols": ["expr"], "postprocess": 
@@ -190,7 +225,7 @@ var grammar = {
             return [data[0]];
         }
                 },
-    {"name": "argument_list", "symbols": ["expr", "__", "argument_list"], "postprocess": 
+    {"name": "argument_list", "symbols": ["expr", "MLWS", "argument_list"], "postprocess": 
         (data) => {
             return [data[0], ...data[2]];
         }
@@ -221,7 +256,7 @@ var grammar = {
         }
                 },
     {"name": "paranthesized_parameter_list", "symbols": [{"literal":"("}, "_", {"literal":")"}], "postprocess": () => []},
-    {"name": "paranthesized_parameter_list", "symbols": [{"literal":"("}, "_", "parameter_list", "_", {"literal":")"}], "postprocess": 
+    {"name": "paranthesized_parameter_list", "symbols": [{"literal":"("}, "_MLWS_", "parameter_list", "_MLWS_", {"literal":")"}], "postprocess": 
         (data) => data[2]
                 },
     {"name": "parameter_list", "symbols": ["fun_param"], "postprocess": 
@@ -229,7 +264,7 @@ var grammar = {
             return [data[0]];
         }
                 },
-    {"name": "parameter_list", "symbols": ["fun_param", "__", "parameter_list"], "postprocess": 
+    {"name": "parameter_list", "symbols": ["fun_param", "_MLWS_", "parameter_list"], "postprocess": 
         (data) => {
             return [data[0], ...data[2]];
         }
@@ -392,9 +427,13 @@ var grammar = {
     {"name": "char_literal", "symbols": [(lexer.has("char_literal") ? {type: "char_literal"} : char_literal)], "postprocess": idSimplifyToken},
     {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": idSimplifyToken},
     {"name": "comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": idSimplifyToken},
-    {"name": "MLWS", "symbols": ["nl_or_ws"]},
-    {"name": "MLWS", "symbols": ["nl_or_ws", "MLWS"]},
-    {"name": "nl_or_ws", "symbols": ["__"]},
+    {"name": "_MLWS_$ebnf$1", "symbols": []},
+    {"name": "_MLWS_$ebnf$1", "symbols": ["_MLWS_$ebnf$1", "nl_or_ws"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "_MLWS_", "symbols": ["_MLWS_$ebnf$1"]},
+    {"name": "MLWS$ebnf$1", "symbols": ["nl_or_ws"]},
+    {"name": "MLWS$ebnf$1", "symbols": ["MLWS$ebnf$1", "nl_or_ws"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "MLWS", "symbols": ["MLWS$ebnf$1"]},
+    {"name": "nl_or_ws", "symbols": [(lexer.has("WS") ? {type: "WS"} : WS)]},
     {"name": "nl_or_ws", "symbols": [(lexer.has("NL") ? {type: "NL"} : NL)]},
     {"name": "__$ebnf$1", "symbols": [(lexer.has("WS") ? {type: "WS"} : WS)]},
     {"name": "__$ebnf$1", "symbols": ["__$ebnf$1", (lexer.has("WS") ? {type: "WS"} : WS)], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},

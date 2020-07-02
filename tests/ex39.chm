@@ -1,0 +1,1 @@
+putchar(tree.left.size + graph.top.count)

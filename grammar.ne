@@ -92,11 +92,16 @@ bin_expr
                 const left = data[0];
                 const right = data[4];
                 const operator = data[2];
+                console.log("parsed " + print(left) + " " + operator.value + " " + print(right));
+                
                 if (right.type === "bin_expr") {
                     // Shunting Yard Algorithm
-                    const myPrec = OperatorPrecedence[operator.value];
-                    const theirPrec = OperatorPrecedence[right.operator.value];
-                    if (myPrec > theirPrec) {
+                    const op1 = operator.value;
+                    const op2 = right.operator.value;
+                    const myPrec = OperatorPrecedence[op1];
+                    const theirPrec = OperatorPrecedence[op2];
+                    console.log(`${op1} = ${myPrec}  ${op2} = ${theirPrec}`);
+                    if (myPrec >= theirPrec) {
                         const newLeft = {
                             type: "bin_expr",
                             start: left.start,
@@ -105,7 +110,7 @@ bin_expr
                             operator: operator,
                             right: right.left
                         }
-                        return {
+                        const fixed =  {
                             type: "bin_expr",
                             start: left.start,
                             end: right.end,
@@ -113,6 +118,9 @@ bin_expr
                             operator: right.operator,
                             right: right.right
                         };
+                        console.log(`fixing tree to: ${print(fixed)}`);
+                        
+                        return fixed;
                     }
                 }
                 return {
@@ -156,8 +164,8 @@ fun_call
         %}
         
 paranthesized_argument_list
-    ->  "(" _ ")"    {% () => [] %}
-    |   "(" _ argument_list _ ")"
+    ->  "(" _MLWS_ ")"    {% () => [] %}
+    |   "(" _MLWS_ argument_list _MLWS_ ")"
         {%
             (data) => data[2]
         %}
@@ -169,7 +177,7 @@ argument_list
                 return [data[0]];
             }
         %}
-    |  expr __ argument_list
+    |  expr MLWS argument_list
         {%
             (data) => {
                 return [data[0], ...data[2]];
@@ -208,7 +216,7 @@ fun_def
 
 paranthesized_parameter_list
     ->  "(" _ ")"    {% () => [] %}
-    |   "(" _ parameter_list _ ")"
+    |   "(" _MLWS_ parameter_list _MLWS_ ")"
         {%
             (data) => data[2]
         %}
@@ -220,7 +228,7 @@ parameter_list
                 return [data[0]];
             }
         %}
-    |  fun_param __ parameter_list
+    |  fun_param _MLWS_ parameter_list
         {%
             (data) => {
                 return [data[0], ...data[2]];
@@ -443,12 +451,13 @@ comment
     -> %comment         {% idSimplifyToken %}
 
 # Multi-line whitespace
-MLWS
-    -> nl_or_ws
-    |  nl_or_ws MLWS
+
+_MLWS_ -> nl_or_ws:*
+
+MLWS -> nl_or_ws:+
 
 nl_or_ws
-    -> __
+    -> %WS
     |  %NL
 
 __ -> %WS:+
@@ -505,5 +514,32 @@ function simplifyToken(token) {
 function idSimplifyToken(data) {
     return simplifyToken(data[0]);
 }
+
+
+function print(node) {
+    switch (node.type) {
+        case "program":
+            return node.body
+                .map(statement => 
+                    print(statement)).join("\n");
+            break;
+        case "fun_call":
+            return `${node.fun_name.value}(` +
+                node.arguments
+                    .map(arg => print(arg)).join(", ") +
+                ")";
+            break;
+        case "bin_expr":
+            return `(${print(node.left)}${node.operator.value}${print(node.right)})`;
+            break;
+        default:
+            if (node.value) {
+                return node.value;
+            } else {
+                throw new Error(`Unsupported: ${node.type}`);
+            }
+    }
+}
+
 
 %}

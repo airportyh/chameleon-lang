@@ -4,7 +4,7 @@ const exec = util.promisify(require("child_process").exec);
 const spawn = require("child_process").spawn;
 
 async function main() {
-    await test("ex1.chm", ["ep", ""]);
+    await test("ex1.chm", ["ap", ""]);
     await test("ex2.chm", ["J"]);
     await test("ex3.chm", ["A"]);
     await test("ex4.chm", [""]);
@@ -90,7 +90,6 @@ async function main() {
     await test("ex32.chm", ["BC"]);
     await test("ex33.chm", ["bd"]);
     await test("ex34.chm", ["14", "10", ""]);
-    await test("ex36.chm", ["Yes", ""]);
     await test("ex35.chm", 
         [
           "> > Key: Val: > Key: Val: > 10:Marty",
@@ -125,6 +124,8 @@ async function main() {
             ""
         ].join("\n")
     );
+    await test("ex36.chm", ["Yes", ""]);
+    await test("ex39.chm", ["1"]);
 }
 
 async function test(filepath, expected, optionalInput) {

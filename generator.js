@@ -1005,6 +1005,9 @@ function implicitTypeCast(type1, type2, valueCode, context, node) {
         return floatTypeCast(type1, type2, valueCode, context, downcast);
     }
     if (isStructTypeOrNull(type1, context) && isStructTypeOrNull(type2, context)) {
+        if (isStructType(type1, context) && isStructType(type2, context)) {
+            throw new Error(`${locInfo(node)}: Cannot cast a ${type1} to a ${type2}`);
+        }
         const dataType = isStructType(type1, context) ? type1 : type2;
         return {
             topCode: [],
