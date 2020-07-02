@@ -125,24 +125,31 @@ fun print_string(string:LList) [
     ]
 ]
 
+# Binary Tree Map Operations
+
 fun btmap_set(key:long value:LList btree:BTreeMap): BTreeMap [
     if btree == null [
-        return btmap(key value 1 null null)
+        return btmap(key value null null)
     ]
     if key == btree.key [
         return btmap(
             key
             value
-            1 + btree.left.size + btree.right.size
             btree.left
             btree.right
         )
     ] else if key > btree.key [
         new_right = btmap_set(key value btree.right)
-        return btmap(btree.key btree.value btree.left new_right)
+        return btmap(
+            btree.key 
+            btree.value 
+            btree.left 
+            new_right
+        )
     ]
     new_left = btmap_set(key value btree.left)
-    return btmap(btree.key btree.value new_left btree.right)
+    return btmap(
+        btree.key btree.value new_left btree.right)
 ]
 
 fun btmap_get(key:long tree:BTreeMap): BTreeMap [
@@ -207,10 +214,16 @@ fun btmap_delete_min(tree:BTreeMap): BTreeMap [
 fun btmap(
     key:long
     value:LList
-    size:int
     left:BTreeMap
     right:BTreeMap
 ): BTreeMap [
+    size = 1
+    if left != null [
+        size = size + left.size
+    ]
+    if right != null [
+        size = size + right.size
+    ]
     return alloc BTreeMap {
         key = key
         value = value
@@ -219,6 +232,8 @@ fun btmap(
         right = right
     }
 ]
+
+# Linked List Operations
 
 fun llist(char:int next:LList): LList [
     return alloc LList {

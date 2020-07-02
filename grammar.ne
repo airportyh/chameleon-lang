@@ -86,40 +86,40 @@ expr -> bin_expr    {% id %}
 
 bin_expr
     -> unary_expr   {% id %}
-    |  unary_expr _ %operator _ bin_expr
+    |  bin_expr _ %operator _ unary_expr
         {%
             (data) => {
                 const left = data[0];
                 const right = data[4];
                 const operator = data[2];
-                console.log("parsed " + print(left) + " " + operator.value + " " + print(right));
                 
-                if (right.type === "bin_expr") {
+                if (left.type === "bin_expr") {
                     // Shunting Yard Algorithm
                     const op1 = operator.value;
-                    const op2 = right.operator.value;
+                    const op2 = left.operator.value;
                     const myPrec = OperatorPrecedence[op1];
                     const theirPrec = OperatorPrecedence[op2];
-                    console.log(`${op1} = ${myPrec}  ${op2} = ${theirPrec}`);
-                    if (myPrec >= theirPrec) {
-                        const newLeft = {
+                    if (!myPrec || !theirPrec) {
+                        throw new Error(`Unknown operator ${op1} or ${op2}`);
+                    }
+                    if (myPrec > theirPrec) {
+                        const newLeft = left.left;
+                        const newRight = {
                             type: "bin_expr",
-                            start: left.start,
-                            end: right.left.end,
-                            left: left,
+                            start: left.right.start,
                             operator: operator,
-                            right: right.left
+                            end: right.end,
+                            left: left.right,
+                            right: right
                         }
                         const fixed =  {
                             type: "bin_expr",
-                            start: left.start,
-                            end: right.end,
+                            start: newLeft.start,
+                            end: newRight.end,
                             left: newLeft,
-                            operator: right.operator,
-                            right: right.right
+                            operator: left.operator,
+                            right: newRight
                         };
-                        console.log(`fixing tree to: ${print(fixed)}`);
-                        
                         return fixed;
                     }
                 }
@@ -474,6 +474,8 @@ const OperatorPrecedence = {
     "%": 15,
     "-": 14,
     "+": 14,
+    ">": 12,
+    "<": 12,
     ">=": 12,
     "<=": 12,
     "==": 11,

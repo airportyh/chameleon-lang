@@ -1,1 +1,1 @@
-putchar(tree.left.size + graph.top.count)
+putchar(40 + tree.left.size + graph.top.count)
