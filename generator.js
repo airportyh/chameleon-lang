@@ -344,6 +344,7 @@ function genBreak(node, context, scope) {
 
 function genIf(node, context, scope) {
     const topCode = [];
+    let returns = false;
     const cond = gen(node.cond, context, scope);
     if (cond.dataType !== "bool") {
         throw new Error(`${locInfo(node)}: Expected if conditional to be a bool but here it is a ${cond.dataType}`);
@@ -370,39 +371,61 @@ function genIf(node, context, scope) {
     } else if (node.alternate) {
         topCode.push(`br i1 ${cond.valueCode}, label %${trueLabel}, label %${falseLabel}`);
         
-        const consequentTopCode = node.consequent.reduce((allTopCode, statement) => {
+        const consequentTopCode = [];
+        let consequentReturns = false;
+        for (let statement of node.consequent) {
             const result = gen(statement, context, scope);
-            return allTopCode.concat(result.topCode);
-        }, []);
+            consequentTopCode.push(...result.topCode);
+            if (statement.type === "return" ||
+                (statement.type === "if" && result.returns)) {
+                consequentReturns = true;
+            }
+        }
         
-        let alternateTopCode;
+        const alternateTopCode = [];
+        let alternateReturns = false;
         
         if (Array.isArray(node.alternate)) {
-            alternateTopCode = node.alternate.reduce((allTopCode, statement) => {
+            for (let statement of node.alternate) {
                 const result = gen(statement, context, scope);
-                return allTopCode.concat(result.topCode);
-            }, []);
+                alternateTopCode.push(...result.topCode);
+                if (statement.type === "return" ||
+                    (statement.type === "if" && result.returns)) {
+                    alternateReturns = true;
+                }
+            }
         } else if (node.alternate.type === "if") {
             const alternate = gen(node.alternate, context, scope);
-            alternateTopCode = alternate.topCode;
+            alternateTopCode.push(...alternate.topCode);
+            alternateReturns = alternate.returns;
         } else {
             throw new Error(`Unexpected alternate type`);
         }
+        
+        returns = consequentReturns && alternateReturns;
+        
         topCode.push("");
         topCode.push(`${trueLabel}:`);
         topCode.push(...consequentTopCode);
-        topCode.push(`br label %${exitLabel}`);
+        if (!returns) {
+            topCode.push(`br label %${exitLabel}`);
+        }
         topCode.push("");
         topCode.push(`${falseLabel}:`);
         topCode.push(...alternateTopCode);
-        topCode.push(`br label %${exitLabel}`);
+        if (!returns) {
+            topCode.push(`br label %${exitLabel}`);
+        }
         topCode.push("");
-        topCode.push(`${exitLabel}:`);
+        if (!returns) {
+            topCode.push(`${exitLabel}:`);
+        }
     }
     return {
         topCode,
         valueCode: null,
-        dataType: null
+        dataType: null,
+        returns
     };
 }
 
@@ -1118,4 +1141,7 @@ function getCurrentLoop(scope) {
 }
 
 
-main().catch(err => console.log(err.stack));
+main().catch(err => {
+    console.log(err.stack)
+    process.exit(1);
+});

@@ -1,13 +1,9 @@
 fun main(): int [
-    a: long = (6 * 2) + 5
+    a: long = (6 * 8) + 5
+    putchar(a)
     b = a + 4 - 2
-    c = (b - 2) * (a + 4) - 2 + int(30.5)
-    d = int(c)
-    f: float = float(5)
-    g = double(f) + 5.6 * double(20)
-    h = g - double(5)
-    putchar(d)
-    putchar(int(h))
-    putchar(10)
+    putchar(b)    
+    
     return 0
 ]
+

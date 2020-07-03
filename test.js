@@ -4,7 +4,7 @@ const exec = util.promisify(require("child_process").exec);
 const spawn = require("child_process").spawn;
 
 async function main() {
-    await test("ex1.chm", ["ap", ""]);
+    await test("ex1.chm", ["57"]);
     await test("ex2.chm", ["J"]);
     await test("ex3.chm", ["A"]);
     await test("ex4.chm", [""]);
@@ -125,7 +125,7 @@ async function main() {
         ].join("\n")
     );
     await test("ex36.chm", ["Yes", ""]);
-    await test("ex39.chm", ["1"]);
+    await test("ex39.chm", ["a"]);
 }
 
 async function test(filepath, expected, optionalInput) {
@@ -134,10 +134,10 @@ async function test(filepath, expected, optionalInput) {
         const llFilePath = `tests/${filepath.replace('.chm', '.ll')}`;
         const asmFilePath = `tests/${filepath.replace('.chm', '.s')}`;
         const binFilePath = `tests/${filepath.replace('.chm', '.bin')}`;
-        await removeFile(astFilePath);
-        await removeFile(llFilePath);
-        await removeFile(asmFilePath);
-        await removeFile(binFilePath);
+        //await removeFile(astFilePath);
+        //await removeFile(llFilePath);
+        //await removeFile(asmFilePath);
+        //await removeFile(binFilePath);
         
         const cmd = `./compile tests/${filepath}`;
         await exec(cmd);

@@ -31,6 +31,9 @@ fun main(): int [
             if input.char == 'g' [
                 user_get_key(tree)
             ]
+            if input.char == 'l' [
+                tree = btmap_single_left_rotation(tree)
+            ]
         ]
     ]
     return 0
@@ -132,7 +135,7 @@ fun btmap_set(key:long value:LList btree:BTreeMap): BTreeMap [
         return btmap(key value null null)
     ]
     if key == btree.key [
-        return btmap(
+        return btmap_create_balanced(
             key
             value
             btree.left
@@ -140,7 +143,7 @@ fun btmap_set(key:long value:LList btree:BTreeMap): BTreeMap [
         )
     ] else if key > btree.key [
         new_right = btmap_set(key value btree.right)
-        return btmap(
+        return btmap_create_balanced(
             btree.key 
             btree.value 
             btree.left 
@@ -170,21 +173,21 @@ fun btmap_delete(key:long tree:BTreeMap): BTreeMap [
     ]
     if key == tree.key [
         right_min = btmap_min(tree.right)
-        return btmap(
+        return btmap_create_balanced(
             right_min.key
             right_min.value
             tree.left
             btmap_delete_min(tree.right)
         )
     ] else if key > tree.key [
-        return btmap(
+        return btmap_create_balanced(
             tree.key
             tree.value
             tree.left
             btmap_delete(key tree.right)
         )
     ]
-    return btmap(
+    return btmap_create_balanced(
         tree.key
         tree.value
         btmap_delete(key tree.left)
@@ -231,6 +234,96 @@ fun btmap(
         left = left
         right = right
     }
+]
+
+# See http://groups.csail.mit.edu/mac/users/adams/BB/
+# section 6: Balance maintenance algorithms
+fun btmap_single_left_rotation(a:BTreeMap): BTreeMap [
+    x = a.left
+    b = a.right
+    y = a.right.left
+    z = a.right.right
+    a1 = btmap(a.key a.value x y)
+    b1 = btmap(b.key b.value a1 z)
+    return b1
+]
+
+fun btmap_single_right_rotation(b:BTreeMap): BTreeMap [
+    a = b.left
+    x = a.left
+    y = a.right
+    z = b.right
+    b1 = btmap(b.key b.value y z)
+    a1 = btmap(a.key a.value x b1)
+    return a1
+]
+
+fun btmap_double_left_rotation(a:BTreeMap): BTreeMap [
+    x = a.left
+    c = a.right
+    b = c.left
+    z = c.right
+    y1 = b.left
+    y2 = b.right
+    a1 = btmap(a.key a.value x y1)
+    c1 = btmap(c.key c.value y2 z)
+    b1 = btmap(b.key b.value a1 c1)
+    return b1
+]
+
+fun btmap_double_right_rotation(c:BTreeMap): BTreeMap [
+    z = c.right
+    a = c.left
+    x = a.left
+    b = a.right
+    y1 = b.left
+    y2 = b.right
+    a1 = btmap(a.key a.value x y1)
+    c1 = btmap(c.key c.value y2 z)
+    b1 = btmap(b.key b.value a1 c1)
+    return b1
+]
+
+fun btmap_create_balanced(key:long value:LList left:BTreeMap right:BTreeMap): BTreeMap [
+    weight = 3.745
+    p = btmap(key value left right)
+    ln = btmap_size(left)
+    rn = btmap_size(right)
+    if ln + rn < 2 [
+        return p
+    ] else if rn > int(weight * double(ln)) [
+        # right is too big
+        rl = right.left
+        rr = right.right
+        rln = btmap_size(rl)
+        rrn = btmap_size(rr)
+        if rln < rrn [
+            return btmap_single_left_rotation(p)
+        ] else [
+            return btmap_double_left_rotation(p)
+        ]
+    ] else if ln > int(weight * double(rn)) [
+        # left is too big
+        ll = left.left
+        lr = left.right
+        lln = btmap_size(ll)
+        lrn = btmap_size(lr)
+        if lrn < lln [
+            return btmap_single_right_rotation(p)
+        ] else [
+            return btmap_double_right_rotation(p)
+        ]
+    ] else [
+        return p
+    ]
+]
+
+fun btmap_size(tree:BTreeMap): int [
+    if tree == null [
+        return 0
+    ] else [
+        return tree.size
+    ]
 ]
 
 # Linked List Operations

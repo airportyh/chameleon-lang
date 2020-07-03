@@ -1,3 +1,16 @@
+set -e
+if test -f "${1%.chm}.ast"; then
+    rm ${1%.chm}.ast
+fi
+if test -f "${1%.chm}.ll"; then
+    rm ${1%.chm}.ll
+fi
+if test -f "${1%.chm}.s"; then
+    rm ${1%.chm}.s
+fi
+if test -f "${1%.chm}.bin"; then
+    rm ${1%.chm}.bin
+fi
 node parse.js $1
 node generator.js ${1%.chm}.ast
 ./ll-to-bin ${1%.chm}.ll

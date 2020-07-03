@@ -1,3 +1,4 @@
+set -e
 # From https://llvm.org/docs/GettingStarted.html#example-with-clang
 
 llc -O0 $1 -o ${1%.ll}.s

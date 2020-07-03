@@ -1,2 +1,3 @@
+set -e
 ./compile $1
 ./${1%.chm}.bin

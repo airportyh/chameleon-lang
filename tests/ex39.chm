@@ -1,1 +1,16 @@
-putchar(40 + tree.left.size + graph.top.count)
+fun main(): int [
+    if gt_zero(5) [
+        putchar('a')
+    ] else [
+        putchar('b')
+    ]
+    return 0
+]
+
+fun gt_zero(n:int): bool [
+    if n > 0 [
+        return true
+    ] else [
+        return false
+    ]
+]
