@@ -3,7 +3,7 @@ struct User {
 }
 
 fun main(): int [
-    user = User { fi = 'b' }
+    user = alloc User { fi = 'b' }
     last_initial = user.li
     return 0
 ]

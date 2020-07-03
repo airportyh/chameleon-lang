@@ -4,7 +4,7 @@ struct User {
 }
 
 fun main(): int [
-    user = User { fi = 3 }
+    user = alloc User { fi = 3 }
     putchar(user.baby)
     return 0
 ]

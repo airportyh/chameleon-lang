@@ -178,6 +178,7 @@ var grammar = {
     {"name": "unary_expr", "symbols": ["null_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["bool_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["char_literal"], "postprocess": id},
+    {"name": "unary_expr", "symbols": ["string_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["not"], "postprocess": id},
     {"name": "var_ref", "symbols": ["identifier"], "postprocess": id},
     {"name": "fun_call", "symbols": ["identifier", "_", "paranthesized_argument_list"], "postprocess": 
@@ -343,7 +344,7 @@ var grammar = {
         (data) => {
             return {
                 type: "struct_literal",
-                start: tokenStart(data[0]),
+                start: data[0].start,
                 end: tokenEnd(data[6]),
                 structName: data[0],
                 entries: data[4]
@@ -403,6 +404,51 @@ var grammar = {
     {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": idSimplifyToken},
     {"name": "comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": idSimplifyToken},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": idSimplifyToken},
+    {"name": "string_literal", "symbols": [(lexer.has("string_literal") ? {type: "string_literal"} : string_literal)], "postprocess": 
+        (data) => {
+            const stringToken = idSimplifyToken(data);
+            const string = stringToken.value;
+            let rootCallNode;
+            let currentCallNode;
+            for (let i = 0; i < string.length; i++) {
+                const char = string.charCodeAt(i);
+                const callNode =  {
+                    type: "fun_call",
+                    start: stringToken.start,
+                    end: stringToken.end,
+                    fun_name: {
+                        type: "identifier",
+                        value: "string",
+                        start: stringToken.start,
+                        end: stringToken.end
+                    },
+                    arguments: [
+                        {
+                            type: "char_literal",
+                            value: char,
+                            start: stringToken.start,
+                            end: stringToken.end
+                        }
+                    ]
+                };
+                if (!rootCallNode) {
+                    rootCallNode = callNode;
+                }
+                if (currentCallNode) {
+                    currentCallNode.arguments.push(callNode);
+                    
+                }
+                currentCallNode = callNode;
+            }
+            currentCallNode.arguments.push({
+                type: "null_literal",
+                value: "null",
+                start: stringToken.start,
+                end: stringToken.end
+            });
+            return rootCallNode;
+        }
+                },
     {"name": "operator", "symbols": [(lexer.has("operator") ? {type: "operator"} : operator)], "postprocess": idSimplifyToken},
     {"name": "_MLWS_$ebnf$1", "symbols": []},
     {"name": "_MLWS_$ebnf$1", "symbols": ["_MLWS_$ebnf$1", "nl_or_ws"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},

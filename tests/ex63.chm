@@ -1,0 +1,29 @@
+struct String {
+    char: int
+    next: String
+}
+
+fun main(): int [
+    print("Hello, world!")
+    print("Whatsup?")
+    return 0
+]
+
+fun string(char:int next:String): String [
+    return alloc String {
+        char = char
+        next = next
+    }
+]
+
+fun put_string(string:String) [
+    if string != null [
+        putchar(string.char)
+        put_string(string.next)
+    ]
+]
+
+fun print(string:String) [
+    put_string(string)
+    putchar('\n')
+]

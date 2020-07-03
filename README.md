@@ -6,7 +6,6 @@ backends.
 ## Todos
 
 * garbage collector
-* string literals
 * modules
 * implement binary trees
     * delete (done)
@@ -16,7 +15,6 @@ backends.
     * difference
 * separate top-level statements from normal statements
 * type resolution errors can happen earlier: at struct def time and fun def time
-* strings (maybe implemented in the language)
 * error due to forgetting to alloc (and then dereferencing)
 * error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
 * allow assigning to struct fields
@@ -29,6 +27,7 @@ backends.
 * classes
 * default function parameter values
 * default field values for structs
+* fix lexer string literal value converter to account for escape sequences
 * allow main to return void
 * change type casting scheme to allow opt to optimize away casting instructions if possible (maybe type hints)
 * separate type checker from generator
@@ -37,6 +36,8 @@ backends.
 * experiment with optimization
 * type checker that gives good error messages
 
+* strings (maybe implemented in the language) (done)
+* string literals (done)
 * tests for erroring test cases (done)
 * better error reporting: show a few lines of code and highlight the selected code (done)
 * grammar: change all recursion to left recursion (done)

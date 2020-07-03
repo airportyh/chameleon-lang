@@ -1,0 +1,24 @@
+struct String {
+    char: int
+    next: String
+}
+
+fun main(): int [
+    print_string("Hello")
+    putchar('\n')
+    return 0
+]
+
+fun string(char:int next:String): String [
+    return alloc String {
+        char = char
+        next = next
+    }
+]
+
+fun print_string(string:LList) [
+    if string != null [
+        putchar(string.char)
+        print_string(string.next)
+    ]
+]

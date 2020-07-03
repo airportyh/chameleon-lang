@@ -46,8 +46,8 @@ async function testSuite() {
         ""
     ]);
     await test("ex10.chm", [""]);
-    await test("ex11.chm", [""]);
-    await test("ex12.chm", ["TH", "MH", ""]);
+    await testExpectFail("ex11.chm", "Creating structs on the stack is temporarily disallowed.");
+    await testExpectFail("ex12.chm", "Creating structs on the stack is temporarily disallowed.");
     //await test("ex13.chm", ["MH", ""]);
     await test("ex14.chm", ["MH", ""]);
     await test("ex15.chm", ["ABC", ""]);
@@ -132,7 +132,7 @@ async function testSuite() {
     await test("ex39.chm", ["a"]);
     await testExpectFail("ex40.chm", "Function main must return a int but it does not always return.");
     await testExpectFail("ex41.chm", "Cannot alloc undefined struct User.");
-    await testExpectFail("ex42.chm", "Cannot create undefined struct User.");
+    // await testExpectFail("ex42.chm", "Cannot create undefined struct User.");
     await testExpectFail("ex43.chm", "Break statement used outside of a loop.");
     await testExpectFail("ex44.chm", "Expected if conditional to be a bool but here it is a int.");
     await testExpectFail("ex45.chm", "Trying to call function blah which is not defined.");
@@ -153,6 +153,7 @@ async function testSuite() {
     await testExpectFail("ex60.chm", "Cannot implicitly cast a double from/to a int.");
     await testExpectFail("ex61.chm", "Cannot implicitly cast a Apple to a Orange.");
     await testExpectFail("ex62.chm", "Cannot implicitly cast a Apple to a int.");
+    await test("ex63.chm", ["Hello, world!", "Whatsup?", ""]);
 }
 
 async function run(filepath, optionalInput) {

@@ -39,7 +39,18 @@ const lexer = moo.compile({
           }
       }
   },
-  string:  /"(?:\\["\\]|[^\n"\\])*"/,
+  string_literal: {
+      match: /"(?:\\["\\tn]|[^\n"\\])*"/,
+      value: (value) => {
+          value = value
+            .replace(/\\n/g, "\n")
+            .replace(/\\t/g, "\t")
+            .replace(/\\\"/g, "\"")
+            .replace(/\\\\/g, "\\");
+          return value
+            .substring(1, value.length - 1);
+      }
+  },
   lparen:  '(',
   rparen:  ')',
   lbracket: '[',

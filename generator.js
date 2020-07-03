@@ -89,6 +89,8 @@ async function main() {
                 // unable to display source code snippet, we'll still display the message
                 // and stack trace
             }
+        } else {
+            console.log(colors.red("Generate Error:"));
         }
         console.log(colors.red(e.message));
         console.log();
@@ -145,6 +147,8 @@ function gen(node, context, scope) {
         return genBoolLiteral(node);
     } else if (node.type === "char_literal") {
         return genCharLiteral(node);
+    } else if (node.type === "string_literal") {
+        return genStringLiteral(node);
     } else if (node.type === "comment") {
         return genComment();
     } else {
@@ -273,6 +277,7 @@ function genAlloc(node, context, scope) {
 // Precondition: node.value is a struct_literal node
 // varName is passed in as the variable name to assign the struct pointer to
 function genStructLiteral(node, context, scope) {
+    throw makeError(`Creating structs on the stack is temporarily disallowed.`, node);
     const topCode = [];
     const structName = node.structName.value;
     const structId = `%struct.${structName}`;

@@ -144,6 +144,7 @@ unary_expr
     |  null_literal    {% id %}
     |  bool_literal    {% id %}
     |  char_literal    {% id %}
+    |  string_literal  {% id %}
     |  not             {% id %}
     
 var_ref
@@ -364,7 +365,7 @@ struct_literal
             (data) => {
                 return {
                     type: "struct_literal",
-                    start: tokenStart(data[0]),
+                    start: data[0].start,
                     end: tokenEnd(data[6]),
                     structName: data[0],
                     entries: data[4]
@@ -452,6 +453,54 @@ comment
     
 identifier
     -> %identifier      {% idSimplifyToken %}
+
+string_literal
+    -> %string_literal
+        {%
+            (data) => {
+                const stringToken = idSimplifyToken(data);
+                const string = stringToken.value;
+                let rootCallNode;
+                let currentCallNode;
+                for (let i = 0; i < string.length; i++) {
+                    const char = string.charCodeAt(i);
+                    const callNode =  {
+                        type: "fun_call",
+                        start: stringToken.start,
+                        end: stringToken.end,
+                        fun_name: {
+                            type: "identifier",
+                            value: "string",
+                            start: stringToken.start,
+                            end: stringToken.end
+                        },
+                        arguments: [
+                            {
+                                type: "char_literal",
+                                value: char,
+                                start: stringToken.start,
+                                end: stringToken.end
+                            }
+                        ]
+                    };
+                    if (!rootCallNode) {
+                        rootCallNode = callNode;
+                    }
+                    if (currentCallNode) {
+                        currentCallNode.arguments.push(callNode);
+                        
+                    }
+                    currentCallNode = callNode;
+                }
+                currentCallNode.arguments.push({
+                    type: "null_literal",
+                    value: "null",
+                    start: stringToken.start,
+                    end: stringToken.end
+                });
+                return rootCallNode;
+            }
+        %}
 
 operator
     -> %operator        {% idSimplifyToken %}
