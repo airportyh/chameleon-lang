@@ -1,0 +1,5 @@
+fun main(): int [
+    b = 3.brother
+    putchar(b)
+    return 0
+]

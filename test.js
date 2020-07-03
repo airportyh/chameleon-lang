@@ -130,9 +130,29 @@ async function testSuite() {
     );
     await test("ex36.chm", ["Yes", ""]);
     await test("ex39.chm", ["a"]);
-    await testExpectFail("ex40.chm", "Function main must return int but it does not always return.");
+    await testExpectFail("ex40.chm", "Function main must return a int but it does not always return.");
     await testExpectFail("ex41.chm", "Cannot alloc undefined struct User.");
     await testExpectFail("ex42.chm", "Cannot create undefined struct User.");
+    await testExpectFail("ex43.chm", "Break statement used outside of a loop.");
+    await testExpectFail("ex44.chm", "Expected if conditional to be a bool but here it is a int.");
+    await testExpectFail("ex45.chm", "Trying to call function blah which is not defined.");
+    await testExpectFail("ex46.chm", "Function putchar accepts 1 arguments but was given 3.");
+    await testExpectFail("ex47.chm", "A type cast can only handle one argument but 2 was given.");
+    await testExpectFail("ex48.chm", "Cannot cast a int to a bool.");
+    await testExpectFail("ex49.chm", "Right hand side of the dot operator must be an identifier but here is a number.");
+    await testExpectFail("ex50.chm", "Left hand side of dot operator must be a struct but here is a int.");
+    await testExpectFail("ex51.chm", "Cannot find field li on struct User.");
+    await testExpectFail("ex52.chm", "Encountered undefined type Baby for field baby of struct User.");
+    await testExpectFail("ex53.chm", "Unable to find bool instruction for operator +.");
+    await testExpectFail("ex54.chm", "Unable to find float instruction for operator and.");
+    await testExpectFail("ex55.chm", "Unable to find int instruction for operator or.");
+    await testExpectFail("ex56.chm", "Unable to find pointer instruction for operator +.");
+    await testExpectFail("ex57.chm", "Reference to unknown variable y.");
+    await testExpectFail("ex58.chm", "Unable to resolve type Baby for variable baby.");
+    await testExpectFail("ex59.chm", "Cannot re-define the type of variable a to long, previously defined as int.");
+    await testExpectFail("ex60.chm", "Cannot implicitly cast a double from/to a int.");
+    await testExpectFail("ex61.chm", "Cannot implicitly cast a Apple to a Orange.");
+    await testExpectFail("ex62.chm", "Cannot implicitly cast a Apple to a int.");
 }
 
 async function run(filepath, optionalInput) {

@@ -1,0 +1,4 @@
+fun main(): int [
+    r = 4 or 5
+    return 0
+]

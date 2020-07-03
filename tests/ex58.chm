@@ -1,0 +1,7 @@
+fun main(): int [
+    return 0
+]
+
+fun clean(baby:Baby) [
+    return baby
+]

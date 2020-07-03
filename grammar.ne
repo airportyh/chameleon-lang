@@ -86,7 +86,7 @@ expr -> bin_expr    {% id %}
 
 bin_expr
     -> unary_expr   {% id %}
-    |  bin_expr _ %operator _ unary_expr
+    |  bin_expr _ operator _ unary_expr
         {%
             (data) => {
                 const left = data[0];
@@ -452,6 +452,9 @@ comment
     
 identifier
     -> %identifier      {% idSimplifyToken %}
+
+operator
+    -> %operator        {% idSimplifyToken %}
 
 # Multi-line whitespace
 

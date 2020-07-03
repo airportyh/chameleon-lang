@@ -1,0 +1,9 @@
+struct Apple {
+    color: int
+}
+
+fun main(): int [
+    a:Apple = null
+    c:int = a
+    return 0
+]

@@ -1,0 +1,13 @@
+struct Apple {
+    color: int
+}
+
+struct Orange {
+    color: int
+}
+
+fun main(): int [
+    a:Apple = null
+    b:Orange = a
+    return 0
+]

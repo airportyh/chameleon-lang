@@ -1,0 +1,4 @@
+fun main(): int [
+    putchar(1 2 3)
+    return 0
+]

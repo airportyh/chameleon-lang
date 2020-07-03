@@ -1,0 +1,10 @@
+struct User {
+    fi: int
+    baby: Baby
+}
+
+fun main(): int [
+    user = User { fi = 3 }
+    putchar(user.baby)
+    return 0
+]

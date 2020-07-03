@@ -1,0 +1,9 @@
+struct User {
+    fi: int
+}
+
+fun main(): int [
+    user = User { fi = 'a' }
+    putchar(user.3)
+    return 0
+]

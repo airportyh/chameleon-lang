@@ -1,0 +1,4 @@
+fun main(): int [
+    f = double(4 4)
+    return 0
+]

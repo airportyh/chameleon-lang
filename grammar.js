@@ -123,7 +123,7 @@ var grammar = {
             },
     {"name": "expr", "symbols": ["bin_expr"], "postprocess": id},
     {"name": "bin_expr", "symbols": ["unary_expr"], "postprocess": id},
-    {"name": "bin_expr", "symbols": ["bin_expr", "_", (lexer.has("operator") ? {type: "operator"} : operator), "_", "unary_expr"], "postprocess": 
+    {"name": "bin_expr", "symbols": ["bin_expr", "_", "operator", "_", "unary_expr"], "postprocess": 
         (data) => {
             const left = data[0];
             const right = data[4];
@@ -403,6 +403,7 @@ var grammar = {
     {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": idSimplifyToken},
     {"name": "comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": idSimplifyToken},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": idSimplifyToken},
+    {"name": "operator", "symbols": [(lexer.has("operator") ? {type: "operator"} : operator)], "postprocess": idSimplifyToken},
     {"name": "_MLWS_$ebnf$1", "symbols": []},
     {"name": "_MLWS_$ebnf$1", "symbols": ["_MLWS_$ebnf$1", "nl_or_ws"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_MLWS_", "symbols": ["_MLWS_$ebnf$1"]},

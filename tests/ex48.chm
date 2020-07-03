@@ -1,0 +1,6 @@
+fun main(): int [
+    if bool(3) [
+        putchar('a')
+    ]
+    return 0
+]

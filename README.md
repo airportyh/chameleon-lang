@@ -5,19 +5,18 @@ backends.
 
 ## Todos
 
-* better error reporting: show a few lines of code and highlight the selected code
+* garbage collector
+* string literals
+* modules
 * implement binary trees
     * delete (done)
     * rotations (auto-balancing) (done)
     * iteration
     * union
     * difference
-* garbage collector
 * separate top-level statements from normal statements
-* modules
+* type resolution errors can happen earlier: at struct def time and fun def time
 * strings (maybe implemented in the language)
-* string literals
-* tests for erroring test cases
 * error due to forgetting to alloc (and then dereferencing)
 * error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
 * allow assigning to struct fields
@@ -38,6 +37,8 @@ backends.
 * experiment with optimization
 * type checker that gives good error messages
 
+* tests for erroring test cases (done)
+* better error reporting: show a few lines of code and highlight the selected code (done)
 * grammar: change all recursion to left recursion (done)
 * automatic ret instruct generated for LL if needed (when all paths already return for example),
 also return my error message instead of going through to LL (done)

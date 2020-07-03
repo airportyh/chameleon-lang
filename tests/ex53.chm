@@ -1,0 +1,4 @@
+fun main(): int [
+    a = true + false
+    return 0
+]

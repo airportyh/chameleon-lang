@@ -1,0 +1,8 @@
+fun main(): int [
+    if 3 [
+        putchar('A')
+    ] else [
+        putchar('B')
+    ]
+    return 0
+]

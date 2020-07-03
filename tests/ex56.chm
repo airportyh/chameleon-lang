@@ -1,0 +1,10 @@
+struct User {
+    fi: int
+}
+
+fun main(): int [
+    user: User = null
+    user2: User = null
+    r = user + user2
+    return 0
+]

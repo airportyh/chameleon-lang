@@ -370,7 +370,7 @@ function genWhile(node, context, scope) {
 function genBreak(node, context, scope) {
     const whileScope = getCurrentLoop(scope);
     if (!whileScope) {
-        throw makeError("Break statement used outside of a loop", node);
+        throw makeError("Break statement used outside of a loop.", node);
     }
     return {
         topCode: [`br label %${whileScope.exitLabel}`],
@@ -384,7 +384,7 @@ function genIf(node, context, scope) {
     let returns = false;
     const cond = gen(node.cond, context, scope);
     if (cond.dataType !== "bool") {
-        throw makeError(`Expected if conditional to be a bool but here it is a ${cond.dataType}`, node.cond);
+        throw makeError(`Expected if conditional to be a bool but here it is a ${cond.dataType}.`, node.cond);
     }
     topCode.push(...cond.topCode);
     const id = context.nextTemp++;
@@ -526,7 +526,7 @@ function genFunDef(node, context, scope) {
         if (outputType === "void") {
             body.push("ret void");
         } else {
-            throw makeError(`Function ${funName} must return ${outputType} but it does not always return.`, node.fun_name);
+            throw makeError(`Function ${funName} must return a ${outputType} but it does not always return.`, node.fun_name);
         }
     }
     
@@ -566,14 +566,14 @@ function genFunCall(node, context, scope) {
         return explicitTypeCast(node, context, scope);
     }
     if (!context.funTable.has(funName)) {
-        throw makeError(`Trying to call function ${funName} which is not defined`, node);
+        throw makeError(`Trying to call function ${funName} which is not defined.`, node);
     }
     const topCode = [];
     const funSig = context.funTable.get(funName);
     const outputDataType = funSig.output;
     const llOutputDataType = context.dataTypeMap.get(outputDataType);
     if (funSig.input.length !== node.arguments.length) {
-        throw makeError(`Function ${funName} accepts ${funSig.input.length} arguments, but was given ${node.arguments.length}`, node);
+        throw makeError(`Function ${funName} accepts ${funSig.input.length} arguments but was given ${node.arguments.length}.`, node);
     }
     const argList = [];
     for (let i = 0; i < node.arguments.length; i++) {
@@ -613,7 +613,7 @@ function explicitTypeCast(node, context, scope) {
     const destDataType = node.fun_name.value;
     const llDestDataType = context.dataTypeMap.get(destDataType);
     if (node.arguments.length > 1) {
-        throw makeError(`A type cast can only handle one argument, ${node.arguments.length} was given.`, node);
+        throw makeError(`A type cast can only handle one argument but ${node.arguments.length} was given.`, node);
     }
     const value = gen(node.arguments[0], context, scope);
     topCode.push(...value.topCode);
@@ -635,7 +635,7 @@ function explicitTypeCast(node, context, scope) {
     } else if (isFloatType(srcDataType) && isIntegerType(destDataType)){
         typeCast = floatToIntegerTypeCast(srcDataType, destDataType, value.valueCode, context);
     } else {
-        throw makeError(`Cannot cast a ${srcDataType} to a ${destDataType}`, node);
+        throw makeError(`Cannot cast a ${srcDataType} to a ${destDataType}.`, node);
     }
     
     topCode.push(...typeCast.topCode);
@@ -654,13 +654,13 @@ function genFieldAccessor(node, context, scope) {
     const structType = left.dataType;
     
     if (node.right.type !== "identifier") {
-        throw makeError(`Expected right hand side of the dot operator to be an identifier`, node.right);
+        throw makeError(`Right hand side of the dot operator must be an identifier but here is a ${node.right.type}.`, node.right);
     }
     const fieldName = node.right.value;
     
     const llStructPtrType = context.dataTypeMap.get(structType);
     if (!llStructPtrType.startsWith("%struct.")) {
-        throw makeError(`Expected left hand side of dot operator to be a struct, but was ${left.dataType}`, node.left);
+        throw makeError(`Left hand side of dot operator must be a struct but here is a ${left.dataType}.`, node.left);
     }
     
     // substring to remove the * from the end of the type: %struct.MyStruct*
@@ -668,13 +668,13 @@ function genFieldAccessor(node, context, scope) {
     const structDef = context.structTable.get(structType);
     const index = indexWhere(structDef.entries, (entry) => entry.field_name.value === fieldName);
     if (index === -1) {
-        throw makeError(`Cannot find field ${fieldName} on struct ${structType}`, node.left);
+        throw makeError(`Cannot find field ${fieldName} on struct ${structType}.`, node.right);
     }
     const fieldDef = structDef.entries[index];
     const fieldType = fieldDef.field_type.value;
     const llFieldType = context.dataTypeMap.get(fieldType);
     if (!llFieldType) {
-        throw makeError(`Unable to resolve field type ${fieldType}`, node);
+        throw makeError(`Encountered undefined type ${fieldType} for field ${fieldName} of struct ${structType}.`, node.right);
     }
     const ptrVarName = newTempVar(context);
     const valVarName = newTempVar(context);
@@ -735,7 +735,7 @@ function genBinExpr(node, context, scope) {
             twoWayTypeCast.valueCode2, context, node
         );
     } else {
-        throw makeError(`Unable to find instruction for operator ${operator} for type ${dataType}`, node);
+        throw makeError(`Cannot to find instruction for operator ${operator} for type ${dataType}`, node.operator);
     }
     
     topCode.push(...operation.topCode);
@@ -771,7 +771,7 @@ function genFloatOperation(operator, dataType, valueCode1, valueCode2, context, 
     ]);
     const ins = instructionTable[operator];
     if (!ins) {
-        throw makeError(`Unable to find float instruction for operator ${operator}`, node);
+        throw makeError(`Unable to find float instruction for operator ${operator}.`, node.operator);
     }
     const llDataType = context.dataTypeMap.get(dataType);
     const topCode = [
@@ -813,7 +813,7 @@ function genIntegerOperation(operator, dataType, valueCode1, valueCode2, context
     ]);
     const ins = instructionTable[operator];
     if (!ins) {
-        throw makeError(`Unable to find integer instruction for operator ${operator}`, node);
+        throw makeError(`Unable to find int instruction for operator ${operator}.`, node.operator);
     }
     const llDataType = context.dataTypeMap.get(dataType);
     const topCode = [
@@ -837,7 +837,7 @@ function genPointerOperation(operator, dataType, valueCode1, valueCode2, context
     };
     const ins = instructionTable[operator];
     if (!ins) {
-        throw makeError(`Unable to find pointer instruction for operator ${operator}`, node);
+        throw makeError(`Unable to find pointer instruction for operator ${operator}.`, node.operator);
     }
     const llDataType = context.dataTypeMap.get(dataType);
     const topCode = [
@@ -857,7 +857,7 @@ function genBoolOperation(operator, valueCode1, valueCode2, context, node) {
     };
     const ins = instructionTable[operator];
     if (!ins) {
-        throw makeError(`Unable to find bool instruction for operator ${operator}`, node);
+        throw makeError(`Unable to find bool instruction for operator ${operator}.`, node.operator);
     }
     const tempVar = newTempVar(context);
     const topCode = [
@@ -874,13 +874,13 @@ function genVarRef(node, context, scope) {
     const varName = node.value;
     const dataType = getVariableType(varName, scope);
     if (!dataType) {
-        throw makeError(`Reference to unknown variable ${varName}`, node);
+        throw makeError(`Reference to unknown variable ${varName}.`, node);
     }
     const llDataType = context.dataTypeMap.get(dataType);
-    const tempVarName = "%tmp" + context.nextTemp++;
     if (!llDataType) {
-        throw makeError(`Unable to resolve type ${dataType}`, node);
+        throw makeError(`Unable to resolve type ${dataType} for variable ${varName}.`, node);
     }
+    const tempVarName = "%tmp" + context.nextTemp++;
     const code = [
         `${tempVarName} = load ${llDataType}, ${llDataType}* %${varName}`
     ];
@@ -897,7 +897,7 @@ function genVarAssign(node, context, scope) {
     const definedDataType = node.data_type && node.data_type.value;
     const prevDefinedDataType = getVariableType(varName, scope);
     if (definedDataType && prevDefinedDataType) {
-        throw makeError(`Cannot re-define the data type of variable ${varName}.`, node);
+        throw makeError(`Cannot re-define the type of variable ${varName} to ${definedDataType}, previously defined as ${prevDefinedDataType}.`, node.data_type);
     }
 
     const value = gen(node.value, context, scope);
@@ -912,10 +912,6 @@ function genVarAssign(node, context, scope) {
     } else {
         valueCode = value.valueCode;
         dataType = value.dataType;
-    }
-    
-    if (!dataType) {
-        throw makeError(`Unable to infer data type for ${varName}`, node);
     }
     
     const llDataType = context.dataTypeMap.get(dataType);
@@ -1036,7 +1032,7 @@ function implicit2WayTypeCast(type1, type2, value1, value2, context, node) {
             dataType
         };
     }
-    throw makeError(`Cannot implicitly cast a ${type1} from/to a ${type2}`, node);
+    throw makeError(`Cannot implicitly cast a ${type1} from/to a ${type2}.`, node);
 }
 
 function getIntTypePriority(dataType) {
@@ -1074,7 +1070,7 @@ function implicitTypeCast(type1, type2, valueCode, context, node) {
     }
     if (isStructTypeOrNull(type1, context) && isStructTypeOrNull(type2, context)) {
         if (isStructType(type1, context) && isStructType(type2, context)) {
-            throw makeError(`Cannot cast a ${type1} to a ${type2}`, node);
+            throw makeError(`Cannot implicitly cast a ${type1} to a ${type2}.`, node);
         }
         const dataType = isStructType(type1, context) ? type1 : type2;
         return {
@@ -1083,7 +1079,7 @@ function implicitTypeCast(type1, type2, valueCode, context, node) {
             dataType
         };
     }
-    throw makeError(`Cannot implicitly cast a ${type1} to a ${type2}`, node);
+    throw makeError(`Cannot implicitly cast a ${type1} to a ${type2}.`, node);
 }
 
 function integerTypeCast(type1, type2, valueCode, context, downcast) {

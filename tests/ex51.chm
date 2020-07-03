@@ -1,0 +1,9 @@
+struct User {
+    fi: int
+}
+
+fun main(): int [
+    user = User { fi = 'b' }
+    last_initial = user.li
+    return 0
+]
