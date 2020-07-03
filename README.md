@@ -5,7 +5,6 @@ backends.
 
 ## Todos
 
-* separate top-level statements from normal statements
 * better error reporting: show a few lines of code and highlight the selected code
 * implement binary trees
     * delete (done)
@@ -14,6 +13,7 @@ backends.
     * union
     * difference
 * garbage collector
+* separate top-level statements from normal statements
 * modules
 * strings (maybe implemented in the language)
 * string literals

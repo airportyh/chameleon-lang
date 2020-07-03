@@ -1,0 +1,4 @@
+fun main(): int [
+    marty = alloc User { firstInitial = 'M' }
+    return 0
+]

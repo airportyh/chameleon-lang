@@ -2,8 +2,7 @@ fun main(): int [
     a: long = (6 * 8) + 5
     putchar(a)
     b = a + 4 - 2
-    putchar(b)    
-    
+    putchar(b)
     return 0
 ]
 

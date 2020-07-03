@@ -1,9 +1,13 @@
 const util = require("util");
 const fs = require("mz/fs");
-const exec = util.promisify(require("child_process").exec);
 const spawn = require("child_process").spawn;
+const colors = require("colors/safe");
 
 async function main() {
+    await testSuite();
+}
+
+async function testSuite() {
     await test("ex1.chm", ["57"]);
     await test("ex2.chm", ["J"]);
     await test("ex3.chm", ["A"]);
@@ -126,37 +130,53 @@ async function main() {
     );
     await test("ex36.chm", ["Yes", ""]);
     await test("ex39.chm", ["a"]);
+    await testExpectFail("ex41.chm", "Cannot alloc undefined struct User.");
+    await testExpectFail("ex42.chm", "Cannot create undefined struct User.");
+}
+
+async function run(filepath, optionalInput) {
+    const binFilePath = `tests/${filepath.replace('.chm', '.bin')}`;
+    await execProgram("./compile", [`tests/${filepath}`]);
+    return await execProgram(binFilePath, [], optionalInput);
 }
 
 async function test(filepath, expected, optionalInput) {
+    const output = await run(filepath, optionalInput);
+    const expectedString = expected.join("\n");
+    if (output.stdout !== expectedString) {
+        console.error(`Test ${filepath} failed:`);
+        console.log(indent([
+            `Expected:`,
+            indent(expectedString),
+            `Actual:`,
+            indent(output.stdout)
+        ].join("\n")));
+        console.log(indent(JSON.stringify(output.stdout.split("\n"), null, "    ")));
+    } else {
+        console.log(`Test ${filepath} OK`);
+    }
+}
+
+async function testExpectFail(filepath, failPattern, optionalInput) {
     try {
-        const astFilePath = `tests/${filepath.replace('.chm', '.ast')}`;
-        const llFilePath = `tests/${filepath.replace('.chm', '.ll')}`;
-        const asmFilePath = `tests/${filepath.replace('.chm', '.s')}`;
-        const binFilePath = `tests/${filepath.replace('.chm', '.bin')}`;
-        //await removeFile(astFilePath);
-        //await removeFile(llFilePath);
-        //await removeFile(asmFilePath);
-        //await removeFile(binFilePath);
-        
-        const cmd = `./compile tests/${filepath}`;
-        await exec(cmd);
-        const output = await execProgram(binFilePath, optionalInput);
-        const expectedString = expected.join("\n");
-        if (output.stdout !== expectedString) {
-            console.error(`Test ${filepath} failed:`);
-            console.log(indent([
-                `Expected:`,
-                indent(expectedString),
-                `Actual:`,
-                indent(output.stdout)
-            ].join("\n")))
-            console.log(indent(JSON.stringify(output.stdout.split("\n"), null, "    ")));
-        } else {
-            console.error(`Test ${filepath} OK`);
-        }
+        const output = await run(filepath, optionalInput);
+        console.error(`Test ${filepath} failed:`);
+        console.log(indent([
+            `Expected to fail with "${failPattern}" but output was:`,
+            indent(output.stdout)
+        ].join("\n")));
     } catch (e) {
-        console.error(e.message);
+        const idx = e.message.indexOf(failPattern);
+        if (idx !== -1) {
+            console.log(`Test ${filepath} OK`);
+        } else {
+            console.error(`Test ${filepath} failed:`);
+            
+            console.log(indent([
+                `Expected to fail with "${failPattern}" but output was:`,
+                indent(colors.yellow(e.message))
+            ].join("\n")));
+        }
     }
 }
 
@@ -174,11 +194,11 @@ function indent(text) {
     return text.split("\n").map(line => "  " + line).join("\n");
 }
 
-async function execProgram(program, input) {
+async function execProgram(cmd, args, input) {
     return new Promise((accept, reject) => {
         let stdout = "";
         let stderr = "";
-        const process = spawn(program);
+        const process = spawn(cmd, args, { cwd: __dirname });
     
         if (input) {
             process.stdin.write(input);
