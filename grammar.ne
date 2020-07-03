@@ -49,12 +49,12 @@ statement
     |  comment         {% id %}
 
 var_assign
-    -> %identifier _ type_def _ "=" _ expr
+    -> identifier _ type_def _ "=" _ expr
         {%
             (data) => {
                 return {
                     type: "var_assign",
-                    start: tokenStart(data[0]),
+                    start: data[0].start,
                     end: data[6].end,
                     data_type: data[2],
                     var_name: data[0],
@@ -62,12 +62,12 @@ var_assign
                 };
             }
         %}
-    | %identifier _ "=" _ expr
+    | identifier _ "=" _ expr
         {%
             (data) => {
                 return {
                     type: "var_assign",
-                    start: tokenStart(data[0]),
+                    start: data[0].start,
                     end: data[4].end,
                     var_name: data[0],
                     value: data[4]
@@ -75,7 +75,7 @@ var_assign
             }
         %}
 
-type_def -> ":" _ %identifier
+type_def -> ":" _ identifier
     {%
         (data) => {
             return data[2];
@@ -147,15 +147,15 @@ unary_expr
     |  not             {% id %}
     
 var_ref
-    -> %identifier     {% idSimplifyToken %}
+    -> identifier     {% id %}
 
 fun_call
-    -> %identifier _ paranthesized_argument_list
+    -> identifier _ paranthesized_argument_list
         {%
             (data) => {
                 return {
                     type: "fun_call",
-                    start: tokenStart(data[0]),
+                    start: data[0].start,
                     end: data[2].end,
                     fun_name: data[0],
                     arguments: data[2]
@@ -185,7 +185,7 @@ argument_list
         %}
 
 fun_def
-    -> "fun" __ %identifier _ paranthesized_parameter_list _ type_def _ code_block
+    -> "fun" __ identifier _ paranthesized_parameter_list _ type_def _ code_block
         {%
             (data) => {
                 return {
@@ -199,7 +199,7 @@ fun_def
                 };
             }
         %}
-    | "fun" __ %identifier _ paranthesized_parameter_list _ code_block
+    | "fun" __ identifier _ paranthesized_parameter_list _ code_block
         {%
             (data) => {
                 return {
@@ -236,25 +236,25 @@ parameter_list
         %}
 
 fun_param
-    -> %identifier _ type_def
+    -> identifier _ type_def
         {%
             (data) => {
                 return {
                     type: "fun_param",
-                    start: tokenStart(data[0]),
+                    start: data[0].start,
                     end: data[2].end,
                     name: data[0],
                     data_type: data[2]
                 }
             }
         %}
-    |  %identifier
+    |  identifier
         {%
             (data) => {
                 return {
                     type: "fun_param",
-                    start: tokenStart(data[0]),
-                    end: tokenEnd(data[0]),
+                    start: data[0].start,
+                    end: data[0].end,
                     name: data[0]
                 }
             }
@@ -319,7 +319,7 @@ break
     -> %break_statement      {% idSimplifyToken %}
 
 struct_def
-    -> "struct" __ %identifier _ "{" MLWS struct_def_entry_list MLWS "}"
+    -> "struct" __ identifier _ "{" MLWS struct_def_entry_list MLWS "}"
         {%
             (data) => {
                 return {
@@ -345,12 +345,12 @@ struct_def_entry_list
         %}
 
 struct_def_entry
-    -> %identifier _ type_def
+    -> identifier _ type_def
         {%
             (data) => {
                 return {
                     type: "struct_def_entry",
-                    start: tokenStart(data[0]),
+                    start: data[0].start,
                     end: data[2].end,
                     field_name: data[0],
                     field_type: data[2]
@@ -359,7 +359,7 @@ struct_def_entry
         %}
         
 struct_literal
-    -> %identifier _ "{" MLWS struct_literal_entry_list MLWS "}"
+    -> identifier _ "{" MLWS struct_literal_entry_list MLWS "}"
         {%
             (data) => {
                 return {
@@ -383,12 +383,12 @@ struct_literal_entry_list
         %}
 
 struct_literal_entry
-    -> %identifier _ "=" _ expr
+    -> identifier _ "=" _ expr
         {%
             (data) => {
                 return {
                     type: "struct_literal_entry",
-                    start: tokenStart(data[0]),
+                    start: data[0].start,
                     end: data[4].end,
                     field_name: data[0],
                     field_value: data[4]
@@ -449,6 +449,9 @@ number
 
 comment
     -> %comment         {% idSimplifyToken %}
+    
+identifier
+    -> %identifier      {% idSimplifyToken %}
 
 # Multi-line whitespace
 
@@ -516,32 +519,5 @@ function simplifyToken(token) {
 function idSimplifyToken(data) {
     return simplifyToken(data[0]);
 }
-
-
-function print(node) {
-    switch (node.type) {
-        case "program":
-            return node.body
-                .map(statement => 
-                    print(statement)).join("\n");
-            break;
-        case "fun_call":
-            return `${node.fun_name.value}(` +
-                node.arguments
-                    .map(arg => print(arg)).join(", ") +
-                ")";
-            break;
-        case "bin_expr":
-            return `(${print(node.left)}${node.operator.value}${print(node.right)})`;
-            break;
-        default:
-            if (node.value) {
-                return node.value;
-            } else {
-                throw new Error(`Unsupported: ${node.type}`);
-            }
-    }
-}
-
 
 %}

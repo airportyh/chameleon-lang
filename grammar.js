@@ -58,33 +58,6 @@ function idSimplifyToken(data) {
     return simplifyToken(data[0]);
 }
 
-
-function print(node) {
-    switch (node.type) {
-        case "program":
-            return node.body
-                .map(statement => 
-                    print(statement)).join("\n");
-            break;
-        case "fun_call":
-            return `${node.fun_name.value}(` +
-                node.arguments
-                    .map(arg => print(arg)).join(", ") +
-                ")";
-            break;
-        case "bin_expr":
-            return `(${print(node.left)}${node.operator.value}${print(node.right)})`;
-            break;
-        default:
-            if (node.value) {
-                return node.value;
-            } else {
-                throw new Error(`Unsupported: ${node.type}`);
-            }
-    }
-}
-
-
 var grammar = {
     Lexer: lexer,
     ParserRules: [
@@ -120,11 +93,11 @@ var grammar = {
     {"name": "statement", "symbols": ["free"], "postprocess": id},
     {"name": "statement", "symbols": ["break"], "postprocess": id},
     {"name": "statement", "symbols": ["comment"], "postprocess": id},
-    {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def", "_", {"literal":"="}, "_", "expr"], "postprocess": 
+    {"name": "var_assign", "symbols": ["identifier", "_", "type_def", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
                 type: "var_assign",
-                start: tokenStart(data[0]),
+                start: data[0].start,
                 end: data[6].end,
                 data_type: data[2],
                 var_name: data[0],
@@ -132,18 +105,18 @@ var grammar = {
             };
         }
                 },
-    {"name": "var_assign", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"="}, "_", "expr"], "postprocess": 
+    {"name": "var_assign", "symbols": ["identifier", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
                 type: "var_assign",
-                start: tokenStart(data[0]),
+                start: data[0].start,
                 end: data[4].end,
                 var_name: data[0],
                 value: data[4]
             };
         }
                 },
-    {"name": "type_def", "symbols": [{"literal":":"}, "_", (lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": 
+    {"name": "type_def", "symbols": [{"literal":":"}, "_", "identifier"], "postprocess": 
         (data) => {
             return data[2];
         }
@@ -206,12 +179,12 @@ var grammar = {
     {"name": "unary_expr", "symbols": ["bool_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["char_literal"], "postprocess": id},
     {"name": "unary_expr", "symbols": ["not"], "postprocess": id},
-    {"name": "var_ref", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": idSimplifyToken},
-    {"name": "fun_call", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_argument_list"], "postprocess": 
+    {"name": "var_ref", "symbols": ["identifier"], "postprocess": id},
+    {"name": "fun_call", "symbols": ["identifier", "_", "paranthesized_argument_list"], "postprocess": 
         (data) => {
             return {
                 type: "fun_call",
-                start: tokenStart(data[0]),
+                start: data[0].start,
                 end: data[2].end,
                 fun_name: data[0],
                 arguments: data[2]
@@ -232,7 +205,7 @@ var grammar = {
             return [...data[0], data[2]];
         }
                 },
-    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_parameter_list", "_", "type_def", "_", "code_block"], "postprocess": 
+    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", "identifier", "_", "paranthesized_parameter_list", "_", "type_def", "_", "code_block"], "postprocess": 
         (data) => {
             return {
                 type: "fun_def",
@@ -245,7 +218,7 @@ var grammar = {
             };
         }
                 },
-    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_parameter_list", "_", "code_block"], "postprocess": 
+    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", "identifier", "_", "paranthesized_parameter_list", "_", "code_block"], "postprocess": 
         (data) => {
             return {
                 type: "fun_def",
@@ -271,23 +244,23 @@ var grammar = {
             return [...data[0], data[2]];
         }
                 },
-    {"name": "fun_param", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def"], "postprocess": 
+    {"name": "fun_param", "symbols": ["identifier", "_", "type_def"], "postprocess": 
         (data) => {
             return {
                 type: "fun_param",
-                start: tokenStart(data[0]),
+                start: data[0].start,
                 end: data[2].end,
                 name: data[0],
                 data_type: data[2]
             }
         }
                 },
-    {"name": "fun_param", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": 
+    {"name": "fun_param", "symbols": ["identifier"], "postprocess": 
         (data) => {
             return {
                 type: "fun_param",
-                start: tokenStart(data[0]),
-                end: tokenEnd(data[0]),
+                start: data[0].start,
+                end: data[0].end,
                 name: data[0]
             }
         }
@@ -336,7 +309,7 @@ var grammar = {
         }
                 },
     {"name": "break", "symbols": [(lexer.has("break_statement") ? {type: "break_statement"} : break_statement)], "postprocess": idSimplifyToken},
-    {"name": "struct_def", "symbols": [{"literal":"struct"}, "__", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"{"}, "MLWS", "struct_def_entry_list", "MLWS", {"literal":"}"}], "postprocess": 
+    {"name": "struct_def", "symbols": [{"literal":"struct"}, "__", "identifier", "_", {"literal":"{"}, "MLWS", "struct_def_entry_list", "MLWS", {"literal":"}"}], "postprocess": 
         (data) => {
             return {
                 type: "struct_def",
@@ -355,18 +328,18 @@ var grammar = {
             return [...data[0], data[2]];
         }
                 },
-    {"name": "struct_def_entry", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def"], "postprocess": 
+    {"name": "struct_def_entry", "symbols": ["identifier", "_", "type_def"], "postprocess": 
         (data) => {
             return {
                 type: "struct_def_entry",
-                start: tokenStart(data[0]),
+                start: data[0].start,
                 end: data[2].end,
                 field_name: data[0],
                 field_type: data[2]
             };
         }
                 },
-    {"name": "struct_literal", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"{"}, "MLWS", "struct_literal_entry_list", "MLWS", {"literal":"}"}], "postprocess": 
+    {"name": "struct_literal", "symbols": ["identifier", "_", {"literal":"{"}, "MLWS", "struct_literal_entry_list", "MLWS", {"literal":"}"}], "postprocess": 
         (data) => {
             return {
                 type: "struct_literal",
@@ -383,11 +356,11 @@ var grammar = {
     {"name": "struct_literal_entry_list", "symbols": ["struct_literal_entry_list", "MLWS", "struct_literal_entry"], "postprocess": 
         (data) => [...data[0], data[2]]
                 },
-    {"name": "struct_literal_entry", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"="}, "_", "expr"], "postprocess": 
+    {"name": "struct_literal_entry", "symbols": ["identifier", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
                 type: "struct_literal_entry",
-                start: tokenStart(data[0]),
+                start: data[0].start,
                 end: data[4].end,
                 field_name: data[0],
                 field_value: data[4]
@@ -429,6 +402,7 @@ var grammar = {
     {"name": "char_literal", "symbols": [(lexer.has("char_literal") ? {type: "char_literal"} : char_literal)], "postprocess": idSimplifyToken},
     {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": idSimplifyToken},
     {"name": "comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": idSimplifyToken},
+    {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": idSimplifyToken},
     {"name": "_MLWS_$ebnf$1", "symbols": []},
     {"name": "_MLWS_$ebnf$1", "symbols": ["_MLWS_$ebnf$1", "nl_or_ws"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_MLWS_", "symbols": ["_MLWS_$ebnf$1"]},

@@ -68,8 +68,8 @@ async function main() {
         if (node) {
             const startLine = node.start.line;
             const startCol = node.start.col;
-            const endLine = node.end.line;
-            const endCol = node.end.col;
+            const endLine = node.end ? node.end.line : node.start.line;
+            const endCol = node.end ? node.end.col : node.start.col;
             
             const sourceFile = path.join(baseDir, path.basename(filename, ".ast") + ".chm");
             try {
@@ -526,7 +526,7 @@ function genFunDef(node, context, scope) {
         if (outputType === "void") {
             body.push("ret void");
         } else {
-            throw makeError(`Function ${funName} does not always return`, node);
+            throw makeError(`Function ${funName} must return ${outputType} but it does not always return.`, node.fun_name);
         }
     }
     

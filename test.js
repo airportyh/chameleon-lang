@@ -130,6 +130,7 @@ async function testSuite() {
     );
     await test("ex36.chm", ["Yes", ""]);
     await test("ex39.chm", ["a"]);
+    await testExpectFail("ex40.chm", "Function main must return int but it does not always return.");
     await testExpectFail("ex41.chm", "Cannot alloc undefined struct User.");
     await testExpectFail("ex42.chm", "Cannot create undefined struct User.");
 }
