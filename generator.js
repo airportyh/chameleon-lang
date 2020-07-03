@@ -451,14 +451,14 @@ function genReturn(node, context, scope) {
 function genFunDef(node, context, scope) {
     const variables = new Map();
     const paramList = [];
-    const allocaStoreInstructions = [];
+    const body = [];
     for (const param of node.parameters) {
         const paramName = param.name.value;
         const paramDataType = param.data_type && param.data_type.value || "void";
         variables.set(paramName, paramDataType);
         const llParamDataType = context.dataTypeMap.get(paramDataType);
         paramList.push(`${llParamDataType} %_${paramName}`);
-        allocaStoreInstructions.push(
+        body.push(
             `%${paramName} = alloca ${llParamDataType}`,
             `store ${llParamDataType} %_${paramName}, ${llParamDataType}* %${paramName}`
         );
@@ -475,14 +475,22 @@ function genFunDef(node, context, scope) {
         variables
     };
     
-    const body = 
-        allocaStoreInstructions.concat(
-        node.body.map(statement => {
-            const { topCode } = gen(statement, context, [newScope, ...scope]);
-            return topCode.join("\n");
-        }));
-    if (outputType === "void") {
-        body.push("ret void");
+    let returns = false;
+    for (let statement of node.body) {
+        const result = gen(statement, context, [newScope, ...scope]);
+        body.push(...result.topCode);
+        if (statement.type === "return" || 
+            (statement.type === "if" && result.returns)) {
+            returns = true;
+        }
+    }
+
+    if (!returns) {
+        if (outputType === "void") {
+            body.push("ret void");
+        } else {
+            throw new Error(`${locInfo(node)}: Function ${funName} does not always return`);
+        }
     }
     
     const topCode = [
