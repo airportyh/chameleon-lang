@@ -97,7 +97,7 @@ var grammar = {
         }
             },
     {"name": "lines", "symbols": ["line"], "postprocess": id},
-    {"name": "lines", "symbols": ["line", (lexer.has("NL") ? {type: "NL"} : NL), "lines"], "postprocess": 
+    {"name": "lines", "symbols": ["lines", (lexer.has("NL") ? {type: "NL"} : NL), "line"], "postprocess": 
         (data) => {
             return [...data[0], ...data[2]];
         }
@@ -227,9 +227,9 @@ var grammar = {
             return [data[0]];
         }
                 },
-    {"name": "argument_list", "symbols": ["expr", "MLWS", "argument_list"], "postprocess": 
+    {"name": "argument_list", "symbols": ["argument_list", "MLWS", "expr"], "postprocess": 
         (data) => {
-            return [data[0], ...data[2]];
+            return [...data[0], data[2]];
         }
                 },
     {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", (lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "paranthesized_parameter_list", "_", "type_def", "_", "code_block"], "postprocess": 
@@ -266,9 +266,9 @@ var grammar = {
             return [data[0]];
         }
                 },
-    {"name": "parameter_list", "symbols": ["fun_param", "_MLWS_", "parameter_list"], "postprocess": 
+    {"name": "parameter_list", "symbols": ["parameter_list", "_MLWS_", "fun_param"], "postprocess": 
         (data) => {
-            return [data[0], ...data[2]];
+            return [...data[0], data[2]];
         }
                 },
     {"name": "fun_param", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def"], "postprocess": 
@@ -350,9 +350,9 @@ var grammar = {
     {"name": "struct_def_entry_list", "symbols": ["struct_def_entry"], "postprocess": 
         (data) => [data[0]]
                 },
-    {"name": "struct_def_entry_list", "symbols": ["struct_def_entry", "MLWS", "struct_def_entry_list"], "postprocess": 
+    {"name": "struct_def_entry_list", "symbols": ["struct_def_entry_list", "MLWS", "struct_def_entry"], "postprocess": 
         (data) => {
-            return [data[0], ...data[2]];
+            return [...data[0], data[2]];
         }
                 },
     {"name": "struct_def_entry", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", "type_def"], "postprocess": 
@@ -380,8 +380,8 @@ var grammar = {
     {"name": "struct_literal_entry_list", "symbols": ["struct_literal_entry"], "postprocess": 
         (data) => [data[0]]
                 },
-    {"name": "struct_literal_entry_list", "symbols": ["struct_literal_entry", "MLWS", "struct_literal_entry_list"], "postprocess": 
-        (data) => [data[0], ...data[2]]
+    {"name": "struct_literal_entry_list", "symbols": ["struct_literal_entry_list", "MLWS", "struct_literal_entry"], "postprocess": 
+        (data) => [...data[0], data[2]]
                 },
     {"name": "struct_literal_entry", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier), "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {

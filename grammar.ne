@@ -16,7 +16,7 @@ program -> lines
 
 lines
     -> line   {% id %}
-    |  line %NL lines
+    |  lines %NL line
         {%
             (data) => {
                 return [...data[0], ...data[2]];
@@ -177,10 +177,10 @@ argument_list
                 return [data[0]];
             }
         %}
-    |  expr MLWS argument_list
+    |  argument_list MLWS expr
         {%
             (data) => {
-                return [data[0], ...data[2]];
+                return [...data[0], data[2]];
             }
         %}
 
@@ -228,10 +228,10 @@ parameter_list
                 return [data[0]];
             }
         %}
-    |  fun_param _MLWS_ parameter_list
+    |  parameter_list _MLWS_ fun_param
         {%
             (data) => {
-                return [data[0], ...data[2]];
+                return [...data[0], data[2]];
             }
         %}
 
@@ -337,10 +337,10 @@ struct_def_entry_list
         {%
             (data) => [data[0]]
         %}
-    |  struct_def_entry MLWS struct_def_entry_list
+    |  struct_def_entry_list MLWS struct_def_entry
         {%
             (data) => {
-                return [data[0], ...data[2]];
+                return [...data[0], data[2]];
             }
         %}
 
@@ -377,9 +377,9 @@ struct_literal_entry_list
         {%
             (data) => [data[0]]
         %}
-    |  struct_literal_entry MLWS struct_literal_entry_list
+    |  struct_literal_entry_list MLWS struct_literal_entry
         {%
-            (data) => [data[0], ...data[2]]
+            (data) => [...data[0], data[2]]
         %}
 
 struct_literal_entry

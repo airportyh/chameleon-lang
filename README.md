@@ -5,9 +5,7 @@ backends.
 
 ## Todos
 
-* if a function doesn't not always return, report compiler error
 * separate top-level statements from normal statements
-* change all recursion to left recursion
 * better error reporting: show a few lines of code and highlight the selected code
 * implement binary trees
     * delete (done)
@@ -15,17 +13,15 @@ backends.
     * iteration
     * union
     * difference
-* modules
-* tests for erroring test cases
-* automatic ret instruct generated for LL if needed (when all paths already return for example),
-also return my error message instead of going through to LL
-* error due to forgetting to alloc (and then dereferencing)
-* error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
 * garbage collector
-* allow assigning to struct fields
-* code blocks to have end pos info
+* modules
 * strings (maybe implemented in the language)
 * string literals
+* tests for erroring test cases
+* error due to forgetting to alloc (and then dereferencing)
+* error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
+* allow assigning to struct fields
+* code blocks to have end pos info
 * do some code challenges
 * multiple return values for functions
 * arrays
@@ -42,6 +38,10 @@ also return my error message instead of going through to LL
 * experiment with optimization
 * type checker that gives good error messages
 
+* grammar: change all recursion to left recursion (done)
+* automatic ret instruct generated for LL if needed (when all paths already return for example),
+also return my error message instead of going through to LL (done)
+* if a function doesn't not always return, report compiler error (done)
 * if statement do not have exit block if both clauses return (done)
 * write test for ex35.chm (done)
 * comments (done)
