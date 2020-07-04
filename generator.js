@@ -928,6 +928,21 @@ function genVarAssign(node, context, scope) {
     topCode.push(
         `store ${llDataType} ${valueCode}, ${llDataType}* %${varName}`
     );
+    
+    if (isStructType(value.dataType, context)) {
+        const mapKeyTempVar = newTempVar(context);
+        const mapValueTempVar = newTempVar(context);
+        const refMapValueTempVar = newTempVar(context);
+        const newTreeTempVar = newTempVar(context);
+        topCode.push(
+            `${mapValueTempVar} = ptrtoint ${llDataType} ${valueCode} to i64`,
+            `${mapKeyTempVar} = ptrtoint ${llDataType}* %${varName} to i64`,
+            `${refMapValueTempVar} = load %struct.BTreeMap*, %struct.BTreeMap** @ref_map`,
+            `${newTreeTempVar} = call %struct.BTreeMap* @btmap_set(i64 ${mapKeyTempVar}, i64 ${mapValueTempVar}, %struct.BTreeMap* ${refMapValueTempVar})`,
+            `store %struct.BTreeMap* ${newTreeTempVar}, %struct.BTreeMap** @ref_map`
+        );
+    }
+    
     return {
         topCode: topCode, 
         valueCode: "%" + varName,
@@ -941,6 +956,7 @@ function genProgram(node, context, scope) {
         `declare i32 @getchar()`,
         `declare i8* @malloc(i32)`,
         `declare void @free(i8*)`,
+        `@ref_map = global %struct.BTreeMap* null`,
         ""
     ];
     
