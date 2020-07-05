@@ -249,17 +249,6 @@ fun_param
                 }
             }
         %}
-    |  identifier
-        {%
-            (data) => {
-                return {
-                    type: "fun_param",
-                    start: data[0].start,
-                    end: data[0].end,
-                    name: data[0]
-                }
-            }
-        %}
 
 code_block
     -> "[" lines "]"

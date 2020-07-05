@@ -6,6 +6,12 @@ backends.
 ## Todos
 
 * garbage collector
+* for loops
+* lambdas and closures
+* var args for print statements?
+* string utility functions
+* format parser/lexer errors nicely
+* preload structs similar to fun defs
 * modules
 * implement binary trees
     * delete (done)
@@ -23,7 +29,6 @@ backends.
 * multiple return values for functions
 * arrays
 * type classes / protocols
-* lambdas and closures
 * classes
 * default function parameter values
 * default field values for structs

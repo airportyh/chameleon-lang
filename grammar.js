@@ -256,16 +256,6 @@ var grammar = {
             }
         }
                 },
-    {"name": "fun_param", "symbols": ["identifier"], "postprocess": 
-        (data) => {
-            return {
-                type: "fun_param",
-                start: data[0].start,
-                end: data[0].end,
-                name: data[0]
-            }
-        }
-                },
     {"name": "code_block", "symbols": [{"literal":"["}, "lines", {"literal":"]"}], "postprocess": 
         (data) => {
             return data[1];

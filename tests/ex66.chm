@@ -1,0 +1,157 @@
+struct String {
+    char: int
+    next: String
+}
+
+struct StringList {
+    string: String
+    next: StringList
+}
+
+struct AppendUntilResult {
+    part: String
+    rest: String
+}
+
+# String functions ==========================
+
+fun string(char:int next:String): String [
+    return alloc String {
+        char = char
+        next = next
+    }
+]
+
+fun string_list(string:String next:StringList): StringList [
+    return alloc StringList {
+        string = string
+        next = next
+    }
+]
+
+fun put_string(string:String) [
+    if string != null [
+        putchar(string.char)
+        put_string(string.next)
+    ]
+]
+
+fun split_string(source:String separator:int): StringList [
+    return split_string_helper(source separator null)
+]
+
+fun split_string_helper(source:String separator:int dest:StringList): StringList [
+    if source == null [
+        return dest
+    ]
+    append_result = append_until(source separator null)
+    rest_list = split_string_helper(append_result.rest separator dest)
+    return string_list(append_result.part rest_list)
+]
+
+fun append_until(source:String stop_char:int dest:String): AppendUntilResult [
+    if source == null [
+        return alloc AppendUntilResult {
+            part = dest
+            rest = null
+        }
+    ]
+    char = source.char
+    if char == stop_char [
+        return alloc AppendUntilResult {
+            part = dest
+            rest = source.next
+        }
+    ] else [
+        append_result = append_until(source.next stop_char dest)
+        return alloc AppendUntilResult {
+            part = string(char append_result.part)
+            rest = append_result.rest
+        }
+    ]
+]
+
+fun concat_string(string1:String string2:String): String [
+    combined:String = null
+    combined = concat_string_helper(string2 combined)
+    combined = concat_string_helper(string1 combined)
+    return combined
+]
+
+fun concat_string_helper(source:String dest:String): String [
+    if source != null [
+        char = source.char
+        new_dest = concat_string_helper(source.next dest)
+        return string(char new_dest)
+    ] else [
+        return dest
+    ]
+]
+
+fun string_length(string:String): int [
+    length:int = 0
+    curr = string
+    while curr != null [
+        curr = curr.next
+        length = length + 1
+    ]
+    return length
+]
+
+fun find_string(string:String target:String): String [
+    if starts_with_string(string target) [
+        return string
+    ] else [
+        return find_string(string.next target)
+    ]
+]
+
+fun starts_with_string(string:String target:String): bool [
+    if target == null [
+        return true
+    ]
+    if string == null [
+        return false
+    ]
+    if string.char == target.char [
+        return starts_with_string(string.next target.next)
+    ] else [
+        return false
+    ]
+]
+
+fun print(string:String) [
+    put_string(string)
+    putchar('\n')
+]
+
+# Number functions
+
+fun print_int(num:int) [
+    if num > 0 [
+        digit = num % 10
+        print_int(num / 10)
+        putchar(48 + digit)
+    ]
+]
+
+# ===========================================
+
+fun main(): int [
+    message = "To be or not to be that is the question"
+    words = split_string(message ' ')
+    current = words
+    while current != null [
+        print(current.string)
+        current = current.next
+    ]
+    result = starts_with_string(message "To")
+    if result [
+        print("Yes starts with To")
+    ] else [
+        print("No does not start with to")
+    ]
+    print(find_string(message "not"))
+    return 0
+]
+

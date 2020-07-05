@@ -154,6 +154,21 @@ async function testSuite() {
     await testExpectFail("ex61.chm", "Cannot implicitly cast a Apple to a Orange.");
     await testExpectFail("ex62.chm", "Cannot implicitly cast a Apple to a int.");
     await test("ex63.chm", ["Hello, world!", "Whatsup?", ""]);
+    await test("ex66.chm", [
+        "To",
+        "be",
+        "or",
+        "not",
+        "to",
+        "be",
+        "that",
+        "is",
+        "the",
+        "question",
+        "Yes starts with To",
+        "not to be that is the question",
+        ""
+    ]);
 }
 
 async function run(filepath, optionalInput) {
