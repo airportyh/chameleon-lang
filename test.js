@@ -169,6 +169,7 @@ async function testSuite() {
         "not to be that is the question",
         ""
     ]);
+    await test("ex68.chm", ["B"]);
 }
 
 async function run(filepath, optionalInput) {

@@ -61,6 +61,7 @@ const lexer = moo.compile({
   assign: '=',
   colon: ':',
   dot: '.',
+  at: '@',
   NL:      { match: /\n/, lineBreaks: true },
 });
 

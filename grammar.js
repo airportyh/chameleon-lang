@@ -84,7 +84,7 @@ var grammar = {
         () => []
                 },
     {"name": "statement", "symbols": ["fun_call"], "postprocess": id},
-    {"name": "statement", "symbols": ["var_assign"], "postprocess": id},
+    {"name": "statement", "symbols": ["assign"], "postprocess": id},
     {"name": "statement", "symbols": ["fun_def"], "postprocess": id},
     {"name": "statement", "symbols": ["return"], "postprocess": id},
     {"name": "statement", "symbols": ["if"], "postprocess": id},
@@ -93,7 +93,7 @@ var grammar = {
     {"name": "statement", "symbols": ["free"], "postprocess": id},
     {"name": "statement", "symbols": ["break"], "postprocess": id},
     {"name": "statement", "symbols": ["comment"], "postprocess": id},
-    {"name": "var_assign", "symbols": ["identifier", "_", "type_def", "_", {"literal":"="}, "_", "expr"], "postprocess": 
+    {"name": "assign", "symbols": ["identifier", "_", "type_def", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
             return {
                 type: "var_assign",
@@ -105,15 +105,26 @@ var grammar = {
             };
         }
                 },
-    {"name": "var_assign", "symbols": ["identifier", "_", {"literal":"="}, "_", "expr"], "postprocess": 
+    {"name": "assign", "symbols": ["expr", "_", {"literal":"="}, "_", "expr"], "postprocess": 
         (data) => {
-            return {
-                type: "var_assign",
-                start: data[0].start,
-                end: data[4].end,
-                var_name: data[0],
-                value: data[4]
-            };
+            let type;
+            if (data[0].type === "identifier") {
+                return {
+                    type: "var_assign",
+                    start: data[0].start,
+                    end: data[4].end,
+                    var_name: data[0],
+                    value: data[4]
+                }
+            } else {
+                return {
+                    type: "field_assign",
+                    start: data[0].start,
+                    end: data[4].end,
+                    left: data[0],
+                    right: data[4]
+                };
+            }
         }
                 },
     {"name": "type_def", "symbols": [{"literal":":"}, "_", "identifier"], "postprocess": 
@@ -206,31 +217,27 @@ var grammar = {
             return [...data[0], data[2]];
         }
                 },
-    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", "identifier", "_", "paranthesized_parameter_list", "_", "type_def", "_", "code_block"], "postprocess": 
+    {"name": "fun_def$ebnf$1$subexpression$1", "symbols": ["gc_off", "__"]},
+    {"name": "fun_def$ebnf$1", "symbols": ["fun_def$ebnf$1$subexpression$1"], "postprocess": id},
+    {"name": "fun_def$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "fun_def$ebnf$2$subexpression$1", "symbols": ["type_def", "_"]},
+    {"name": "fun_def$ebnf$2", "symbols": ["fun_def$ebnf$2$subexpression$1"], "postprocess": id},
+    {"name": "fun_def$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
+    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", "fun_def$ebnf$1", "identifier", "_", "paranthesized_parameter_list", "_", "fun_def$ebnf$2", "code_block"], "postprocess": 
         (data) => {
             return {
                 type: "fun_def",
                 start: tokenStart(data[0]),
                 end: data[8].end,
-                fun_name: data[2],
-                data_type: data[6],
-                parameters: data[4],
-                body: data[8]
+                fun_name: data[3],
+                data_type: data[7] && data[7][0],
+                parameters: data[5],
+                body: data[8],
+                gc: !data[2]
             };
         }
                 },
-    {"name": "fun_def", "symbols": [{"literal":"fun"}, "__", "identifier", "_", "paranthesized_parameter_list", "_", "code_block"], "postprocess": 
-        (data) => {
-            return {
-                type: "fun_def",
-                start: tokenStart(data[0]),
-                end: data[6].end,
-                fun_name: data[2],
-                parameters: data[4],
-                body: data[6]
-            };
-        }
-                },
+    {"name": "gc_off", "symbols": [{"literal":"gc"}, {"literal":":"}, {"literal":"off"}]},
     {"name": "paranthesized_parameter_list", "symbols": [{"literal":"("}, "_", {"literal":")"}], "postprocess": () => []},
     {"name": "paranthesized_parameter_list", "symbols": [{"literal":"("}, "_MLWS_", "parameter_list", "_MLWS_", {"literal":")"}], "postprocess": 
         (data) => data[2]
@@ -271,6 +278,15 @@ var grammar = {
             };
         }
                 },
+    {"name": "return", "symbols": [{"literal":"return"}], "postprocess": 
+        (data) => {
+            return {
+                type: "return",
+                start: tokenStart(data[0]),
+                end: tokenEnd(data[0])
+            };
+        }
+                },
     {"name": "if$ebnf$1$subexpression$1", "symbols": ["_", {"literal":"else"}, "_", "if_alternate"]},
     {"name": "if$ebnf$1", "symbols": ["if$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "if$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
@@ -307,7 +323,8 @@ var grammar = {
                 start: tokenStart(data[0]),
                 end: tokenEnd(data[8]),
                 name: data[2],
-                entries: data[6]
+                entries: data[6],
+                gc: true
             };
         }
                 },
@@ -394,8 +411,21 @@ var grammar = {
     {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": idSimplifyToken},
     {"name": "comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": idSimplifyToken},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": idSimplifyToken},
+    {"name": "identifier", "symbols": [{"literal":"@"}, (lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": 
+        (data) => {
+            return {
+                type: "identifier",
+                value: "@" + data[1].value,
+                start: tokenStart(data[0]),
+                end: data[1].end
+            }
+        }
+                },
     {"name": "string_literal", "symbols": [(lexer.has("string_literal") ? {type: "string_literal"} : string_literal)], "postprocess": 
         (data) => {
+            // Convert a string literal to a string
+            // A string is represented as a linked list
+            // So "hello" -> string('h' string('e' string('l' string('l' string('o' null)))))
             const stringToken = idSimplifyToken(data);
             const string = stringToken.value;
             let rootCallNode;

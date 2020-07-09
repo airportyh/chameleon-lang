@@ -1,0 +1,10 @@
+struct Product {
+    price: int
+}
+
+fun main(): int [
+    basket = alloc Product { price = 4 }
+    basket.price = 66
+    putchar(basket.price)
+    return 0
+]

@@ -38,7 +38,7 @@ line
 
 statement
     -> fun_call        {% id %}
-    |  var_assign      {% id %}
+    |  assign          {% id %}
     |  fun_def         {% id %}
     |  return          {% id %}
     |  if              {% id %}
@@ -48,7 +48,7 @@ statement
     |  break           {% id %}
     |  comment         {% id %}
 
-var_assign
+assign
     -> identifier _ type_def _ "=" _ expr
         {%
             (data) => {
@@ -62,16 +62,27 @@ var_assign
                 };
             }
         %}
-    | identifier _ "=" _ expr
+    | expr _ "=" _ expr
         {%
             (data) => {
-                return {
-                    type: "var_assign",
-                    start: data[0].start,
-                    end: data[4].end,
-                    var_name: data[0],
-                    value: data[4]
-                };
+                let type;
+                if (data[0].type === "identifier") {
+                    return {
+                        type: "var_assign",
+                        start: data[0].start,
+                        end: data[4].end,
+                        var_name: data[0],
+                        value: data[4]
+                    }
+                } else {
+                    return {
+                        type: "field_assign",
+                        start: data[0].start,
+                        end: data[4].end,
+                        left: data[0],
+                        right: data[4]
+                    };
+                }
             }
         %}
 
@@ -186,34 +197,23 @@ argument_list
         %}
 
 fun_def
-    -> "fun" __ identifier _ paranthesized_parameter_list _ type_def _ code_block
+    -> "fun" __ (gc_off __):? identifier _ paranthesized_parameter_list _ (type_def _):? code_block
         {%
             (data) => {
                 return {
                     type: "fun_def",
                     start: tokenStart(data[0]),
                     end: data[8].end,
-                    fun_name: data[2],
-                    data_type: data[6],
-                    parameters: data[4],
-                    body: data[8]
+                    fun_name: data[3],
+                    data_type: data[7] && data[7][0],
+                    parameters: data[5],
+                    body: data[8],
+                    gc: !data[2]
                 };
             }
         %}
-    | "fun" __ identifier _ paranthesized_parameter_list _ code_block
-        {%
-            (data) => {
-                return {
-                    type: "fun_def",
-                    start: tokenStart(data[0]),
-                    end: data[6].end,
-                    fun_name: data[2],
-                    parameters: data[4],
-                    body: data[6]
-                };
-            }
-        %}
-    
+
+gc_off -> "gc" ":" "off"
 
 paranthesized_parameter_list
     ->  "(" _ ")"    {% () => [] %}
@@ -270,6 +270,16 @@ return
                 };
             }
         %}
+    |  "return"
+        {%
+            (data) => {
+                return {
+                    type: "return",
+                    start: tokenStart(data[0]),
+                    end: tokenEnd(data[0])
+                };
+            }
+        %}
 
 if
     -> "if" __ expr __ code_block
@@ -317,7 +327,8 @@ struct_def
                     start: tokenStart(data[0]),
                     end: tokenEnd(data[8]),
                     name: data[2],
-                    entries: data[6]
+                    entries: data[6],
+                    gc: true
                 };
             }
         %}
@@ -442,11 +453,25 @@ comment
     
 identifier
     -> %identifier      {% idSimplifyToken %}
+    |  "@" %identifier
+        {%
+            (data) => {
+                return {
+                    type: "identifier",
+                    value: "@" + data[1].value,
+                    start: tokenStart(data[0]),
+                    end: data[1].end
+                }
+            }
+        %}
 
 string_literal
     -> %string_literal
         {%
             (data) => {
+                // Convert a string literal to a string
+                // A string is represented as a linked list
+                // So "hello" -> string('h' string('e' string('l' string('l' string('o' null)))))
                 const stringToken = idSimplifyToken(data);
                 const string = stringToken.value;
                 let rootCallNode;

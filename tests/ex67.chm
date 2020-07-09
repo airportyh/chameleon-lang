@@ -5,7 +5,7 @@ struct String {
     next: String
 }
 
-struct BTreeMap {
+struct gc:off BTreeMap {
     key: long
     value: long
     size: int
@@ -14,20 +14,16 @@ struct BTreeMap {
 }
 
 fun main(): int [
-    message = "H"
-    print_ref_map(@ref_map 0)
-    a(message)
-    print_ref_map(@ref_map 0)
-    putchar('\n')
-    print_tree(@alloc_map 0)
+    name = "Jerry"
+    car = "BMW"
     return 0
 ]
 
-fun a(string:String) [
-    print_ref_map(@ref_map 0)
-]
-
-fun b(string:String) [
+fun a_function() [
+    print("Hello")
+    name = "Jerry"
+    print(name)
+    print_tree(@ref_map 0)
 ]
 
 # String functions
@@ -76,16 +72,6 @@ fun read_long(): long [
 
 # BTreeMap functions
 
-fun print_indent(amount:int) [
-    while amount > 0 [
-        putchar(' ')
-        putchar(' ')
-        putchar(' ')
-        putchar(' ')
-        amount = amount - 1
-    ]
-]
-
 fun print_tree(tree:BTreeMap level:int) [
     if tree != null [
         print_indent(level)
@@ -98,83 +84,19 @@ fun print_tree(tree:BTreeMap level:int) [
     ]
 ]
 
-fun print_ref_map(tree:BTreeMap level:int) [
-    sub_map:BTreeMap = null
-    if tree != null [
-        print_indent(level)
-        print_long(tree.key)
-        putchar('>')
-        sub_map = BTreeMap(tree.value)
-        putchar('\n')
-        print_tree(sub_map level + 1)
-        print_ref_map(tree.left level + 1)
-        print_ref_map(tree.right level + 1)
+fun print_indent(amount:int) [
+    while amount > 0 [
+        putchar(' ')
+        putchar(' ')
+        putchar(' ')
+        putchar(' ')
+        amount = amount - 1
     ]
-]
-
-# Garbage collector
-
-fun gc:off gc_add_ref(source:long dest:long) [
-    putchar('+')
-    putchar('(')
-    print_long(source)
-    putchar(',')
-    print_long(dest)
-    putchar(')')
-    putchar('\n')
-    if dest == 0 [
-        return
-    ]
-    result = btmap_get(source @ref_map)
-    refs:BTreeMap = null
-    if result != null [
-        refs = BTreeMap(result.value)
-        new_refs = btmap_set(dest 1 refs)
-        @ref_map = btmap_set(source long(new_refs) @ref_map)
-    ] else [
-        refs = btmap(dest 1 null null)
-        @ref_map = btmap_set(source long(refs) @ref_map)
-    ]
-]
-
-fun gc:off gc_remove_ref(source:long dest:long) [
-    putchar('-')
-    putchar('(')
-    print_long(source)
-    putchar(',')
-    print_long(dest)
-    putchar(')')
-    putchar('\n')
-    if dest == 0 [
-        return
-    ]
-    
-    result = btmap_get(source @ref_map)
-    refs:BTreeMap = null
-    if result != null [
-        refs = BTreeMap(result.value)
-        new_refs = btmap_delete(dest refs)
-        if new_refs == null [
-            @ref_map = btmap_delete(source @ref_map)
-        ] else [
-            @ref_map = btmap_set(source long(new_refs) @ref_map)
-        ]
-    ]
-]
-
-fun gc:off gc_collect(map:BTreeMap) [
-    # for each entry @alloc_map, set value to false
-    # for each key/value pair in @ref_map
-    # start tra
-]
-
-fun gc:off gc_set_all_unmarked(alloc_map:BTreeMap) [
-    
 ]
 
 # Core BTreeMap Operations
 
-fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
+fun btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
     if btree == null [
         return btmap(key value null null)
     ]
@@ -186,6 +108,7 @@ fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
             btree.right
         )
     ] else if key > btree.key [
+        print("right")
         new_right = btmap_set(key value btree.right)
         return btmap_create_balanced(
             btree.key 
@@ -194,13 +117,13 @@ fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
             new_right
         )
     ] else [
+        print("left")
         new_left = btmap_set(key value btree.left)
-        return btmap_create_balanced(
-            btree.key btree.value new_left btree.right)
+        return btmap_create_balanced(btree.key btree.value new_left btree.right)
     ]
 ]
 
-fun gc:off btmap_get(key:long tree:BTreeMap): BTreeMap [
+fun btmap_get(key:long tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
     ]
@@ -212,23 +135,18 @@ fun gc:off btmap_get(key:long tree:BTreeMap): BTreeMap [
     return btmap_get(key tree.left)
 ]
 
-fun gc:off btmap_delete(key:long tree:BTreeMap): BTreeMap [
+fun btmap_delete(key:long tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
     ]
     if key == tree.key [
         right_min = btmap_min(tree.right)
-        right = btmap_delete_min(tree.right)
-        if right_min != null [
-            return btmap_create_balanced(
-                 right_min.key
-                 right_min.value
-                 tree.left
-                 right
-            )
-        ] else [
-            return tree.left
-        ]
+        return btmap_create_balanced(
+            right_min.key
+            right_min.value
+            tree.left
+            btmap_delete_min(tree.right)
+        )
     ] else if key > tree.key [
         return btmap_create_balanced(
             tree.key
@@ -236,44 +154,35 @@ fun gc:off btmap_delete(key:long tree:BTreeMap): BTreeMap [
             tree.left
             btmap_delete(key tree.right)
         )
-    ] else [
-        return btmap_create_balanced(
+    ]
+    return btmap_create_balanced(
+        tree.key
+        tree.value
+        btmap_delete(key tree.left)
+        tree.right
+    )
+]
+
+fun btmap_min(tree:BTreeMap): BTreeMap [
+    if tree.left != null [
+        return btmap_min(tree.left)
+    ]
+    return tree
+]
+
+fun btmap_delete_min(tree:BTreeMap): BTreeMap [
+    if tree.left != null [
+        return btmap(
             tree.key
             tree.value
-            btmap_delete(key tree.left)
+            btmap_delete_min(tree.left)
             tree.right
         )
     ]
+    return tree.right
 ]
 
-fun gc:off btmap_min(tree:BTreeMap): BTreeMap [
-    if tree == null [
-        return null
-    ] else [
-        if tree.left != null [
-            return btmap_min(tree.left)
-        ]
-        return tree
-    ]
-]
-
-fun gc:off btmap_delete_min(tree:BTreeMap): BTreeMap [
-    if tree == null [
-        return null
-    ] else [
-        if tree.left != null [
-            return btmap(
-                tree.key
-                tree.value
-                btmap_delete_min(tree.left)
-                tree.right
-            )
-        ]
-        return tree.right
-    ]
-]
-
-fun gc:off btmap(
+fun btmap(
     key:long
     value:long
     left:BTreeMap
@@ -297,7 +206,7 @@ fun gc:off btmap(
 
 # See http://groups.csail.mit.edu/mac/users/adams/BB/
 # section 6: Balance maintenance algorithms
-fun gc:off btmap_single_left_rotation(a:BTreeMap): BTreeMap [
+fun btmap_single_left_rotation(a:BTreeMap): BTreeMap [
     x = a.left
     b = a.right
     y = a.right.left
@@ -307,7 +216,7 @@ fun gc:off btmap_single_left_rotation(a:BTreeMap): BTreeMap [
     return b1
 ]
 
-fun gc:off btmap_single_right_rotation(b:BTreeMap): BTreeMap [
+fun btmap_single_right_rotation(b:BTreeMap): BTreeMap [
     a = b.left
     x = a.left
     y = a.right
@@ -317,7 +226,7 @@ fun gc:off btmap_single_right_rotation(b:BTreeMap): BTreeMap [
     return a1
 ]
 
-fun gc:off btmap_double_left_rotation(a:BTreeMap): BTreeMap [
+fun btmap_double_left_rotation(a:BTreeMap): BTreeMap [
     x = a.left
     c = a.right
     b = c.left
@@ -330,7 +239,7 @@ fun gc:off btmap_double_left_rotation(a:BTreeMap): BTreeMap [
     return b1
 ]
 
-fun gc:off btmap_double_right_rotation(c:BTreeMap): BTreeMap [
+fun btmap_double_right_rotation(c:BTreeMap): BTreeMap [
     z = c.right
     a = c.left
     x = a.left
@@ -343,12 +252,13 @@ fun gc:off btmap_double_right_rotation(c:BTreeMap): BTreeMap [
     return b1
 ]
 
-fun gc:off btmap_create_balanced(
+fun btmap_create_balanced(
     key:long
     value:long
     left:BTreeMap
     right:BTreeMap
 ): BTreeMap [
+    print("btmap_create_balanced")
     weight = 3.745
     p = btmap(key value left right)
     ln = btmap_size(left)
@@ -382,7 +292,7 @@ fun gc:off btmap_create_balanced(
     ]
 ]
 
-fun gc:off btmap_size(tree:BTreeMap): int [
+fun btmap_size(tree:BTreeMap): int [
     if tree == null [
         return 0
     ] else [

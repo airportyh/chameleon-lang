@@ -13,10 +13,16 @@ async function main() {
     const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
 
     parser.feed(content);
-
+    const baseDir = path.dirname(filename);
+    
     if (parser.results.length > 1) {
         console.log("Ambiguous grammar detected.");
-        console.log(parser.results);
+        for (let i = 0; i < parser.results.length; i++) {
+            const outputFilename = path.join(baseDir, path.basename(filename, ".chm") + "-" + (i + 1) + ".ast");
+            const ast = parser.results[i];
+            await fs.writeFile(outputFilename, JSON.stringify(ast, null, "  "));
+            console.log(`Wrote ${outputFilename}.`);
+        }
         return;
     }
     
@@ -24,9 +30,9 @@ async function main() {
         console.error("Parse failed.");
         return;
     }
-    const baseDir = path.dirname(filename);
     const outputFilename = path.join(baseDir, path.basename(filename, ".chm") + ".ast");
     const ast = parser.results[0];
+    
     await fs.writeFile(outputFilename, JSON.stringify(ast, null, "  "));
     console.log(`Wrote ${outputFilename}.`);
 }

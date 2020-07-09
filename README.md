@@ -3,27 +3,31 @@
 A programming language for me to learn how to implement various programming language
 backends.
 
+# Pain Points
+
+* null exceptions cause segfaults, and are hard to debug
+* infinite recursion also causes segfaults
+* the generated code is getting bulky and hard to read
+* at the moment cannot print info in low-level code (that does't want gc to kick in)
+
 ## Todos
 
-* garbage collector
+* allow assigning to struct fields
+* implement mutable tree map
+* gc: collect
+* experiment with stack traces: https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
+* fix variables first declared in if blocks not dominating all cases (if should have scope?)
 * for loops
 * lambdas and closures
 * var args for print statements?
-* string utility functions
+* allow using void type explicitly
 * format parser/lexer errors nicely
 * preload structs similar to fun defs
 * modules
-* implement binary trees
-    * delete (done)
-    * rotations (auto-balancing) (done)
-    * iteration
-    * union
-    * difference
 * separate top-level statements from normal statements
 * type resolution errors can happen earlier: at struct def time and fun def time
 * error due to forgetting to alloc (and then dereferencing)
 * error handling - what if null pointer dereference segfault? stackoverflow (looks like this results in segfault anyway)
-* allow assigning to struct fields
 * code blocks to have end pos info
 * do some code challenges
 * multiple return values for functions
@@ -41,6 +45,12 @@ backends.
 * experiment with optimization
 * type checker that gives good error messages
 
+* string utility functions (done)
+* allow tagging gc on functions instead of structs (perhaps use a block-based directive) (done)
+* gc: de-initialize vars for void functions (done)
+* implement binary trees
+    * delete (done)
+    * rotations (auto-balancing) (done)
 * strings (maybe implemented in the language) (done)
 * string literals (done)
 * tests for erroring test cases (done)
