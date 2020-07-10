@@ -5,6 +5,12 @@ struct String {
     next: String
 }
 
+struct Product {
+    name: String
+    description: String
+    price: double
+}
+
 struct BTreeMap {
     key: long
     value: long
@@ -24,8 +30,17 @@ struct AppendUntilResult {
 }
 
 fun main(): int [
-    t = "t"
-    m = do_it(t)
+    bball = alloc Product {
+        name = "Basketball"
+        description = "You can bounce it, you can shoot it!"
+        price = 20.00
+    }
+    bball.description = "BAM"
+    putchar('a')
+    putchar('a')
+    putchar('\n')
+    print_assoc_map(@assoc_map 0)
+    
     putchar('V')
     putchar('\n')
     print_tree(@var_ref_map 0)
@@ -48,141 +63,6 @@ fun hello(subject:String): String [
     return concat_string(concat_string("Hello, " subject) "!")
 ]
 
-# String functions ==========================
-
-fun string(char:int next:String): String [
-    return alloc String {
-        char = char
-        next = next
-    }
-]
-
-fun string_list(string:String next:StringList): StringList [
-    return alloc StringList {
-        string = string
-        next = next
-    }
-]
-
-fun put_string(string:String) [
-    if string != null [
-        putchar(string.char)
-        put_string(string.next)
-    ]
-]
-
-fun split_string(source:String separator:int): StringList [
-    return split_string_helper(source separator null)
-]
-
-fun split_string_helper(source:String separator:int dest:StringList): StringList [
-    if source == null [
-        return dest
-    ]
-    append_result = append_until(source separator null)
-    rest_list = split_string_helper(append_result.rest separator dest)
-    return string_list(append_result.part rest_list)
-]
-
-fun append_until(source:String stop_char:int dest:String): AppendUntilResult [
-    if source == null [
-        return alloc AppendUntilResult {
-            part = dest
-            rest = null
-        }
-    ]
-    char = source.char
-    if char == stop_char [
-        return alloc AppendUntilResult {
-            part = dest
-            rest = source.next
-        }
-    ] else [
-        append_result = append_until(source.next stop_char dest)
-        return alloc AppendUntilResult {
-            part = string(char append_result.part)
-            rest = append_result.rest
-        }
-    ]
-]
-
-fun concat_string(string1:String string2:String): String [
-    combined:String = null
-    combined = concat_string_helper(string2 combined)
-    combined = concat_string_helper(string1 combined)
-    return combined
-]
-
-fun concat_string_helper(source:String dest:String): String [
-    new_dest:String = null
-    if source != null [
-        char = source.char
-        new_dest = concat_string_helper(source.next dest)
-        return string(char new_dest)
-    ] else [
-        return dest
-    ]
-]
-
-fun string_length(string:String): int [
-    length:int = 0
-    curr = string
-    while curr != null [
-        curr = curr.next
-        length = length + 1
-    ]
-    return length
-]
-
-fun find_string(string:String target:String): String [
-    if starts_with_string(string target) [
-        return string
-    ] else [
-        return find_string(string.next target)
-    ]
-]
-
-fun starts_with_string(string:String target:String): bool [
-    if target == null [
-        return true
-    ]
-    if string == null [
-        return false
-    ]
-    if string.char == target.char [
-        return starts_with_string(string.next target.next)
-    ] else [
-        return false
-    ]
-]
-
-fun print(string:String) [
-    put_string(string)
-    putchar('\n')
-]
-
-# Number functions
-
-fun print_long(num:long) [
-    if num > 0 [
-        digit = num % 10
-        print_long(num / 10)
-        putchar(48 + digit)
-    ]
-]
-
-fun read_long(): long [
-    num = 0
-    while true [
-        digit = getchar()
-        if digit == 10 [
-            break
-        ]
-        num = num * 10
-        num = num + (digit - 48)
-    ]
-    return num
-]
 
 # BTreeMap functions
 
@@ -252,19 +132,33 @@ fun gc:off gc_add_assoc(source:long dest:long) [
 ]
 
 fun gc:off gc_remove_assoc(source:long dest:long) [
+    putchar('R')
+    print_long(source)
+    putchar(',')
+    print_long(dest)
+    putchar('\n')
     if dest == 0 [
         return
     ]
     result = btmap_get(source @assoc_map)
     refs:BTreeMap = null
     if result != null [
+        putchar('%')
+        putchar('\n')
         refs = BTreeMap(result.value)
         new_refs = btmap_delete(dest refs)
         if new_refs == null [
+            putchar('(')
+            putchar('\n')
             @assoc_map = btmap_delete(source @assoc_map)
         ] else [
+            putchar('(')
+            putchar('\n')
             @assoc_map = btmap_set(source long(new_refs) @assoc_map)
         ]
+    ] else [
+        putchar('^')
+        putchar('\n')
     ]
 ]
 
@@ -598,4 +492,140 @@ fun gc:off btmap_size(tree:BTreeMap): int [
     ] else [
         return tree.size
     ]
+]
+
+# String functions ==========================
+
+fun string(char:int next:String): String [
+    return alloc String {
+        char = char
+        next = next
+    }
+]
+
+fun string_list(string:String next:StringList): StringList [
+    return alloc StringList {
+        string = string
+        next = next
+    }
+]
+
+fun put_string(string:String) [
+    if string != null [
+        putchar(string.char)
+        put_string(string.next)
+    ]
+]
+
+fun split_string(source:String separator:int): StringList [
+    return split_string_helper(source separator null)
+]
+
+fun split_string_helper(source:String separator:int dest:StringList): StringList [
+    if source == null [
+        return dest
+    ]
+    append_result = append_until(source separator null)
+    rest_list = split_string_helper(append_result.rest separator dest)
+    return string_list(append_result.part rest_list)
+]
+
+fun append_until(source:String stop_char:int dest:String): AppendUntilResult [
+    if source == null [
+        return alloc AppendUntilResult {
+            part = dest
+            rest = null
+        }
+    ]
+    char = source.char
+    if char == stop_char [
+        return alloc AppendUntilResult {
+            part = dest
+            rest = source.next
+        }
+    ] else [
+        append_result = append_until(source.next stop_char dest)
+        return alloc AppendUntilResult {
+            part = string(char append_result.part)
+            rest = append_result.rest
+        }
+    ]
+]
+
+fun concat_string(string1:String string2:String): String [
+    combined:String = null
+    combined = concat_string_helper(string2 combined)
+    combined = concat_string_helper(string1 combined)
+    return combined
+]
+
+fun concat_string_helper(source:String dest:String): String [
+    new_dest:String = null
+    if source != null [
+        char = source.char
+        new_dest = concat_string_helper(source.next dest)
+        return string(char new_dest)
+    ] else [
+        return dest
+    ]
+]
+
+fun string_length(string:String): int [
+    length:int = 0
+    curr = string
+    while curr != null [
+        curr = curr.next
+        length = length + 1
+    ]
+    return length
+]
+
+fun find_string(string:String target:String): String [
+    if starts_with_string(string target) [
+        return string
+    ] else [
+        return find_string(string.next target)
+    ]
+]
+
+fun starts_with_string(string:String target:String): bool [
+    if target == null [
+        return true
+    ]
+    if string == null [
+        return false
+    ]
+    if string.char == target.char [
+        return starts_with_string(string.next target.next)
+    ] else [
+        return false
+    ]
+]
+
+fun print(string:String) [
+    put_string(string)
+    putchar('\n')
+]
+
+# Number functions
+
+fun print_long(num:long) [
+    if num > 0 [
+        digit = num % 10
+        print_long(num / 10)
+        putchar(48 + digit)
+    ]
+]
+
+fun read_long(): long [
+    num = 0
+    while true [
+        digit = getchar()
+        if digit == 10 [
+            break
+        ]
+        num = num * 10
+        num = num + (digit - 48)
+    ]
+    return num
 ]

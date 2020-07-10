@@ -1057,7 +1057,9 @@ function getElementPointer(node, context, scope) {
     return {
         topCode,
         valueCode: ptrVarName,
-        dataType: fieldType
+        dataType: fieldType,
+        structValueCode: left.valueCode,
+        structDataType: left.dataType
     };
 }
 
@@ -1066,7 +1068,7 @@ function genFieldAssign(node, context, scope) {
         throw makeError(`Cannot perform field assignment to a non-dot expression.`, node.left.operator);
     }
     const topCode = [
-        `; gen field assign`
+        `; field assign`
     ];
     const left = getElementPointer(node.left, context, scope);
     topCode.push(...left.topCode);
@@ -1075,9 +1077,42 @@ function genFieldAssign(node, context, scope) {
     const typeCast = implicitTypeCast(right.dataType, left.dataType, right.valueCode, context, node);
     topCode.push(...typeCast.topCode);
     const llDataType = context.dataTypeMap.get(typeCast.dataType);
+    const fun = getCurrentFun(scope);
+    
+    if (fun.gc && isStructType(typeCast.dataType, context)) {
+        const llStructType = context.dataTypeMap.get(left.structDataType);
+        const sourceTempVar = newTempVar(context);
+        const oldDestValueTempVar = newTempVar(context);
+        const oldDestTempVar = newTempVar(context);
+        
+        //topCode.push(`${valVarName} = load ${llFieldType}, ${llFieldType}* ${pointer.valueCode}`);
+        
+        topCode.push(
+            `${sourceTempVar} = ptrtoint ${llStructType} ${left.structValueCode} to i64`,
+            `${oldDestValueTempVar} = load ${llDataType}, ${llDataType}* ${left.valueCode}`,
+            `${oldDestTempVar} = ptrtoint ${llDataType} ${oldDestValueTempVar} to i64`,
+            `call void @gc_remove_assoc(i64 ${sourceTempVar}, i64 ${oldDestTempVar})`
+        );
+    }
+    
     topCode.push(
         `store ${llDataType} ${typeCast.valueCode}, ${llDataType}* ${left.valueCode}`
     );
+    
+    if (fun.gc && isStructType(typeCast.dataType, context)) {
+        const llStructType = context.dataTypeMap.get(left.structDataType);
+        const sourceTempVar = newTempVar(context);
+        const destTempVar = newTempVar(context);
+        
+        //topCode.push(`${valVarName} = load ${llFieldType}, ${llFieldType}* ${pointer.valueCode}`);
+        
+        topCode.push(
+            `${sourceTempVar} = ptrtoint ${llStructType} ${left.structValueCode} to i64`,
+            `${destTempVar} = ptrtoint ${llDataType} ${typeCast.valueCode} to i64`,
+            `call void @gc_add_assoc(i64 ${sourceTempVar}, i64 ${destTempVar})`
+        );
+    }
+    
     return {
         topCode,
         valueCode: null,
