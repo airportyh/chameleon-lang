@@ -1,0 +1,601 @@
+# Garbage Collection
+
+struct String {
+    char: int
+    next: String
+}
+
+struct BTreeMap {
+    key: long
+    value: long
+    size: int
+    left: BTreeMap
+    right: BTreeMap
+}
+
+struct StringList {
+    string: String
+    next: StringList
+}
+
+struct AppendUntilResult {
+    part: String
+    rest: String
+}
+
+fun main(): int [
+    t = "t"
+    m = do_it(t)
+    putchar('V')
+    putchar('\n')
+    print_tree(@var_ref_map 0)
+    putchar('A')
+    putchar('\n')
+    print_assoc_map(@assoc_map 0)
+    putchar('\n')
+    gc_mark_and_sweep()
+    return 0
+]
+
+fun do_it(thing:String): String [
+    message = "H"
+    print(message)
+    print(thing)
+    return message
+]
+
+fun hello(subject:String): String [
+    return concat_string(concat_string("Hello, " subject) "!")
+]
+
+# String functions ==========================
+
+fun string(char:int next:String): String [
+    return alloc String {
+        char = char
+        next = next
+    }
+]
+
+fun string_list(string:String next:StringList): StringList [
+    return alloc StringList {
+        string = string
+        next = next
+    }
+]
+
+fun put_string(string:String) [
+    if string != null [
+        putchar(string.char)
+        put_string(string.next)
+    ]
+]
+
+fun split_string(source:String separator:int): StringList [
+    return split_string_helper(source separator null)
+]
+
+fun split_string_helper(source:String separator:int dest:StringList): StringList [
+    if source == null [
+        return dest
+    ]
+    append_result = append_until(source separator null)
+    rest_list = split_string_helper(append_result.rest separator dest)
+    return string_list(append_result.part rest_list)
+]
+
+fun append_until(source:String stop_char:int dest:String): AppendUntilResult [
+    if source == null [
+        return alloc AppendUntilResult {
+            part = dest
+            rest = null
+        }
+    ]
+    char = source.char
+    if char == stop_char [
+        return alloc AppendUntilResult {
+            part = dest
+            rest = source.next
+        }
+    ] else [
+        append_result = append_until(source.next stop_char dest)
+        return alloc AppendUntilResult {
+            part = string(char append_result.part)
+            rest = append_result.rest
+        }
+    ]
+]
+
+fun concat_string(string1:String string2:String): String [
+    combined:String = null
+    combined = concat_string_helper(string2 combined)
+    combined = concat_string_helper(string1 combined)
+    return combined
+]
+
+fun concat_string_helper(source:String dest:String): String [
+    new_dest:String = null
+    if source != null [
+        char = source.char
+        new_dest = concat_string_helper(source.next dest)
+        return string(char new_dest)
+    ] else [
+        return dest
+    ]
+]
+
+fun string_length(string:String): int [
+    length:int = 0
+    curr = string
+    while curr != null [
+        curr = curr.next
+        length = length + 1
+    ]
+    return length
+]
+
+fun find_string(string:String target:String): String [
+    if starts_with_string(string target) [
+        return string
+    ] else [
+        return find_string(string.next target)
+    ]
+]
+
+fun starts_with_string(string:String target:String): bool [
+    if target == null [
+        return true
+    ]
+    if string == null [
+        return false
+    ]
+    if string.char == target.char [
+        return starts_with_string(string.next target.next)
+    ] else [
+        return false
+    ]
+]
+
+fun print(string:String) [
+    put_string(string)
+    putchar('\n')
+]
+
+# Number functions
+
+fun print_long(num:long) [
+    if num > 0 [
+        digit = num % 10
+        print_long(num / 10)
+        putchar(48 + digit)
+    ]
+]
+
+fun read_long(): long [
+    num = 0
+    while true [
+        digit = getchar()
+        if digit == 10 [
+            break
+        ]
+        num = num * 10
+        num = num + (digit - 48)
+    ]
+    return num
+]
+
+# BTreeMap functions
+
+fun print_indent(amount:int) [
+    while amount > 0 [
+        putchar(' ')
+        putchar(' ')
+        putchar(' ')
+        putchar(' ')
+        amount = amount - 1
+    ]
+]
+
+fun print_tree(tree:BTreeMap level:int) [
+    if tree != null [
+        print_indent(level)
+        print_long(tree.key)
+        putchar(58)
+        print_long(tree.value)
+        putchar(10)
+        print_tree(tree.left level + 1)
+        print_tree(tree.right level + 1)
+    ]
+]
+
+fun print_assoc_map(tree:BTreeMap level:int) [
+    sub_map:BTreeMap = null
+    if tree != null [
+        print_indent(level)
+        print_long(tree.key)
+        putchar('>')
+        sub_map = BTreeMap(tree.value)
+        putchar('\n')
+        print_tree(sub_map level + 1)
+        print_assoc_map(tree.left level + 1)
+        print_assoc_map(tree.right level + 1)
+    ]
+]
+
+# Garbage collector
+
+fun gc:off gc_add_var_ref(source:long dest:long) [
+    if dest == 0 [
+        return
+    ]
+    @var_ref_map = btmap_set(source dest @var_ref_map)
+]
+
+fun gc:off gc_remove_var_ref(source:long) [
+    @var_ref_map = btmap_delete(source @var_ref_map)
+]
+
+fun gc:off gc_add_assoc(source:long dest:long) [
+    if dest == 0 [
+        return
+    ]
+    result = btmap_get(source @assoc_map)
+    refs:BTreeMap = null
+    if result != null [
+        refs = BTreeMap(result.value)
+        new_refs = btmap_set(dest 1 refs)
+        @assoc_map = btmap_set(source long(new_refs) @assoc_map)
+    ] else [
+        refs = btmap(dest 1 null null)
+        @assoc_map = btmap_set(source long(refs) @assoc_map)
+    ]
+]
+
+fun gc:off gc_remove_assoc(source:long dest:long) [
+    if dest == 0 [
+        return
+    ]
+    result = btmap_get(source @assoc_map)
+    refs:BTreeMap = null
+    if result != null [
+        refs = BTreeMap(result.value)
+        new_refs = btmap_delete(dest refs)
+        if new_refs == null [
+            @assoc_map = btmap_delete(source @assoc_map)
+        ] else [
+            @assoc_map = btmap_set(source long(new_refs) @assoc_map)
+        ]
+    ]
+]
+
+fun gc:off gc_mark_and_sweep() [
+    putchar('A')
+    putchar('\n')
+    print_tree(@alloc_map 0)
+    putchar('\n')
+    putchar(':')
+    print_long(btmap_size(@alloc_map))
+    putchar('\n')
+    # for each entry @alloc_map, set value to false
+    
+    @alloc_map = gc_set_all_unmarked(@alloc_map)
+    putchar('B')
+    putchar('\n')
+    print_tree(@alloc_map 0)
+    # Mark:
+    # for each key/value pair in @var_ref_map walk the references
+    # and mark each allocation that was reached
+    putchar('\n')
+    putchar('*')
+    putchar('*')
+    putchar('\n')
+    gc_walk()
+    # Sweep: 
+    # for each allocation that was not marked, free it
+    putchar('\n')
+    putchar('*')
+    putchar('*')
+    putchar('*')
+    putchar('\n')
+    putchar('C')
+    putchar('\n')
+    print_tree(@alloc_map 0)
+    gc_free_all_unmarked(@alloc_map)
+]
+
+fun gc:off gc_set_all_unmarked(map:BTreeMap): BTreeMap [
+    if map == null [
+        return null
+    ]
+    return btmap(map.key 0 gc_set_all_unmarked(map.left) gc_set_all_unmarked(map.right))
+]
+
+fun gc:off gc_walk() [
+    gc_walk_var_ref_map(@var_ref_map)
+]
+
+fun gc:off gc_walk_var_ref_map(map:BTreeMap) [
+    if map == null [
+        return
+    ]
+    gc_visit_alloc(map.value)
+    gc_walk_var_ref_map(map.left)
+    gc_walk_var_ref_map(map.right)
+]
+
+fun gc:off gc_visit_alloc(address:long) [
+    putchar('v')
+    print_long(address)
+    putchar('\n')
+    alloc_entry = btmap_get(address @alloc_map)
+    if alloc_entry != null [
+        putchar('!')
+        putchar('\n')
+        if alloc_entry.value == 1 [
+            # it was already marked, do not re-process
+            # or there would be an infinite loop
+            return
+        ]
+        # You've been marked
+        alloc_entry.value = 1
+        assocs_entry = btmap_get(address @assoc_map)
+        if assocs_entry != null [
+            assocs = BTreeMap(assocs_entry.value)
+            gc_walk_assocs(assocs)
+        ]
+    ] else [
+        putchar('.')
+        putchar('\n')
+    ]
+]
+
+fun gc:off gc_walk_assocs(assocs:BTreeMap) [
+    if assocs == null [
+        return
+    ]
+    putchar('w')
+    putchar('a')
+    print_long(assocs.key)
+    putchar('\n')
+    
+    gc_visit_alloc(assocs.key)
+    gc_walk_assocs(assocs.left)
+    gc_walk_assocs(assocs.right)
+]
+
+fun gc:off gc_free_all_unmarked(map:BTreeMap) [
+    if map == null [
+        return
+    ]
+    if map.value == 0 [
+        # Walk did not reach this allocation, free it
+        putchar('~')
+        print_long(map.key)
+        putchar('\n')
+        free BTreeMap(map.key)
+    ]
+    gc_free_all_unmarked(map.left)
+    gc_free_all_unmarked(map.right)
+]
+
+# Core BTreeMap Operations
+
+fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
+    if btree == null [
+        return btmap(key value null null)
+    ]
+    if key == btree.key [
+        return btmap_create_balanced(
+            key
+            value
+            btree.left
+            btree.right
+        )
+    ] else if key > btree.key [
+        new_right = btmap_set(key value btree.right)
+        return btmap_create_balanced(
+            btree.key 
+            btree.value 
+            btree.left 
+            new_right
+        )
+    ] else [
+        new_left = btmap_set(key value btree.left)
+        return btmap_create_balanced(
+            btree.key
+            btree.value
+            new_left
+            btree.right
+        )
+    ]
+]
+
+fun gc:off btmap_get(key:long tree:BTreeMap): BTreeMap [
+    if tree == null [
+        return null
+    ]
+    if key == tree.key [
+        return tree
+    ] else if key > tree.key [
+        return btmap_get(key tree.right)
+    ]
+    return btmap_get(key tree.left)
+]
+
+fun gc:off btmap_delete(key:long tree:BTreeMap): BTreeMap [
+    if tree == null [
+        return null
+    ]
+    if key == tree.key [
+        right_min = btmap_min(tree.right)
+        right = btmap_delete_min(tree.right)
+        if right_min != null [
+            return btmap_create_balanced(
+                 right_min.key
+                 right_min.value
+                 tree.left
+                 right
+            )
+        ] else [
+            return tree.left
+        ]
+    ] else if key > tree.key [
+        return btmap_create_balanced(
+            tree.key
+            tree.value
+            tree.left
+            btmap_delete(key tree.right)
+        )
+    ] else [
+        return btmap_create_balanced(
+            tree.key
+            tree.value
+            btmap_delete(key tree.left)
+            tree.right
+        )
+    ]
+]
+
+fun gc:off btmap_min(tree:BTreeMap): BTreeMap [
+    if tree == null [
+        return null
+    ] else [
+        if tree.left != null [
+            return btmap_min(tree.left)
+        ]
+        return tree
+    ]
+]
+
+fun gc:off btmap_delete_min(tree:BTreeMap): BTreeMap [
+    if tree == null [
+        return null
+    ] else [
+        if tree.left != null [
+            return btmap(
+                tree.key
+                tree.value
+                btmap_delete_min(tree.left)
+                tree.right
+            )
+        ]
+        return tree.right
+    ]
+]
+
+fun gc:off btmap(
+    key:long
+    value:long
+    left:BTreeMap
+    right:BTreeMap
+): BTreeMap [
+    size = 1
+    if left != null [
+        size = size + left.size
+    ]
+    if right != null [
+        size = size + right.size
+    ]
+    return alloc BTreeMap {
+        key = key
+        value = value
+        size = size
+        left = left
+        right = right
+    }
+]
+
+# See http://groups.csail.mit.edu/mac/users/adams/BB/
+# section 6: Balance maintenance algorithms
+fun gc:off btmap_single_left_rotation(a:BTreeMap): BTreeMap [
+    x = a.left
+    b = a.right
+    y = a.right.left
+    z = a.right.right
+    a1 = btmap(a.key a.value x y)
+    b1 = btmap(b.key b.value a1 z)
+    return b1
+]
+
+fun gc:off btmap_single_right_rotation(b:BTreeMap): BTreeMap [
+    a = b.left
+    x = a.left
+    y = a.right
+    z = b.right
+    b1 = btmap(b.key b.value y z)
+    a1 = btmap(a.key a.value x b1)
+    return a1
+]
+
+fun gc:off btmap_double_left_rotation(a:BTreeMap): BTreeMap [
+    x = a.left
+    c = a.right
+    b = c.left
+    z = c.right
+    y1 = b.left
+    y2 = b.right
+    a1 = btmap(a.key a.value x y1)
+    c1 = btmap(c.key c.value y2 z)
+    b1 = btmap(b.key b.value a1 c1)
+    return b1
+]
+
+fun gc:off btmap_double_right_rotation(c:BTreeMap): BTreeMap [
+    z = c.right
+    a = c.left
+    x = a.left
+    b = a.right
+    y1 = b.left
+    y2 = b.right
+    a1 = btmap(a.key a.value x y1)
+    c1 = btmap(c.key c.value y2 z)
+    b1 = btmap(b.key b.value a1 c1)
+    return b1
+]
+
+fun gc:off btmap_create_balanced(
+    key:long
+    value:long
+    left:BTreeMap
+    right:BTreeMap
+): BTreeMap [
+    weight = 3.745
+    p = btmap(key value left right)
+    ln = btmap_size(left)
+    rn = btmap_size(right)
+    if ln + rn < 2 [
+        return p
+    ] else if rn > int(weight * double(ln)) [
+        # right is too big
+        rl = right.left
+        rr = right.right
+        rln = btmap_size(rl)
+        rrn = btmap_size(rr)
+        if rln < rrn [
+            return btmap_single_left_rotation(p)
+        ] else [
+            return btmap_double_left_rotation(p)
+        ]
+    ] else if ln > int(weight * double(rn)) [
+        # left is too big
+        ll = left.left
+        lr = left.right
+        lln = btmap_size(ll)
+        lrn = btmap_size(lr)
+        if lrn < lln [
+            return btmap_single_right_rotation(p)
+        ] else [
+            return btmap_double_right_rotation(p)
+        ]
+    ] else [
+        return p
+    ]
+]
+
+fun gc:off btmap_size(tree:BTreeMap): int [
+    if tree == null [
+        return 0
+    ] else [
+        return tree.size
+    ]
+]

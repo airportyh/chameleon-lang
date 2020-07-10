@@ -12,8 +12,9 @@ backends.
 
 ## Todos
 
-* allow assigning to struct fields
-* implement mutable tree map
+* add to and remove from `@assoc_map` on field assignment
+* error arrow is not perfectly aligned?
+* allow comments next to code
 * gc: collect
 * experiment with stack traces: https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
 * fix variables first declared in if blocks not dominating all cases (if should have scope?)
@@ -45,6 +46,7 @@ backends.
 * experiment with optimization
 * type checker that gives good error messages
 
+* allow assigning to struct fields (done)
 * string utility functions (done)
 * allow tagging gc on functions instead of structs (perhaps use a block-based directive) (done)
 * gc: de-initialize vars for void functions (done)

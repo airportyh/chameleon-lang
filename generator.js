@@ -58,7 +58,7 @@ async function main() {
         funTable,
         dataTypeMap,
         structTable,
-        gc: false // on/off master switch for gc
+        gc: true // on/off master switch for gc
     };
     try {
         const { topCode } = gen(ast, context, []);
@@ -338,7 +338,7 @@ function genFieldInitialization(varName, structNode, context, scope) {
                 `${destValueTempVar} = load ${llFieldType}, ${llFieldType}* ${fieldValueTempVar}`,
                 `${destTempVar} = ptrtoint ${llFieldType} ${destValueTempVar} to i64`,
                 `; field initialization`,
-                `call void @gc_add_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
+                `call void @gc_add_assoc(i64 ${sourceTempVar}, i64 ${destTempVar})`
             );
         }
     }
@@ -529,15 +529,11 @@ function genReturn(node, context, scope) {
         if (fun.gc && isStructType(dataType, context)) {
             const structDef = context.structTable.get(dataType);
             const sourceTempVar = newTempVar(context);
-            const destTempVar = newTempVar(context);
-            const destValueTempVar = newTempVar(context);
             const llDataType = context.dataTypeMap.get(dataType);
             topCode.push(
-                `${sourceTempVar} = ptrtoint ${llDataType}* %${varName} to i64`,
-                `${destValueTempVar} = load ${llDataType}, ${llDataType}* %${varName}`,
-                `${destTempVar} = ptrtoint ${llDataType} ${destValueTempVar} to i64`,
                 `; variable cleanup for function`,
-                `call void @gc_remove_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
+                `${sourceTempVar} = ptrtoint ${llDataType}* %${varName} to i64`,
+                `call void @gc_remove_var_ref(i64 ${sourceTempVar})`
             );
         }
     }
@@ -571,7 +567,7 @@ function genFunDef(node, context, scope) {
                 `${sourceTempVar} = ptrtoint ${llParamDataType}* %${paramName} to i64`,
                 `${destTempVar} = ptrtoint ${llParamDataType} %_${paramName} to i64`,
                 `; function parameter initialization`,
-                `call void @gc_add_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
+                `call void @gc_add_var_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
             );
         }
     }
@@ -935,7 +931,10 @@ function genVarRef(node, context, scope) {
     const varName = node.value;
     let dataType, llDataType, llVarName;
     if (varName[0] === "@") {
-        if (varName === "@ref_map" || varName === "@alloc_map") {
+        if (varName === "@var_ref_map" || 
+            varName === "@alloc_map" ||
+            varName === "@assoc_map"
+        ) {
             dataType = "BTreeMap";
             llDataType = "%struct.BTreeMap*";
             llVarName = varName;
@@ -1011,7 +1010,7 @@ function genVarAssign(node, context, scope) {
             `${sourceTempVar} = ptrtoint ${llDataType}* %${varName} to i64`,
             `${destTempVar} = ptrtoint ${llDataType} ${valueCode} to i64`,
             `; var assign`,
-            `call void @gc_add_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
+            `call void @gc_add_var_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
         );
     }
     
@@ -1066,15 +1065,18 @@ function genFieldAssign(node, context, scope) {
     if (!(node.left.type === "bin_expr" && node.left.operator.value === ".")) {
         throw makeError(`Cannot perform field assignment to a non-dot expression.`, node.left.operator);
     }
-    const topCode = [];
+    const topCode = [
+        `; gen field assign`
+    ];
     const left = getElementPointer(node.left, context, scope);
     topCode.push(...left.topCode);
     const right = gen(node.right, context, scope);
     topCode.push(...right.topCode);
-    const llLeftType = context.dataTypeMap.get(left.dataType);
-    const llRightType = context.dataTypeMap.get(right.dataType);
+    const typeCast = implicitTypeCast(right.dataType, left.dataType, right.valueCode, context, node);
+    topCode.push(...typeCast.topCode);
+    const llDataType = context.dataTypeMap.get(typeCast.dataType);
     topCode.push(
-        `store ${llRightType} ${right.valueCode}, ${llLeftType}* ${left.valueCode}`
+        `store ${llDataType} ${typeCast.valueCode}, ${llDataType}* ${left.valueCode}`
     );
     return {
         topCode,
@@ -1108,8 +1110,9 @@ function genProgram(node, context, scope) {
     
     if (context.gc) {
         builtInFuns.push(
-            `@ref_map = global %struct.BTreeMap* null`,
-            `@alloc_map = global %struct.BTreeMap* null`,
+            `@var_ref_map = global %struct.BTreeMap* null`,
+            `@assoc_map = global %struct.BTreeMap* null`,
+            `@alloc_map = global %struct.BTreeMap* null`
         );
     }
     
