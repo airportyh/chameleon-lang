@@ -12,6 +12,9 @@ backends.
 
 ## Todos
 
+* support empty strings
+* write test for gc
+* free resources properly in gc
 * integrate gc implicitly into program flow
 * research minor gc
 * error arrow is not perfectly aligned?
@@ -44,8 +47,8 @@ backends.
 * nested inlined structs
 * web assembly backend?
 * experiment with optimization
-* type checker that gives good error messages
 
+* type checker that gives good error messages (done)
 * add to and remove from `@assoc_map` on field assignment (done)
 * gc: collect (done)
 * allow assigning to struct fields (done)

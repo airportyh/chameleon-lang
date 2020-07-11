@@ -4,12 +4,13 @@ const lexer = require("./lexer.js");
 
 @lexer lexer
 
-program -> lines
+program -> (_ gc_directive _ %NL):? lines
     {%
         (data) => {
             return {
                 type: "program",
-                body: data[0]
+                gc: data[0] ? data[0][1].gc : false,
+                body: data[1]
             };
         }
     %}
@@ -197,7 +198,7 @@ argument_list
         %}
 
 fun_def
-    -> "fun" __ (gc_off __):? identifier _ paranthesized_parameter_list _ (type_def _):? code_block
+    -> "fun" __ (gc_directive __):? identifier _ paranthesized_parameter_list _ (type_def _):? code_block
         {%
             (data) => {
                 return {
@@ -208,12 +209,22 @@ fun_def
                     data_type: data[7] && data[7][0],
                     parameters: data[5],
                     body: data[8],
-                    gc: !data[2]
+                    gc: data[2] ? data[2][0].gc : true
                 };
             }
         %}
 
-gc_off -> "gc" ":" "off"
+gc_directive -> "gc" _ ":" _ ("on" | "off")
+    {%
+        (data) => {
+            return {
+                type: "gc_directive",
+                start: tokenStart(data[0]),
+                end: tokenEnd(data[4][0]),
+                gc: data[4][0].value === "on"
+            };
+        }
+    %}
 
 paranthesized_parameter_list
     ->  "(" _ ")"    {% () => [] %}

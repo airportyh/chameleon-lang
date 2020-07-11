@@ -58,7 +58,7 @@ async function main() {
         funTable,
         dataTypeMap,
         structTable,
-        gc: true // on/off master switch for gc
+        gc: false
     };
     try {
         const { topCode } = gen(ast, context, []);
@@ -320,13 +320,26 @@ function genFieldInitialization(varName, structNode, context, scope) {
     const structDef = context.structTable.get(structName);
     const fun = getCurrentFun(scope);
     for (let i = 0; i < structNode.entries.length; i++) {
-        const fieldDef = structDef.entries[i];
+        const fieldName = structNode.entries[i].field_name.value;
+        let fieldDef, fieldIdx;
+        for (let j = 0; j < structDef.entries.length; j++) {
+            const entry = structDef.entries[j];
+            if (entry.field_name.value === fieldName) {
+                fieldIdx = j;
+                fieldDef =  entry;
+            }
+        }
+        if (!fieldDef) {
+            throw makeError(`Don't know about field ${fieldName} on struct ${structName}.`, structNode);
+        }
         const fieldType = fieldDef.field_type.value;
         const llFieldType = context.dataTypeMap.get(fieldType);
         const fieldValue = gen(structNode.entries[i].field_value, context, scope);
         const fieldValueTempVar = newTempVar(context);
+        topCode.push(`; ${JSON.stringify(fieldDef)}`);
+        topCode.push(`; initialize struct field ${fieldName} ${fieldType}`);
         topCode.push(...fieldValue.topCode);
-        topCode.push(`${fieldValueTempVar} = getelementptr inbounds ${structId}, ${structId}* ${varName}, i32 0, i32 ${i}`);
+        topCode.push(`${fieldValueTempVar} = getelementptr inbounds ${structId}, ${structId}* ${varName}, i32 0, i32 ${fieldIdx}`);
         topCode.push(`store ${llFieldType} ${fieldValue.valueCode}, ${llFieldType}* ${fieldValueTempVar}`);
         
         if (fun.gc && isStructType(fieldType, context)) {
@@ -970,10 +983,12 @@ function genVarAssign(node, context, scope) {
     }
 
     const topCode = [];
-    const definedDataType = node.data_type && node.data_type.value;
     const prevDefinedDataType = getVariableType(varName, scope);
+    let definedDataType = node.data_type && node.data_type.value;
     if (definedDataType && prevDefinedDataType) {
         throw makeError(`Cannot re-define the type of variable ${varName} to ${definedDataType}, previously defined as ${prevDefinedDataType}.`, node.data_type);
+    } else if (!definedDataType && prevDefinedDataType) {
+        definedDataType = prevDefinedDataType;
     }
 
     const value = gen(node.value, context, scope);
@@ -997,11 +1012,13 @@ function genVarAssign(node, context, scope) {
         topCode.push(`%${varName} = alloca ${llDataType}`);
     }
     topCode.push(
+        `; var assign with ${dataType}`,
         `store ${llDataType} ${valueCode}, ${llDataType}* %${varName}`
     );
     
     const fun = getCurrentFun(scope);
-    if (fun.gc && isStructType(value.dataType, context)) {
+    
+    if (fun.gc && isStructType(dataType, context)) {
         const sourceTempVar = newTempVar(context);
         const destTempVar = newTempVar(context);
         const refMapValueTempVar = newTempVar(context);
@@ -1009,7 +1026,6 @@ function genVarAssign(node, context, scope) {
         topCode.push(
             `${sourceTempVar} = ptrtoint ${llDataType}* %${varName} to i64`,
             `${destTempVar} = ptrtoint ${llDataType} ${valueCode} to i64`,
-            `; var assign`,
             `call void @gc_add_var_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
         );
     }
@@ -1136,6 +1152,8 @@ function genGlobalVarAssign(node, context, scope) {
 }
 
 function genProgram(node, context, scope) {
+    context.gc = node.gc;
+    console.log("GC:", context.gc);
     const builtInFuns = [
         `declare i32 @putchar(i32)`,
         `declare i32 @getchar()`,

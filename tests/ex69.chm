@@ -1,3 +1,4 @@
+gc:on
 # Garbage Collection
 
 struct String {
@@ -8,7 +9,16 @@ struct String {
 struct Product {
     name: String
     description: String
+    owner: String
     price: double
+}
+
+struct Student {
+    first_initial: int
+    last_initial: int
+    average: double
+    friend: Student
+    friend2: Student
 }
 
 struct BTreeMap {
@@ -30,26 +40,473 @@ struct AppendUntilResult {
 }
 
 fun main(): int [
-    bball = alloc Product {
+    test_suite()
+    return 0
+]
+
+fun test_suite() [
+    scenario_0()
+    gc_mark_and_sweep()
+    scenario_1()
+    gc_mark_and_sweep()
+    print_info()
+    scenario_2()
+    gc_mark_and_sweep()
+    scenario_3()
+    gc_mark_and_sweep()
+    scenario_4()
+    gc_mark_and_sweep()
+    scenario_5()
+    gc_mark_and_sweep()
+    scenario_6()
+    gc_mark_and_sweep()
+    scenario_7()
+    gc_mark_and_sweep()
+    scenario_8()
+    gc_mark_and_sweep()
+    scenario_9()
+    gc_mark_and_sweep()
+    scenario_10()
+    gc_mark_and_sweep()
+    scenario_11()
+    gc_mark_and_sweep()
+    scenario_12()
+    gc_mark_and_sweep()
+    scenario_13()
+    gc_mark_and_sweep()
+]
+
+fun scenario_0() [
+    putchar('0')
+    putchar('\n')
+    print_info()
+]
+
+fun scenario_1() [
+    putchar('1')
+    putchar('\n')
+
+    bob = alloc Student {
+        first_initial = 'M'
+        last_initial = 'H'
+        average = 100.0
+    }
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_2() [
+    putchar('2')
+    putchar('\n')
+
+    bob = alloc Student {
+        first_initial = 'M'
+        last_initial = 'H'
+        average = 100.0
+    }
+    
+    bob = null
+
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_3() [
+    putchar('3')
+    putchar('\n')
+
+    bob = alloc Student {
+        first_initial = 'M'
+        last_initial = 'H'
+        average = 100.0
+        friend = alloc Student {
+            first_initial = 'L'
+            last_initial = 'L'
+            average = 97.0
+        }
+    }
+
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_4() [
+    putchar('4')
+    putchar('\n')
+
+    bob = alloc Student {
+        first_initial = 'M'
+        last_initial = 'H'
+        average = 100.0
+        friend = alloc Student {
+            first_initial = 'L'
+            last_initial = 'L'
+            average = 97.0
+        }
+    }
+    
+    bob.friend = null
+
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_5() [
+    putchar('5')
+    putchar('\n')
+
+    bob = alloc Student {
+        first_initial = 'M'
+        last_initial = 'H'
+        average = 100.0
+        friend = alloc Student {
+            first_initial = 'L'
+            last_initial = 'L'
+            average = 97.0
+        }
+    }
+    
+    bob = null
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_6() [
+    putchar('6')
+    putchar('\n')
+
+    bob = alloc Student {
+        first_initial = 'M'
+        last_initial = 'H'
+        average = 100.0
+        friend = alloc Student {
+            first_initial = 'L'
+            last_initial = 'H'
+            average = 97.0
+        }
+        friend2 = alloc Student {
+            first_initial = 'E'
+            last_initial = 'H'
+            average = 80.0
+        }
+    }
+    print_info()
+    
+    bob = null
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_7() [
+    putchar('7')
+    putchar('\n')
+
+    message = "Hello"
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_8() [
+    putchar('8')
+    putchar('\n')
+
+    message = "Hello"
+    message = null
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_9() [
+    putchar('9')
+    putchar('\n')
+
+    print("Hello")
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_10() [
+    putchar('1')
+    putchar('0')
+    putchar('\n')
+
+    print(concat_string("Hello" "World"))
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_11() [
+    putchar('1')
+    putchar('1')
+    putchar('\n')
+
+    print(hello("George"))
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_12() [
+    putchar('1')
+    putchar('2')
+    putchar('\n')
+
+    message = hello("Jessica")
+    print(message)
+    
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_13() [
+    putchar('1')
+    putchar('3')
+    putchar('\n')
+
+    basketball = alloc Product {
         name = "Basketball"
         description = "You can bounce it, you can shoot it!"
-        price = 20.00
+        price = 12.50
     }
-    bball.description = "BAM"
-    putchar('a')
-    putchar('a')
-    putchar('\n')
-    print_assoc_map(@assoc_map 0)
+    basketball.description = "Play it!"
     
-    putchar('V')
-    putchar('\n')
-    print_tree(@var_ref_map 0)
-    putchar('A')
-    putchar('\n')
-    print_assoc_map(@assoc_map 0)
-    putchar('\n')
+    print_info()
     gc_mark_and_sweep()
-    return 0
+    print_info()
+]
+
+fun print_detailed_info() [
+    print_var_ref_map(0)
+    print_assoc_map(0)
+    print_alloc_map(0)
+]
+
+fun print_info() [
+    print_var_ref_map_size()
+    print_assoc_map_size()
+    print_max_assoc_count()
+    print_alloc_map_size()
+]
+
+fun print_assoc_map_size() [
+    putchar('<')
+    putchar('A')
+    putchar('S')
+    putchar('S')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    print_long(btmap_size(@assoc_map))
+    putchar('<')
+    putchar('/')
+    putchar('A')
+    putchar('S')
+    putchar('S')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    putchar('\n')
+]
+
+fun print_var_ref_map_size() [
+    putchar('<')
+    putchar('V')
+    putchar('A')
+    putchar('R')
+    putchar('R')
+    putchar('E')
+    putchar('F')
+    putchar('S')
+    putchar('>')
+    print_long(btmap_size(@var_ref_map))
+    putchar('<')
+    putchar('/')
+    putchar('V')
+    putchar('A')
+    putchar('R')
+    putchar('R')
+    putchar('E')
+    putchar('F')
+    putchar('S')
+    putchar('>')
+    putchar('\n')
+]
+
+fun print_alloc_map_size() [
+    putchar('<')
+    putchar('A')
+    putchar('L')
+    putchar('L')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    print_long(btmap_size(@alloc_map))
+    putchar('<')
+    putchar('/')
+    putchar('A')
+    putchar('L')
+    putchar('L')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    putchar('\n')
+]
+
+fun print_max_assoc_count() [
+    count = max_assoc_count(@assoc_map)
+    putchar('<')
+    putchar('M')
+    putchar('A')
+    putchar('X')
+    putchar('A')
+    putchar('S')
+    putchar('S')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    print_long(count)
+    putchar('<')
+    putchar('/')
+    putchar('M')
+    putchar('A')
+    putchar('X')
+    putchar('A')
+    putchar('S')
+    putchar('S')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    putchar('\n')
+]
+
+fun max_assoc_count(map:BTreeMap): int [
+    if map == null [
+        return 0
+    ]
+    refs = BTreeMap(map.value)
+    my_count = btmap_size(refs)
+    left_count = max_assoc_count(map.left)
+    right_count = max_assoc_count(map.right)
+    if my_count > left_count [
+        if my_count > right_count [
+            return my_count
+        ] else [
+            return right_count
+        ]
+    ] else [
+        if right_count > left_count [
+            return right_count
+        ] else [
+            return left_count
+        ]
+    ]
+]
+
+fun print_assoc_map(indent:int) [
+    print_indent(indent)
+    putchar('<')
+    putchar('A')
+    putchar('S')
+    putchar('S')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    putchar('\n')
+    print_assoc_map_helper(@assoc_map indent)
+    print_indent(indent)
+    putchar('<')
+    putchar('/')
+    putchar('A')
+    putchar('S')
+    putchar('S')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    putchar('\n')
+]
+
+fun print_var_ref_map(indent:int) [
+    putchar('<')
+    putchar('V')
+    putchar('A')
+    putchar('R')
+    putchar('R')
+    putchar('E')
+    putchar('F')
+    putchar('S')
+    putchar(' ')
+    print_long(btmap_size(@var_ref_map))
+    putchar('>')
+    putchar('\n')
+    print_map(@var_ref_map indent + 1)
+    putchar('<')
+    putchar('/')
+    putchar('V')
+    putchar('A')
+    putchar('R')
+    putchar('R')
+    putchar('E')
+    putchar('F')
+    putchar('S')
+    putchar('>')
+    putchar('\n')
+]
+
+fun print_map(map:BTreeMap indent:int) [
+    if map == null [
+        return
+    ]
+    print_indent(indent)
+    print_long(map.key)
+    putchar(' ')
+    putchar('>')
+    putchar(' ')
+    print_long(map.value)
+    putchar('\n')
+    print_map(map.left indent)
+    print_map(map.right indent)
+]
+
+fun print_alloc_map(indent:int) [
+    print_indent(indent)
+    putchar('<')
+    putchar('A')
+    putchar('L')
+    putchar('L')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    putchar('\n')
+    print_map(@alloc_map indent + 1)
+    print_indent(indent)
+    putchar('<')
+    putchar('/')
+    putchar('A')
+    putchar('L')
+    putchar('L')
+    putchar('O')
+    putchar('C')
+    putchar('>')
+    putchar('\n')
 ]
 
 fun do_it(thing:String): String [
@@ -88,27 +545,40 @@ fun print_tree(tree:BTreeMap level:int) [
     ]
 ]
 
-fun print_assoc_map(tree:BTreeMap level:int) [
+fun print_assoc_map_helper(tree:BTreeMap level:int) [
     sub_map:BTreeMap = null
     if tree != null [
-        print_indent(level)
+        print_indent(1)
         print_long(tree.key)
+        putchar(' ')
         putchar('>')
+        putchar(' ')
         sub_map = BTreeMap(tree.value)
+        print_map_keys_one_line(sub_map ' ')
         putchar('\n')
-        print_tree(sub_map level + 1)
-        print_assoc_map(tree.left level + 1)
-        print_assoc_map(tree.right level + 1)
+        print_assoc_map_helper(tree.left level + 1)
+        print_assoc_map_helper(tree.right level + 1)
     ]
+]
+
+fun print_map_keys_one_line(map:BTreeMap separator:int) [
+    if map == null [
+        return
+    ]
+    print_long(map.key)
+    putchar(separator)
+    print_map_keys_one_line(map.left separator)
+    print_map_keys_one_line(map.right separator)
 ]
 
 # Garbage collector
 
 fun gc:off gc_add_var_ref(source:long dest:long) [
     if dest == 0 [
-        return
+        @var_ref_map = btmap_delete(source @var_ref_map)
+    ] else [
+        @var_ref_map = btmap_set(source dest @var_ref_map)
     ]
-    @var_ref_map = btmap_set(source dest @var_ref_map)
 ]
 
 fun gc:off gc_remove_var_ref(source:long) [
@@ -132,69 +602,54 @@ fun gc:off gc_add_assoc(source:long dest:long) [
 ]
 
 fun gc:off gc_remove_assoc(source:long dest:long) [
-    putchar('R')
-    print_long(source)
-    putchar(',')
-    print_long(dest)
-    putchar('\n')
     if dest == 0 [
         return
     ]
     result = btmap_get(source @assoc_map)
     refs:BTreeMap = null
     if result != null [
-        putchar('%')
-        putchar('\n')
         refs = BTreeMap(result.value)
         new_refs = btmap_delete(dest refs)
         if new_refs == null [
-            putchar('(')
-            putchar('\n')
             @assoc_map = btmap_delete(source @assoc_map)
         ] else [
-            putchar('(')
-            putchar('\n')
             @assoc_map = btmap_set(source long(new_refs) @assoc_map)
         ]
-    ] else [
-        putchar('^')
-        putchar('\n')
     ]
 ]
 
 fun gc:off gc_mark_and_sweep() [
-    putchar('A')
-    putchar('\n')
-    print_tree(@alloc_map 0)
-    putchar('\n')
-    putchar(':')
-    print_long(btmap_size(@alloc_map))
-    putchar('\n')
+    putchar('<')
+    putchar('G')
+    putchar('C')
+    putchar('>')
+    size_before = btmap_size(@alloc_map)
     # for each entry @alloc_map, set value to false
-    
     @alloc_map = gc_set_all_unmarked(@alloc_map)
-    putchar('B')
-    putchar('\n')
-    print_tree(@alloc_map 0)
     # Mark:
     # for each key/value pair in @var_ref_map walk the references
     # and mark each allocation that was reached
-    putchar('\n')
-    putchar('*')
-    putchar('*')
-    putchar('\n')
     gc_walk()
     # Sweep: 
     # for each allocation that was not marked, free it
-    putchar('\n')
-    putchar('*')
-    putchar('*')
-    putchar('*')
-    putchar('\n')
+    @alloc_map = gc_free_all_unmarked(@alloc_map)
+    size_after = btmap_size(@alloc_map)
+    number_freed = size_before - size_after
+    putchar('f')
+    putchar('r')
+    putchar('e')
+    putchar('e')
+    putchar('d')
+    putchar(' ')
+    print_long(number_freed)
+    putchar('/')
+    print_long(size_before)
+    putchar('<')
+    putchar('/')
+    putchar('G')
     putchar('C')
+    putchar('>')
     putchar('\n')
-    print_tree(@alloc_map 0)
-    gc_free_all_unmarked(@alloc_map)
 ]
 
 fun gc:off gc_set_all_unmarked(map:BTreeMap): BTreeMap [
@@ -218,13 +673,8 @@ fun gc:off gc_walk_var_ref_map(map:BTreeMap) [
 ]
 
 fun gc:off gc_visit_alloc(address:long) [
-    putchar('v')
-    print_long(address)
-    putchar('\n')
     alloc_entry = btmap_get(address @alloc_map)
     if alloc_entry != null [
-        putchar('!')
-        putchar('\n')
         if alloc_entry.value == 1 [
             # it was already marked, do not re-process
             # or there would be an infinite loop
@@ -237,9 +687,6 @@ fun gc:off gc_visit_alloc(address:long) [
             assocs = BTreeMap(assocs_entry.value)
             gc_walk_assocs(assocs)
         ]
-    ] else [
-        putchar('.')
-        putchar('\n')
     ]
 ]
 
@@ -247,29 +694,39 @@ fun gc:off gc_walk_assocs(assocs:BTreeMap) [
     if assocs == null [
         return
     ]
-    putchar('w')
-    putchar('a')
-    print_long(assocs.key)
-    putchar('\n')
     
     gc_visit_alloc(assocs.key)
     gc_walk_assocs(assocs.left)
     gc_walk_assocs(assocs.right)
 ]
 
-fun gc:off gc_free_all_unmarked(map:BTreeMap) [
+fun gc:off gc_free_all_unmarked(map:BTreeMap): BTreeMap [
     if map == null [
-        return
+        return null
     ]
+    left = gc_free_all_unmarked(map.left)
+    right = gc_free_all_unmarked(map.right)
     if map.value == 0 [
         # Walk did not reach this allocation, free it
-        putchar('~')
-        print_long(map.key)
-        putchar('\n')
         free BTreeMap(map.key)
+        # also remove it from @assoc_map
+        @assoc_map = btmap_delete(map.key @assoc_map)
+        # delete this node
+        right_min = btmap_min(right)
+        right = btmap_delete_min(right)
+        if right_min != null [
+            return btmap_create_balanced(
+                right_min.key
+                right_min.value
+                left
+                right
+            )
+        ] else [
+            return left
+        ]
+    ] else [
+        return btmap_create_balanced(map.key map.value left right)
     ]
-    gc_free_all_unmarked(map.left)
-    gc_free_all_unmarked(map.right)
 ]
 
 # Core BTreeMap Operations
@@ -610,10 +1067,18 @@ fun print(string:String) [
 # Number functions
 
 fun print_long(num:long) [
+    print_long_helper(num true)
+]
+
+fun print_long_helper(num:long first:bool) [
     if num > 0 [
         digit = num % 10
-        print_long(num / 10)
-        putchar(48 + digit)
+        print_long_helper(num / 10 false)
+        putchar('0' + digit)
+    ] else [
+        if first [
+            putchar('0')
+        ]
     ]
 ]
 
