@@ -1140,10 +1140,24 @@ function genGlobalVarAssign(node, context, scope) {
     const varName = node.var_name.value;
     const llDataType = "%struct.BTreeMap*";
     const value = gen(node.value, context, scope);
-    const topCode = [
-        ...value.topCode,
-        `store ${llDataType} ${value.valueCode}, ${llDataType}* ${varName}`
-    ];
+    const fun = getCurrentFun(scope);
+    const topCode = [];
+    if (fun) {
+        topCode.push(
+            ...value.topCode,
+            `store ${llDataType} ${value.valueCode}, ${llDataType}* ${varName}`
+        );
+    } else {
+        // declare a constant at the top level using the global keyword
+        // https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/basic-constructs/global-variables.html
+        if (topCode.length > 0) {
+            throw makeError(`Cannot perform computation at the top level of a program`, node);
+        }
+        topCode.push(
+            `${varName} = global ${llDataType} ${value.valueCode}`
+        );
+    }
+    
     return {
         topCode,
         valueCode: null,
@@ -1153,23 +1167,13 @@ function genGlobalVarAssign(node, context, scope) {
 
 function genProgram(node, context, scope) {
     context.gc = node.gc;
-    console.log("GC:", context.gc);
     const builtInFuns = [
         `declare i32 @putchar(i32)`,
         `declare i32 @getchar()`,
         `declare i8* @malloc(i32)`,
-        `declare void @free(i8*)`
+        `declare void @free(i8*)`,
+        ""
     ];
-    
-    if (context.gc) {
-        builtInFuns.push(
-            `@var_ref_map = global %struct.BTreeMap* null`,
-            `@assoc_map = global %struct.BTreeMap* null`,
-            `@alloc_map = global %struct.BTreeMap* null`
-        );
-    }
-    
-    builtInFuns.push("");
     
     loadFunDefs(node.body, context);
     

@@ -12,11 +12,10 @@ backends.
 
 ## Todos
 
+* ref-count-based gc
 * support empty strings
-* write test for gc
-* free resources properly in gc
 * integrate gc implicitly into program flow
-* research minor gc
+* research minor gc and other gc's
 * error arrow is not perfectly aligned?
 * allow comments next to code
 * experiment with stack traces: https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
@@ -48,6 +47,8 @@ backends.
 * web assembly backend?
 * experiment with optimization
 
+* free resources properly in gc (done)
+* write test for gc (done)
 * type checker that gives good error messages (done)
 * add to and remove from `@assoc_map` on field assignment (done)
 * gc: collect (done)

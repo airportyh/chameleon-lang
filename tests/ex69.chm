@@ -1,5 +1,9 @@
-gc:on
+gc: on
 # Garbage Collection
+
+@var_ref_map:BTreeMap = null
+@assoc_map:BTreeMap = null
+@alloc_map:BTreeMap = null
 
 struct String {
     char: int
@@ -51,6 +55,8 @@ fun test_suite() [
     gc_mark_and_sweep()
     print_info()
     scenario_2()
+    gc_mark_and_sweep()
+    scenario_2B()
     gc_mark_and_sweep()
     scenario_3()
     gc_mark_and_sweep()
@@ -106,6 +112,26 @@ fun scenario_2() [
         last_initial = 'H'
         average = 100.0
     }
+    
+    bob = null
+
+    print_info()
+    gc_mark_and_sweep()
+    print_info()
+]
+
+fun scenario_2B() [
+    putchar('2')
+    putchar('B')
+    putchar('\n')
+
+    bob = alloc Student {
+        first_initial = 'M'
+        last_initial = 'H'
+        average = 100.0
+    }
+    
+    robert = bob
     
     bob = null
 
@@ -706,6 +732,7 @@ fun gc:off gc_free_all_unmarked(map:BTreeMap): BTreeMap [
     ]
     left = gc_free_all_unmarked(map.left)
     right = gc_free_all_unmarked(map.right)
+    new_map:BTreeMap = null
     if map.value == 0 [
         # Walk did not reach this allocation, free it
         free BTreeMap(map.key)
@@ -713,20 +740,23 @@ fun gc:off gc_free_all_unmarked(map:BTreeMap): BTreeMap [
         @assoc_map = btmap_delete(map.key @assoc_map)
         # delete this node
         right_min = btmap_min(right)
-        right = btmap_delete_min(right)
+        new_right = btmap_delete_min(right)
         if right_min != null [
-            return btmap_create_balanced(
+            new_map = btmap_create_balanced(
                 right_min.key
                 right_min.value
                 left
-                right
+                new_right
             )
+            free right_min
         ] else [
-            return left
+            new_map = left
         ]
     ] else [
-        return btmap_create_balanced(map.key map.value left right)
+        new_map = btmap_create_balanced(map.key map.value left right)
     ]
+    free map
+    return new_map
 ]
 
 # Core BTreeMap Operations
@@ -735,8 +765,9 @@ fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
     if btree == null [
         return btmap(key value null null)
     ]
+    new_tree:BTreeMap = null
     if key == btree.key [
-        return btmap_create_balanced(
+        new_tree = btmap_create_balanced(
             key
             value
             btree.left
@@ -744,7 +775,7 @@ fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
         )
     ] else if key > btree.key [
         new_right = btmap_set(key value btree.right)
-        return btmap_create_balanced(
+        new_tree = btmap_create_balanced(
             btree.key 
             btree.value 
             btree.left 
@@ -752,13 +783,15 @@ fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
         )
     ] else [
         new_left = btmap_set(key value btree.left)
-        return btmap_create_balanced(
+        new_tree = btmap_create_balanced(
             btree.key
             btree.value
             new_left
             btree.right
         )
     ]
+    free btree
+    return new_tree
 ]
 
 fun gc:off btmap_get(key:long tree:BTreeMap): BTreeMap [
@@ -777,34 +810,38 @@ fun gc:off btmap_delete(key:long tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
     ]
+    new_tree:BTreeMap = null
     if key == tree.key [
         right_min = btmap_min(tree.right)
         right = btmap_delete_min(tree.right)
         if right_min != null [
-            return btmap_create_balanced(
+            new_tree = btmap_create_balanced(
                  right_min.key
                  right_min.value
                  tree.left
                  right
             )
+            free right_min
         ] else [
-            return tree.left
+            new_tree = tree.left
         ]
     ] else if key > tree.key [
-        return btmap_create_balanced(
+        new_tree = btmap_create_balanced(
             tree.key
             tree.value
             tree.left
             btmap_delete(key tree.right)
         )
     ] else [
-        return btmap_create_balanced(
+        new_tree = btmap_create_balanced(
             tree.key
             tree.value
             btmap_delete(key tree.left)
             tree.right
         )
     ]
+    free tree
+    return new_tree
 ]
 
 fun gc:off btmap_min(tree:BTreeMap): BTreeMap [
@@ -821,17 +858,19 @@ fun gc:off btmap_min(tree:BTreeMap): BTreeMap [
 fun gc:off btmap_delete_min(tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
-    ] else [
-        if tree.left != null [
-            return btmap(
-                tree.key
-                tree.value
-                btmap_delete_min(tree.left)
-                tree.right
-            )
-        ]
-        return tree.right
     ]
+    new_tree:BTreeMap = null
+    if tree.left != null [
+        new_tree = btmap(
+            tree.key
+            tree.value
+            btmap_delete_min(tree.left)
+            tree.right
+        )
+    ] else [
+        new_tree = tree.right
+    ]
+    return new_tree
 ]
 
 fun gc:off btmap(
@@ -865,6 +904,8 @@ fun gc:off btmap_single_left_rotation(a:BTreeMap): BTreeMap [
     z = a.right.right
     a1 = btmap(a.key a.value x y)
     b1 = btmap(b.key b.value a1 z)
+    free a
+    free b
     return b1
 ]
 
@@ -875,6 +916,8 @@ fun gc:off btmap_single_right_rotation(b:BTreeMap): BTreeMap [
     z = b.right
     b1 = btmap(b.key b.value y z)
     a1 = btmap(a.key a.value x b1)
+    free a
+    free b
     return a1
 ]
 
@@ -888,6 +931,9 @@ fun gc:off btmap_double_left_rotation(a:BTreeMap): BTreeMap [
     a1 = btmap(a.key a.value x y1)
     c1 = btmap(c.key c.value y2 z)
     b1 = btmap(b.key b.value a1 c1)
+    free a
+    free b
+    free c
     return b1
 ]
 
@@ -901,6 +947,9 @@ fun gc:off btmap_double_right_rotation(c:BTreeMap): BTreeMap [
     a1 = btmap(a.key a.value x y1)
     c1 = btmap(c.key c.value y2 z)
     b1 = btmap(b.key b.value a1 c1)
+    free a
+    free b
+    free c
     return b1
 ]
 
