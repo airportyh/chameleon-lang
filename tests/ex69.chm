@@ -1,10 +1,6 @@
 gc: on
 # Garbage Collection
 
-@var_ref_map:BTreeMap = null
-@assoc_map:BTreeMap = null
-@alloc_map:BTreeMap = null
-
 struct String {
     char: int
     next: String
@@ -42,6 +38,10 @@ struct AppendUntilResult {
     part: String
     rest: String
 }
+
+@var_ref_map:BTreeMap = null
+@assoc_map:BTreeMap = null
+@alloc_map:BTreeMap = null
 
 fun main(): int [
     test_suite()

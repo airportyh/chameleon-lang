@@ -12,6 +12,7 @@ backends.
 
 ## Todos
 
+* fix grammar ambiguiety: btmap_set(dest (count + 1) @ref_counts)
 * ref-count-based gc
 * support empty strings
 * integrate gc implicitly into program flow

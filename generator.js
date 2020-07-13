@@ -53,11 +53,13 @@ async function main() {
     dataTypeMap.set("void", "void");
     dataTypeMap.set("pointer", "i8*");
     const structTable = new Map();
+    const globalVars = new Map();
     const context = {
         nextTemp: 1,
         funTable,
         dataTypeMap,
         structTable,
+        globalVars,
         gc: false
     };
     try {
@@ -336,7 +338,6 @@ function genFieldInitialization(varName, structNode, context, scope) {
         const llFieldType = context.dataTypeMap.get(fieldType);
         const fieldValue = gen(structNode.entries[i].field_value, context, scope);
         const fieldValueTempVar = newTempVar(context);
-        topCode.push(`; ${JSON.stringify(fieldDef)}`);
         topCode.push(`; initialize struct field ${fieldName} ${fieldType}`);
         topCode.push(...fieldValue.topCode);
         topCode.push(`${fieldValueTempVar} = getelementptr inbounds ${structId}, ${structId}* ${varName}, i32 0, i32 ${fieldIdx}`);
@@ -944,12 +945,12 @@ function genVarRef(node, context, scope) {
     const varName = node.value;
     let dataType, llDataType, llVarName;
     if (varName[0] === "@") {
-        if (varName === "@var_ref_map" || 
-            varName === "@alloc_map" ||
-            varName === "@assoc_map"
-        ) {
-            dataType = "BTreeMap";
-            llDataType = "%struct.BTreeMap*";
+        if (context.globalVars.has(varName)) {
+            dataType = context.globalVars.get(varName);
+            llDataType = context.dataTypeMap.get(dataType);
+            if (!llDataType) {
+                throw makeError(`Unable to resolve type ${dataType}`, node);
+            }
             llVarName = varName;
         } else {
             throw makeError(`Unknown global variable ${varName}.`, node);
@@ -1138,8 +1139,12 @@ function genFieldAssign(node, context, scope) {
 
 function genGlobalVarAssign(node, context, scope) {
     const varName = node.var_name.value;
-    const llDataType = "%struct.BTreeMap*";
     const value = gen(node.value, context, scope);
+    const dataType = node.data_type && node.data_type.value || value.dataType;
+    const llDataType = context.dataTypeMap.get(dataType);
+    if (!llDataType) {
+        throw makeError(`Unable to resolve type ${dataType}`, node.data_type || node);
+    }
     const fun = getCurrentFun(scope);
     const topCode = [];
     if (fun) {
@@ -1151,11 +1156,12 @@ function genGlobalVarAssign(node, context, scope) {
         // declare a constant at the top level using the global keyword
         // https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/basic-constructs/global-variables.html
         if (topCode.length > 0) {
-            throw makeError(`Cannot perform computation at the top level of a program`, node);
+            throw makeError(`Cannot perform computation at the top level of a program`, node.value);
         }
         topCode.push(
             `${varName} = global ${llDataType} ${value.valueCode}`
         );
+        context.globalVars.set(varName, dataType);
     }
     
     return {
