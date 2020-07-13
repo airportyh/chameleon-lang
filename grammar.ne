@@ -4,12 +4,12 @@ const lexer = require("./lexer.js");
 
 @lexer lexer
 
-program -> (_ gc_directive _ %NL):? lines
+program -> (_ memory_manager_directive _ %NL):? lines
     {%
         (data) => {
             return {
                 type: "program",
-                gc: data[0] ? data[0][1].gc : false,
+                memory_manager: data[0] ? data[0][1].value : "none",
                 body: data[1]
             };
         }
@@ -198,7 +198,7 @@ argument_list
         %}
 
 fun_def
-    -> "fun" __ (gc_directive __):? identifier _ paranthesized_parameter_list _ (type_def _):? code_block
+    -> "fun" __ (memory_manager_off_directive __):? identifier _ paranthesized_parameter_list _ (type_def _):? code_block
         {%
             (data) => {
                 return {
@@ -209,19 +209,21 @@ fun_def
                     data_type: data[7] && data[7][0],
                     parameters: data[5],
                     body: data[8],
-                    gc: data[2] ? data[2][0].gc : true
+                    mm: data[2] ? false : true
                 };
             }
         %}
 
-gc_directive -> "gc" _ ":" _ ("on" | "off")
+memory_manager_off_directive -> "mm" _ ":" _ "off"
+
+memory_manager_directive -> "memory_manager" _ ":" _ ("gc" | "arc" | "uptr" | "none")
     {%
         (data) => {
             return {
-                type: "gc_directive",
+                type: "memory_manager_directive",
                 start: tokenStart(data[0]),
                 end: tokenEnd(data[4][0]),
-                gc: data[4][0].value === "on"
+                value: data[4][0].value
             };
         }
     %}
@@ -338,8 +340,7 @@ struct_def
                     start: tokenStart(data[0]),
                     end: tokenEnd(data[8]),
                     name: data[2],
-                    entries: data[6],
-                    gc: true
+                    entries: data[6]
                 };
             }
         %}

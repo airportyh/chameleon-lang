@@ -1,4 +1,5 @@
-gc: on
+memory_manager: gc
+
 # Garbage Collection
 
 struct String {
@@ -599,7 +600,7 @@ fun print_map_keys_one_line(map:BTreeMap separator:int) [
 
 # Garbage collector
 
-fun gc:off gc_add_var_ref(source:long dest:long) [
+fun mm:off gc_add_var_ref(source:long dest:long) [
     if dest == 0 [
         @var_ref_map = btmap_delete(source @var_ref_map)
     ] else [
@@ -607,11 +608,11 @@ fun gc:off gc_add_var_ref(source:long dest:long) [
     ]
 ]
 
-fun gc:off gc_remove_var_ref(source:long) [
+fun mm:off gc_remove_var_ref(source:long) [
     @var_ref_map = btmap_delete(source @var_ref_map)
 ]
 
-fun gc:off gc_add_assoc(source:long dest:long) [
+fun mm:off gc_add_assoc(source:long dest:long) [
     if dest == 0 [
         return
     ]
@@ -627,7 +628,7 @@ fun gc:off gc_add_assoc(source:long dest:long) [
     ]
 ]
 
-fun gc:off gc_remove_assoc(source:long dest:long) [
+fun mm:off gc_remove_assoc(source:long dest:long) [
     if dest == 0 [
         return
     ]
@@ -644,7 +645,7 @@ fun gc:off gc_remove_assoc(source:long dest:long) [
     ]
 ]
 
-fun gc:off gc_mark_and_sweep() [
+fun mm:off gc_mark_and_sweep() [
     putchar('<')
     putchar('G')
     putchar('C')
@@ -678,18 +679,18 @@ fun gc:off gc_mark_and_sweep() [
     putchar('\n')
 ]
 
-fun gc:off gc_set_all_unmarked(map:BTreeMap): BTreeMap [
+fun mm:off gc_set_all_unmarked(map:BTreeMap): BTreeMap [
     if map == null [
         return null
     ]
     return btmap(map.key 0 gc_set_all_unmarked(map.left) gc_set_all_unmarked(map.right))
 ]
 
-fun gc:off gc_walk() [
+fun mm:off gc_walk() [
     gc_walk_var_ref_map(@var_ref_map)
 ]
 
-fun gc:off gc_walk_var_ref_map(map:BTreeMap) [
+fun mm:off gc_walk_var_ref_map(map:BTreeMap) [
     if map == null [
         return
     ]
@@ -698,7 +699,7 @@ fun gc:off gc_walk_var_ref_map(map:BTreeMap) [
     gc_walk_var_ref_map(map.right)
 ]
 
-fun gc:off gc_visit_alloc(address:long) [
+fun mm:off gc_visit_alloc(address:long) [
     alloc_entry = btmap_get(address @alloc_map)
     if alloc_entry != null [
         if alloc_entry.value == 1 [
@@ -716,7 +717,7 @@ fun gc:off gc_visit_alloc(address:long) [
     ]
 ]
 
-fun gc:off gc_walk_assocs(assocs:BTreeMap) [
+fun mm:off gc_walk_assocs(assocs:BTreeMap) [
     if assocs == null [
         return
     ]
@@ -726,7 +727,7 @@ fun gc:off gc_walk_assocs(assocs:BTreeMap) [
     gc_walk_assocs(assocs.right)
 ]
 
-fun gc:off gc_free_all_unmarked(map:BTreeMap): BTreeMap [
+fun mm:off gc_free_all_unmarked(map:BTreeMap): BTreeMap [
     if map == null [
         return null
     ]
@@ -761,7 +762,7 @@ fun gc:off gc_free_all_unmarked(map:BTreeMap): BTreeMap [
 
 # Core BTreeMap Operations
 
-fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
+fun mm:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
     if btree == null [
         return btmap(key value null null)
     ]
@@ -794,7 +795,7 @@ fun gc:off btmap_set(key:long value:long btree:BTreeMap): BTreeMap [
     return new_tree
 ]
 
-fun gc:off btmap_get(key:long tree:BTreeMap): BTreeMap [
+fun mm:off btmap_get(key:long tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
     ]
@@ -806,7 +807,7 @@ fun gc:off btmap_get(key:long tree:BTreeMap): BTreeMap [
     return btmap_get(key tree.left)
 ]
 
-fun gc:off btmap_delete(key:long tree:BTreeMap): BTreeMap [
+fun mm:off btmap_delete(key:long tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
     ]
@@ -844,7 +845,7 @@ fun gc:off btmap_delete(key:long tree:BTreeMap): BTreeMap [
     return new_tree
 ]
 
-fun gc:off btmap_min(tree:BTreeMap): BTreeMap [
+fun mm:off btmap_min(tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
     ] else [
@@ -855,7 +856,7 @@ fun gc:off btmap_min(tree:BTreeMap): BTreeMap [
     ]
 ]
 
-fun gc:off btmap_delete_min(tree:BTreeMap): BTreeMap [
+fun mm:off btmap_delete_min(tree:BTreeMap): BTreeMap [
     if tree == null [
         return null
     ]
@@ -873,7 +874,7 @@ fun gc:off btmap_delete_min(tree:BTreeMap): BTreeMap [
     return new_tree
 ]
 
-fun gc:off btmap(
+fun mm:off btmap(
     key:long
     value:long
     left:BTreeMap
@@ -897,7 +898,7 @@ fun gc:off btmap(
 
 # See http://groups.csail.mit.edu/mac/users/adams/BB/
 # section 6: Balance maintenance algorithms
-fun gc:off btmap_single_left_rotation(a:BTreeMap): BTreeMap [
+fun mm:off btmap_single_left_rotation(a:BTreeMap): BTreeMap [
     x = a.left
     b = a.right
     y = a.right.left
@@ -909,7 +910,7 @@ fun gc:off btmap_single_left_rotation(a:BTreeMap): BTreeMap [
     return b1
 ]
 
-fun gc:off btmap_single_right_rotation(b:BTreeMap): BTreeMap [
+fun mm:off btmap_single_right_rotation(b:BTreeMap): BTreeMap [
     a = b.left
     x = a.left
     y = a.right
@@ -921,7 +922,7 @@ fun gc:off btmap_single_right_rotation(b:BTreeMap): BTreeMap [
     return a1
 ]
 
-fun gc:off btmap_double_left_rotation(a:BTreeMap): BTreeMap [
+fun mm:off btmap_double_left_rotation(a:BTreeMap): BTreeMap [
     x = a.left
     c = a.right
     b = c.left
@@ -937,7 +938,7 @@ fun gc:off btmap_double_left_rotation(a:BTreeMap): BTreeMap [
     return b1
 ]
 
-fun gc:off btmap_double_right_rotation(c:BTreeMap): BTreeMap [
+fun mm:off btmap_double_right_rotation(c:BTreeMap): BTreeMap [
     z = c.right
     a = c.left
     x = a.left
@@ -953,7 +954,7 @@ fun gc:off btmap_double_right_rotation(c:BTreeMap): BTreeMap [
     return b1
 ]
 
-fun gc:off btmap_create_balanced(
+fun mm:off btmap_create_balanced(
     key:long
     value:long
     left:BTreeMap
@@ -992,7 +993,7 @@ fun gc:off btmap_create_balanced(
     ]
 ]
 
-fun gc:off btmap_size(tree:BTreeMap): int [
+fun mm:off btmap_size(tree:BTreeMap): int [
     if tree == null [
         return 0
     ] else [

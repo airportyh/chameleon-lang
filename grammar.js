@@ -61,14 +61,14 @@ function idSimplifyToken(data) {
 var grammar = {
     Lexer: lexer,
     ParserRules: [
-    {"name": "program$ebnf$1$subexpression$1", "symbols": ["_", "gc_directive", "_", (lexer.has("NL") ? {type: "NL"} : NL)]},
+    {"name": "program$ebnf$1$subexpression$1", "symbols": ["_", "memory_manager_directive", "_", (lexer.has("NL") ? {type: "NL"} : NL)]},
     {"name": "program$ebnf$1", "symbols": ["program$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "program$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "program", "symbols": ["program$ebnf$1", "lines"], "postprocess": 
         (data) => {
             return {
                 type: "program",
-                gc: data[0] ? data[0][1].gc : false,
+                memory_manager: data[0] ? data[0][1].value : "none",
                 body: data[1]
             };
         }
@@ -221,7 +221,7 @@ var grammar = {
             return [...data[0], data[2]];
         }
                 },
-    {"name": "fun_def$ebnf$1$subexpression$1", "symbols": ["gc_directive", "__"]},
+    {"name": "fun_def$ebnf$1$subexpression$1", "symbols": ["memory_manager_off_directive", "__"]},
     {"name": "fun_def$ebnf$1", "symbols": ["fun_def$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "fun_def$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "fun_def$ebnf$2$subexpression$1", "symbols": ["type_def", "_"]},
@@ -237,19 +237,22 @@ var grammar = {
                 data_type: data[7] && data[7][0],
                 parameters: data[5],
                 body: data[8],
-                gc: data[2] ? data[2][0].gc : true
+                mm: data[2] ? false : true
             };
         }
                 },
-    {"name": "gc_directive$subexpression$1", "symbols": [{"literal":"on"}]},
-    {"name": "gc_directive$subexpression$1", "symbols": [{"literal":"off"}]},
-    {"name": "gc_directive", "symbols": [{"literal":"gc"}, "_", {"literal":":"}, "_", "gc_directive$subexpression$1"], "postprocess": 
+    {"name": "memory_manager_off_directive", "symbols": [{"literal":"mm"}, "_", {"literal":":"}, "_", {"literal":"off"}]},
+    {"name": "memory_manager_directive$subexpression$1", "symbols": [{"literal":"gc"}]},
+    {"name": "memory_manager_directive$subexpression$1", "symbols": [{"literal":"arc"}]},
+    {"name": "memory_manager_directive$subexpression$1", "symbols": [{"literal":"uptr"}]},
+    {"name": "memory_manager_directive$subexpression$1", "symbols": [{"literal":"none"}]},
+    {"name": "memory_manager_directive", "symbols": [{"literal":"memory_manager"}, "_", {"literal":":"}, "_", "memory_manager_directive$subexpression$1"], "postprocess": 
         (data) => {
             return {
-                type: "gc_directive",
+                type: "memory_manager_directive",
                 start: tokenStart(data[0]),
                 end: tokenEnd(data[4][0]),
-                gc: data[4][0].value === "on"
+                value: data[4][0].value
             };
         }
             },
@@ -338,8 +341,7 @@ var grammar = {
                 start: tokenStart(data[0]),
                 end: tokenEnd(data[8]),
                 name: data[2],
-                entries: data[6],
-                gc: true
+                entries: data[6]
             };
         }
                 },

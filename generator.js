@@ -16,6 +16,18 @@ double: double
 
 */
 
+const GCHooks = {
+    
+};
+
+const ARCHooks = {
+    
+};
+
+const UPtrHooks = {
+    
+};
+
 async function main() {
     const filename = process.argv[2];
     if (!filename) {
@@ -59,8 +71,7 @@ async function main() {
         funTable,
         dataTypeMap,
         structTable,
-        globalVars,
-        gc: false
+        globalVars
     };
     try {
         const { topCode } = gen(ast, context, []);
@@ -273,7 +284,7 @@ function genAlloc(node, context, scope) {
     topCode.push(...fieldInit.topCode);
     
     const fun = getCurrentFun(scope);
-    if (fun.gc) {
+    if (fun.mm) {
         const mapKeyTempVar = newTempVar(context);
         const allocMapValueTempVar = newTempVar(context);
         const newTreeTempVar = newTempVar(context);
@@ -343,7 +354,7 @@ function genFieldInitialization(varName, structNode, context, scope) {
         topCode.push(`${fieldValueTempVar} = getelementptr inbounds ${structId}, ${structId}* ${varName}, i32 0, i32 ${fieldIdx}`);
         topCode.push(`store ${llFieldType} ${fieldValue.valueCode}, ${llFieldType}* ${fieldValueTempVar}`);
         
-        if (fun.gc && isStructType(fieldType, context)) {
+        if (fun.mm && isStructType(fieldType, context)) {
             const sourceTempVar = newTempVar(context);
             const destValueTempVar = newTempVar(context);
             const destTempVar = newTempVar(context);
@@ -540,7 +551,7 @@ function genReturn(node, context, scope) {
     ];
     
     for (let [varName, dataType] of fun.variables.entries()) {
-        if (fun.gc && isStructType(dataType, context)) {
+        if (fun.mm && isStructType(dataType, context)) {
             const structDef = context.structTable.get(dataType);
             const sourceTempVar = newTempVar(context);
             const llDataType = context.dataTypeMap.get(dataType);
@@ -574,7 +585,7 @@ function genFunDef(node, context, scope) {
             `%${paramName} = alloca ${llParamDataType}`,
             `store ${llParamDataType} %_${paramName}, ${llParamDataType}* %${paramName}`
         );
-        if (context.gc && node.gc && isStructType(paramDataType, context)) {
+        if (context.memoryManager === "gc" && node.mm && isStructType(paramDataType, context)) {
             const sourceTempVar = newTempVar(context);
             const destTempVar = newTempVar(context);
             body.push(
@@ -595,7 +606,7 @@ function genFunDef(node, context, scope) {
         type: "fun",
         funName,
         variables,
-        gc: context.gc && node.gc
+        mm: context.memoryManager === "gc" && node.mm
     };
     const childScope = [funScope, ...scope];
     
@@ -620,8 +631,8 @@ function genFunDef(node, context, scope) {
     
     const topCode = [];
     
-    if (!node.gc) {
-        topCode.push(`; gc:off`);
+    if (!node.mm) {
+        topCode.push(`; mm:off`);
     }
     
     topCode.push(    
@@ -1019,7 +1030,7 @@ function genVarAssign(node, context, scope) {
     
     const fun = getCurrentFun(scope);
     
-    if (fun.gc && isStructType(dataType, context)) {
+    if (fun.mm && isStructType(dataType, context)) {
         const sourceTempVar = newTempVar(context);
         const destTempVar = newTempVar(context);
         const refMapValueTempVar = newTempVar(context);
@@ -1096,7 +1107,7 @@ function genFieldAssign(node, context, scope) {
     const llDataType = context.dataTypeMap.get(typeCast.dataType);
     const fun = getCurrentFun(scope);
     
-    if (fun.gc && isStructType(typeCast.dataType, context)) {
+    if (fun.mm && isStructType(typeCast.dataType, context)) {
         const llStructType = context.dataTypeMap.get(left.structDataType);
         const sourceTempVar = newTempVar(context);
         const oldDestValueTempVar = newTempVar(context);
@@ -1116,7 +1127,7 @@ function genFieldAssign(node, context, scope) {
         `store ${llDataType} ${typeCast.valueCode}, ${llDataType}* ${left.valueCode}`
     );
     
-    if (fun.gc && isStructType(typeCast.dataType, context)) {
+    if (fun.mm && isStructType(typeCast.dataType, context)) {
         const llStructType = context.dataTypeMap.get(left.structDataType);
         const sourceTempVar = newTempVar(context);
         const destTempVar = newTempVar(context);
@@ -1172,7 +1183,7 @@ function genGlobalVarAssign(node, context, scope) {
 }
 
 function genProgram(node, context, scope) {
-    context.gc = node.gc;
+    context.memoryManager = node.memory_manager;
     const builtInFuns = [
         `declare i32 @putchar(i32)`,
         `declare i32 @getchar()`,
