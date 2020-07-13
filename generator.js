@@ -17,7 +17,105 @@ double: double
 */
 
 const GCHooks = {
-    
+    onAlloc(structType, structPtr, context) {
+        const llStructType = context.dataTypeMap.get(structType);
+        const mapKeyTempVar = newTempVar(context);
+        const allocMapValueTempVar = newTempVar(context);
+        const newTreeTempVar = newTempVar(context);
+        return [
+            `; gc onAlloc hook`,
+            `${mapKeyTempVar} = ptrtoint ${llStructType} ${structPtr} to i64`,
+            `${allocMapValueTempVar} = load %struct.BTreeMap*, %struct.BTreeMap** @alloc_map`,
+            `${newTreeTempVar} = call %struct.BTreeMap* @btmap_set(i64 ${mapKeyTempVar}, i64 1, %struct.BTreeMap* ${allocMapValueTempVar})`,
+            `store %struct.BTreeMap* ${newTreeTempVar}, %struct.BTreeMap** @alloc_map`,
+            ''
+        ];
+    },
+    onFieldInit(structType, structPtr, fieldType, destPtr, context) {
+        const llStructType = context.dataTypeMap.get(structType);
+        const llFieldType = context.dataTypeMap.get(fieldType);
+        const sourceTempVar = newTempVar(context);
+        const destValueTempVar = newTempVar(context);
+        const destTempVar = newTempVar(context);
+        return [
+            `; gc onFieldInit hook`,
+            `${sourceTempVar} = ptrtoint ${llStructType} ${structPtr} to i64`,
+            `${destValueTempVar} = load ${llFieldType}, ${llFieldType}* ${destPtr}`,
+            `${destTempVar} = ptrtoint ${llFieldType} ${destValueTempVar} to i64`,
+            `call void @gc_add_assoc(i64 ${sourceTempVar}, i64 ${destTempVar})`,
+            ''
+        ];
+    },
+    onFunParamInit(paramType, paramName, context) {
+        const llParamDataType = context.dataTypeMap.get(paramType);
+        const sourceTempVar = newTempVar(context);
+        const destTempVar = newTempVar(context);
+        return [
+            `; gc onFunParamInit hook`,
+            `${sourceTempVar} = ptrtoint ${llParamDataType}* %${paramName} to i64`,
+            `${destTempVar} = ptrtoint ${llParamDataType} %_${paramName} to i64`,
+            `; function parameter initialization`,
+            `call void @gc_add_var_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
+        ];
+    },
+    onFunParamDeInit(structType, structPtr, context) {
+        const structDef = context.structTable.get(structType);
+        const sourceTempVar = newTempVar(context);
+        const llDataType = context.dataTypeMap.get(structType);
+        return [
+            `; gc onFunParamDeInit hook`,
+            `${sourceTempVar} = ptrtoint ${llDataType}* ${structPtr} to i64`,
+            `call void @gc_remove_var_ref(i64 ${sourceTempVar})`,
+            ''
+        ];
+    },
+    onBeforeVarAssign(structType, varName, context) {
+        return [];
+    },
+    onAfterVarAssign(structType, varName, varValue, context) {
+        const llStructType = context.dataTypeMap.get(structType);
+        const sourceTempVar = newTempVar(context);
+        const destTempVar = newTempVar(context);
+        const refMapValueTempVar = newTempVar(context);
+        const newTreeTempVar = newTempVar(context);
+        return [
+            `; gc onAfterVarAssign hook`,
+            `${sourceTempVar} = ptrtoint ${llStructType}* %${varName} to i64`,
+            `${destTempVar} = ptrtoint ${llStructType} ${varValue} to i64`,
+            `call void @gc_add_var_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`,
+            ''
+        ];
+    },
+    onBeforeFieldAssign(structType, structPtr, destType, destPtr, context) {
+        const llStructType = context.dataTypeMap.get(structType);
+        const llDestType = context.dataTypeMap.get(destType);
+        const sourceTempVar = newTempVar(context);
+        const oldDestValueTempVar = newTempVar(context);
+        const oldDestTempVar = newTempVar(context);
+        
+        return [
+            `; gc onBeforeFieldAssign hook`,
+            `${sourceTempVar} = ptrtoint ${llStructType} ${structPtr} to i64`,
+            `${oldDestValueTempVar} = load ${llDestType}, ${llDestType}* ${destPtr}`,
+            `${oldDestTempVar} = ptrtoint ${llDestType} ${oldDestValueTempVar} to i64`,
+            `call void @gc_remove_assoc(i64 ${sourceTempVar}, i64 ${oldDestTempVar})`,
+            ''
+        ];
+    },
+    onAfterFieldAssign(structType, structPtr, destType, destPtr, context) {
+        const llStructType = context.dataTypeMap.get(structType);
+        const llDestType = context.dataTypeMap.get(destType);
+        const sourceTempVar = newTempVar(context);
+        const destTempVar = newTempVar(context);
+        
+        return [
+            `; gc onAfterFieldAssign hook`,
+            `${sourceTempVar} = ptrtoint ${llStructType} ${structPtr} to i64`,
+            `${destTempVar} = ptrtoint ${llDestType} ${destPtr} to i64`,
+            `call void @gc_add_assoc(i64 ${sourceTempVar}, i64 ${destTempVar})`,
+            ''
+        ];
+    }
 };
 
 const ARCHooks = {
@@ -66,12 +164,17 @@ async function main() {
     dataTypeMap.set("pointer", "i8*");
     const structTable = new Map();
     const globalVars = new Map();
+    const memoryManagerHooks = {
+        gc: GCHooks
+    };
+    const mmHooks = memoryManagerHooks[ast.memory_manager];
     const context = {
         nextTemp: 1,
         funTable,
         dataTypeMap,
         structTable,
-        globalVars
+        globalVars,
+        mmHooks
     };
     try {
         const { topCode } = gen(ast, context, []);
@@ -271,11 +374,11 @@ function genAlloc(node, context, scope) {
     const tempVar = newTempVar(context);
     const structPtrVar = newTempVar(context);
     const structNode = node.struct;
-    const structName = structNode.structName.value;
-    const llType = context.dataTypeMap.get(structName);
-    const structDef = context.structTable.get(structName);
+    const structType = structNode.structName.value;
+    const llType = context.dataTypeMap.get(structType);
+    const structDef = context.structTable.get(structType);
     if (!structDef) {
-        throw makeError(`Cannot alloc undefined struct ${structName}.`, structNode);
+        throw makeError(`Cannot alloc undefined struct ${structType}.`, structNode);
     }
     const size = getStructSize(structDef, context);
     topCode.push(`${tempVar} = call i8* @malloc(i32 ${size})`);
@@ -285,21 +388,15 @@ function genAlloc(node, context, scope) {
     
     const fun = getCurrentFun(scope);
     if (fun.mm) {
-        const mapKeyTempVar = newTempVar(context);
-        const allocMapValueTempVar = newTempVar(context);
-        const newTreeTempVar = newTempVar(context);
         topCode.push(
-            `${mapKeyTempVar} = ptrtoint ${llType} ${structPtrVar} to i64`,
-            `${allocMapValueTempVar} = load %struct.BTreeMap*, %struct.BTreeMap** @alloc_map`,
-            `${newTreeTempVar} = call %struct.BTreeMap* @btmap_set(i64 ${mapKeyTempVar}, i64 1, %struct.BTreeMap* ${allocMapValueTempVar})`,
-            `store %struct.BTreeMap* ${newTreeTempVar}, %struct.BTreeMap** @alloc_map`
+            ...context.mmHooks.onAlloc(structType, structPtrVar, context)
         );
     }
     
     return {
         topCode,
         valueCode: structPtrVar,
-        dataType: structName
+        dataType: structType
     };
 }
 
@@ -355,15 +452,8 @@ function genFieldInitialization(varName, structNode, context, scope) {
         topCode.push(`store ${llFieldType} ${fieldValue.valueCode}, ${llFieldType}* ${fieldValueTempVar}`);
         
         if (fun.mm && isStructType(fieldType, context)) {
-            const sourceTempVar = newTempVar(context);
-            const destValueTempVar = newTempVar(context);
-            const destTempVar = newTempVar(context);
             topCode.push(
-                `${sourceTempVar} = ptrtoint ${structId}* ${varName} to i64`,
-                `${destValueTempVar} = load ${llFieldType}, ${llFieldType}* ${fieldValueTempVar}`,
-                `${destTempVar} = ptrtoint ${llFieldType} ${destValueTempVar} to i64`,
-                `; field initialization`,
-                `call void @gc_add_assoc(i64 ${sourceTempVar}, i64 ${destTempVar})`
+                ...context.mmHooks.onFieldInit(structName, varName, fieldType, fieldValueTempVar, context)
             );
         }
     }
@@ -552,13 +642,8 @@ function genReturn(node, context, scope) {
     
     for (let [varName, dataType] of fun.variables.entries()) {
         if (fun.mm && isStructType(dataType, context)) {
-            const structDef = context.structTable.get(dataType);
-            const sourceTempVar = newTempVar(context);
-            const llDataType = context.dataTypeMap.get(dataType);
             topCode.push(
-                `; variable cleanup for function`,
-                `${sourceTempVar} = ptrtoint ${llDataType}* %${varName} to i64`,
-                `call void @gc_remove_var_ref(i64 ${sourceTempVar})`
+                ...context.mmHooks.onFunParamDeInit(dataType, `%${varName}`, context)
             );
         }
     }
@@ -575,6 +660,14 @@ function genFunDef(node, context, scope) {
     const variables = new Map();
     const paramList = [];
     const body = [];
+    const funName = node.fun_name.value;
+    const funScope = {
+        type: "fun",
+        funName,
+        variables,
+        mm: context.memoryManager === "gc" && node.mm
+    };
+    
     for (const param of node.parameters) {
         const paramName = param.name.value;
         const paramDataType = param.data_type && param.data_type.value || "void";
@@ -585,29 +678,15 @@ function genFunDef(node, context, scope) {
             `%${paramName} = alloca ${llParamDataType}`,
             `store ${llParamDataType} %_${paramName}, ${llParamDataType}* %${paramName}`
         );
-        if (context.memoryManager === "gc" && node.mm && isStructType(paramDataType, context)) {
-            const sourceTempVar = newTempVar(context);
-            const destTempVar = newTempVar(context);
+        if (funScope.mm && isStructType(paramDataType, context)) {
             body.push(
-                `${sourceTempVar} = ptrtoint ${llParamDataType}* %${paramName} to i64`,
-                `${destTempVar} = ptrtoint ${llParamDataType} %_${paramName} to i64`,
-                `; function parameter initialization`,
-                `call void @gc_add_var_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
+                ...context.mmHooks.onFunParamInit(paramDataType, paramName, context)
             );
         }
     }
-    const funName = node.fun_name.value;
-    //context.funTable.set(funName, funSig);
     const funSig = context.funTable.get(funName);
     const outputType = funSig.output;
     const llOutputType = context.dataTypeMap.get(outputType);
-    
-    const funScope = {
-        type: "fun",
-        funName,
-        variables,
-        mm: context.memoryManager === "gc" && node.mm
-    };
     const childScope = [funScope, ...scope];
     
     let returns = false;
@@ -1023,22 +1102,18 @@ function genVarAssign(node, context, scope) {
         currentFun.variables.set(varName, dataType);
         topCode.push(`%${varName} = alloca ${llDataType}`);
     }
+    
+    // TODO: call on BeforeVarAssign hook
+    
     topCode.push(
-        `; var assign with ${dataType}`,
         `store ${llDataType} ${valueCode}, ${llDataType}* %${varName}`
     );
     
     const fun = getCurrentFun(scope);
     
     if (fun.mm && isStructType(dataType, context)) {
-        const sourceTempVar = newTempVar(context);
-        const destTempVar = newTempVar(context);
-        const refMapValueTempVar = newTempVar(context);
-        const newTreeTempVar = newTempVar(context);
         topCode.push(
-            `${sourceTempVar} = ptrtoint ${llDataType}* %${varName} to i64`,
-            `${destTempVar} = ptrtoint ${llDataType} ${valueCode} to i64`,
-            `call void @gc_add_var_ref(i64 ${sourceTempVar}, i64 ${destTempVar})`
+            ...context.mmHooks.onAfterVarAssign(dataType, varName, valueCode, context)
         );
     }
     
@@ -1108,18 +1183,8 @@ function genFieldAssign(node, context, scope) {
     const fun = getCurrentFun(scope);
     
     if (fun.mm && isStructType(typeCast.dataType, context)) {
-        const llStructType = context.dataTypeMap.get(left.structDataType);
-        const sourceTempVar = newTempVar(context);
-        const oldDestValueTempVar = newTempVar(context);
-        const oldDestTempVar = newTempVar(context);
-        
-        //topCode.push(`${valVarName} = load ${llFieldType}, ${llFieldType}* ${pointer.valueCode}`);
-        
         topCode.push(
-            `${sourceTempVar} = ptrtoint ${llStructType} ${left.structValueCode} to i64`,
-            `${oldDestValueTempVar} = load ${llDataType}, ${llDataType}* ${left.valueCode}`,
-            `${oldDestTempVar} = ptrtoint ${llDataType} ${oldDestValueTempVar} to i64`,
-            `call void @gc_remove_assoc(i64 ${sourceTempVar}, i64 ${oldDestTempVar})`
+            ...context.mmHooks.onBeforeFieldAssign(left.structDataType, left.structValueCode, typeCast.dataType, left.valueCode, context)
         );
     }
     
@@ -1128,16 +1193,8 @@ function genFieldAssign(node, context, scope) {
     );
     
     if (fun.mm && isStructType(typeCast.dataType, context)) {
-        const llStructType = context.dataTypeMap.get(left.structDataType);
-        const sourceTempVar = newTempVar(context);
-        const destTempVar = newTempVar(context);
-        
-        //topCode.push(`${valVarName} = load ${llFieldType}, ${llFieldType}* ${pointer.valueCode}`);
-        
         topCode.push(
-            `${sourceTempVar} = ptrtoint ${llStructType} ${left.structValueCode} to i64`,
-            `${destTempVar} = ptrtoint ${llDataType} ${typeCast.valueCode} to i64`,
-            `call void @gc_add_assoc(i64 ${sourceTempVar}, i64 ${destTempVar})`
+            ...context.mmHooks.onAfterFieldAssign(left.structDataType, left.structValueCode, typeCast.dataType, typeCast.valueCode, context)
         );
     }
     
